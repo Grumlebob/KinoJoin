@@ -10,9 +10,4 @@
     <ProjectReference Include="..\Domain\Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DTO\" />
-    <Folder Include="Interfaces\" />
-  </ItemGroup>
-
 </Project>

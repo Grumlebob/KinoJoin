@@ -1,7 +1,9 @@
 using Application;
+using Application.Interfaces;
 using Infrastructure;
-using Presentation.Client.Pages;
+using Infrastructure.Services;
 using Presentation.Components;
+using Presentation.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
+builder.Services.AddScoped<IMonkeyService, MonkeyService>();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -34,5 +37,7 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Presentation.Client._Imports).Assembly);
+
+app.MapMonkeyEndpoints();
 
 app.Run();

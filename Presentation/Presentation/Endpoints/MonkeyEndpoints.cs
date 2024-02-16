@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+﻿using Application.DTO;
+using Application.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +14,11 @@ public static class MonkeyEndpoints
             var result = service.Get(id);
             if (result is null) return Results.NotFound();
             return Results.Ok(result);
+        });
+
+        app.MapPost("/monkeys", ([FromServices] IMonkeyService service, [FromBody] CreateMonkeyDto monkey) =>
+        {
+            service.Create(monkey);
         });
     }
 }

@@ -1,4 +1,6 @@
 ﻿@page "/counter"
+@using Application.DTO
+@inject NavigationManager NavigationManager
 
 <PageTitle>Counter</PageTitle>
 
@@ -11,8 +13,11 @@
 @code {
     private int currentCount = 0;
 
-    private void IncrementCount()
+    private async Task IncrementCount()
     {
         currentCount++;
+        var httpClient = new HttpClient();
+        var result = await httpClient.GetAsync(NavigationManager.BaseUri + "monkeys/1");
+        Console.WriteLine((await result.Content.ReadFromJsonAsync<MonkeyDto>()).Name);
     }
 }

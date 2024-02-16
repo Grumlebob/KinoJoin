@@ -2,22 +2,31 @@
 @using Application.DTO
 @inject NavigationManager NavigationManager
 
-<PageTitle>Counter</PageTitle>
+<PageTitle>Monkey Demo</PageTitle>
 
-<h1>Counter</h1>
+<h1>Monkey</h1>
 
-<p role="status">Current count: @currentCount</p>
+<button class="btn btn-primary" @onclick="CreateMonkey">Create Monkey</button>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary" @onclick="GetMonkey">Get first monkey</button>
+<p>@found</p>
 
 @code {
     private int currentCount = 0;
+    private string found = "";
 
-    private async Task IncrementCount()
+    private async Task GetMonkey()
     {
-        currentCount++;
         var httpClient = new HttpClient();
         var result = await httpClient.GetAsync(NavigationManager.BaseUri + "monkeys/1");
-        Console.WriteLine((await result.Content.ReadFromJsonAsync<MonkeyDto>()).Name);
+        var monkey = await result.Content.ReadFromJsonAsync<MonkeyDto>();
+        found = monkey is null ? "None found" : "found: " + monkey.Name;
+    }
+    
+    private async Task CreateMonkey()
+    {
+        var httpClient = new HttpClient();
+        var content = new CreateMonkeyDto("Jens", 30);
+        await httpClient.PostAsJsonAsync(NavigationManager.BaseUri + "monkeys", content);
     }
 }

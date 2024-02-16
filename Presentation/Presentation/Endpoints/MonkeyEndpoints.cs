@@ -9,16 +9,16 @@ public static class MonkeyEndpoints
 {
     public static void MapMonkeyEndpoints(this WebApplication app)
     {
-        app.MapGet("/monkeys/{id}", ([FromServices] IMonkeyService service, int id) =>
+        app.MapGet("/monkeys/{id}", async ([FromServices] IMonkeyService service, int id) =>
         {
-            var result = service.Get(id);
+            var result = await service.GetAsync(id);
             if (result is null) return Results.NotFound();
             return Results.Ok(result);
         });
 
-        app.MapPost("/monkeys", ([FromServices] IMonkeyService service, [FromBody] CreateMonkeyDto monkey) =>
+        app.MapPost("/monkeys", async ([FromServices] IMonkeyService service, [FromBody] CreateMonkeyDto monkey) =>
         {
-            service.Create(monkey);
+            await service.CreateAsync(monkey);
         });
     }
 }

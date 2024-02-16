@@ -13,13 +13,13 @@ public class MonkeyService : IMonkeyService
     {
         _context = context;
     }
-    public async Task<Monkey?> Get(int id)
+    public async Task<MonkeyDto?> GetAsync(int id)
     {
         var result = await _context.Monkeys.FirstOrDefaultAsync(m => m.Id == id);
-        return result is null ? null : new Monkey() {Id = result.Id, Name = result.Name, Age = result.Age};
+        return result is null ? null : new MonkeyDto(result.Id, result.Name, result.Age);
     }
 
-    public async Task Create(CreateMonkeyDto monkey)
+    public async Task CreateAsync(CreateMonkeyDto monkey)
     {
         await _context.Monkeys.AddAsync(new Monkey { Name = monkey.Name, Age = monkey.Age });
         await _context.SaveChangesAsync();

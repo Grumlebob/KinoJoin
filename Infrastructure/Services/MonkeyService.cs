@@ -9,10 +9,12 @@ namespace Infrastructure.Services;
 public class MonkeyService : IMonkeyService
 {
     private readonly DataContext _context;
+
     public MonkeyService(DataContext context)
     {
         _context = context;
     }
+
     public async Task<MonkeyDto?> GetAsync(int id)
     {
         var result = await _context.Monkeys.FirstOrDefaultAsync(m => m.Id == id);

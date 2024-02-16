@@ -33,11 +33,17 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore
+      - name: Restore Dependencies
         run: dotnet restore
+        
+      - name: Install CSharpier
+        run: dotnet tool restore
 
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
       - name: Test
         run: dotnet test
+      
+      - name: Validate Formatting
+        run: dotnet csharpier --check .

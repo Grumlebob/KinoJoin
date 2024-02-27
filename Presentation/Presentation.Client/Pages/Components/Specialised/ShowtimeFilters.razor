@@ -1,0 +1,49 @@
+﻿<h2 style="margin-top: 10px">Tilpas filtrer</h2>
+
+<p style="margin-bottom: 0">Film</p>
+<SearchableCheckboxList @ref="MovieCheckList" IdsToLabels="@MovieIdsToNames"/>
+
+<p style="margin-bottom: 0">Biografer</p>
+<SearchableCheckboxList @ref="CinemaCheckList" IdsToLabels="@CinemaIdsToNames"/>
+
+<p style="margin-bottom: 0">Genrer</p>
+<SearchableCheckboxList @ref="GenreCheckList" IdsToLabels="@GenreIdsToNames"/>
+
+<p style="margin-bottom: 0">Start dato</p>
+<input style="margin-bottom: 10px" type="date" @bind="StartDate"/>
+
+<br/>
+
+<p style="margin-bottom: 0">Slut dato</p>
+<input style="margin-bottom: 10px" type="date" @bind="EndDate"/>
+
+@code {
+    //NOTE: This component is quite shallow. When done move the content (checklists etc) out in JoinCreate for easier access, less pass through and more depth
+    //The method that uses the filters to get show times can then also be moved to JoinCreate
+    [Parameter]
+    public Dictionary<int, string> CinemaIdsToNames { get; set; } = new();
+    [Parameter]
+    public Dictionary<int, string> MovieIdsToNames { get; set; } = new();
+    [Parameter]
+    public Dictionary<int, string> GenreIdsToNames { get; set; } = new();
+
+    public SearchableCheckboxList MovieCheckList { get; private set; } = new();
+    public SearchableCheckboxList CinemaCheckList { get; private set; } = new();
+    public SearchableCheckboxList GenreCheckList { get; private set; } = new();
+    
+    public DateTime StartDate { get; set; } = DateTime.Today;
+    public DateTime EndDate { get; set; } = DateTime.Today.AddDays(30);
+
+    public async Task<List<Showtime>> GetShowtimesFromFilter()
+    {
+        var movieIds = MovieCheckList.SelectedItems;
+        var cinemaIds = CinemaCheckList.SelectedItems;
+        var genreIds = GenreCheckList.SelectedItems;
+        var fromDate = StartDate.ToString("format here");
+        var toDate = EndDate.ToString("format here");
+        //TODO: use vars above to call interface that fetches lists of show times. Return result
+        await Task.Delay(3);
+        return [];
+    }
+    
+}

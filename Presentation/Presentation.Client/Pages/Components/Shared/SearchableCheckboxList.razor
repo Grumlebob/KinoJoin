@@ -1,0 +1,50 @@
+﻿<div style="display: flex; flex-direction: column; width: 400px;">
+    <input type="text" placeholder="Søg" @oninput="@(e => { _searchTerm = e.Value?.ToString() ?? string.Empty; })"/>
+    <div style="display: inline-block; max-height: 100px; overflow-y: auto;">
+        @foreach (var (id, label) in IdsToLabels.Where(item => item.Value.ToLowerInvariant().Contains(_searchTerm.ToLowerInvariant())).Select(item => (item.Key, item.Value)))
+        {
+            var checkBoxId = $"{_uniqueId.ToString()}-{id}";
+            <div style="display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(40ch + 20px);">
+                <input type="checkbox" id="@checkBoxId"
+                       value="@id"
+                       @onchange="@(e => HandleCheckboxChange(e, id))"
+                       checked="@(SelectedItems.Contains(id))"/>
+                <label for="@checkBoxId" style="flex-grow: 1; text-overflow: ellipsis; overflow: hidden; margin-left: 5px;">@label</label>
+            </div>
+        }
+    </div>
+    <!-- Selected items as chips -->
+    <div>
+        @foreach (var id in SelectedItems)
+        {
+            <span class="chip">
+                @IdsToLabels[id]
+                <button @onclick="() => SelectedItems.Remove(id)">X</button>
+            </span>
+        }
+    </div>
+</div>
+
+@code {
+    /**
+     * <summary>Each displayed item in the checkbox list must have a unique id and a label for display</summary>
+     */
+    [Parameter]
+    public Dictionary<int, string> IdsToLabels { get; set; } = new();
+    
+    public HashSet<int> SelectedItems { get; } = [];
+
+    private string _searchTerm = string.Empty;
+    private readonly Guid _uniqueId = Guid.NewGuid(); //this is used to generate unique ids for checkbox items
+
+    private void HandleCheckboxChange(ChangeEventArgs e, int movieId)
+    {
+        if ((bool)e.Value!) //if checkbox was checked
+        {
+            SelectedItems.Add(movieId);
+            return;
+        }
+        SelectedItems.Remove(movieId);
+    }
+
+}

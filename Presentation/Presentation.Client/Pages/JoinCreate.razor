@@ -271,11 +271,12 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
         </div>
     }
     
-    <SearchFilters CinemaIdAndName="CinemaIdAndName" MovieIdAndName="MovieIdAndName"  selectedCinemaFilters="selectedCinemaFilters" selectedMovieFilters="selectedMovieFilters" _startDate="_startDate" _endDate="_endDate" UpdateFilters="UpdateFilters" />
-
-    @if (showtimes.Count == 0)
+    <ShowtimeFilters @ref="_showtimeFiltering" CinemaIdsToNames="CinemaIdAndName" MovieIdsToNames="MovieIdAndName" GenreIdsToNames="GenreIdAndName"/>
+    <button @onclick="@(async () => { showtimes = await _showtimeFiltering.GetShowtimesFromFilter();})">Opdater filtrer</button>
+    
+    if (showtimes.Count == 0)
     {
-        if ((selectedCinemaFilters.Count > 0 || selectedMovieFilters.Count > 0) && !_noFilters)
+        if ((_showtimeFiltering.CinemaCheckList.SelectedItems.Count > 0 || _showtimeFiltering.MovieCheckList.SelectedItems.Count > 0) && !_noFilters)
         {
             <p>Der er ingen forestillinger for de valgte filtre</p>
         }
@@ -464,6 +465,8 @@ else
 
     private bool HostCanAllShowtimes = true;
 
+    private ShowtimeFilters _showtimeFiltering = new();
+
 
     private bool _loading = true;
 
@@ -485,62 +488,12 @@ else
 
     string baseUrl;
 
-    //FILTERS
-    private List<int> selectedMovieFilters = new List<int>();
-    private List<int> selectedCinemaFilters = new List<int>();
-    Dictionary<int, string> CinemaIdAndName = new Dictionary<int, string>();
-    Dictionary<int, string> MovieIdAndName = new Dictionary<int, string>();
-    Dictionary<int, string> GenrerIdAndName = new Dictionary<int, string>();
+    //used for filters
+    Dictionary<int, string> CinemaIdAndName = new();
+    Dictionary<int, string> MovieIdAndName = new();
+    Dictionary<int, string> GenreIdAndName = new();
+    
 
-    private DateTime _startDate = DateTime.Today;
-    private DateTime _endDate = DateTime.Today.AddDays(30);
-
-    private DateTime StartDate
-    {
-        get => _startDate;
-        set
-        {
-            if (_startDate != value)
-            {
-                _startDate = value;
-            }
-        }
-    }
-
-    private DateTime EndDate
-    {
-        get => _endDate;
-        set
-        {
-            if (_endDate != value)
-            {
-                _endDate = value;
-            }
-        }
-    }
-
-    private string movieSearchTerm = string.Empty;
-    private string cinemaSearchTerm = string.Empty;
-
-    private void OnMovieSearchTermChanged(ChangeEventArgs e)
-    {
-        movieSearchTerm = e.Value?.ToString() ?? string.Empty;
-    }
-
-    private void OnCinemaSearchTermChanged(ChangeEventArgs e)
-    {
-        cinemaSearchTerm = e.Value?.ToString() ?? string.Empty;
-    }
-
-    private void RemoveMovieFilter(int movieId)
-    {
-        selectedMovieFilters.Remove(movieId);
-    }
-
-    private void RemoveCinemaFilter(int cinemaId)
-    {
-        selectedCinemaFilters.Remove(cinemaId);
-    }
 
     //FILTERS END
 
@@ -561,9 +514,10 @@ else
     private async Task<List<Movie>> GetMoviesWithoutShowtimes()
     {
         var filterString = "";
-        for (var i = 0; i < selectedMovieFilters.Count; i++)
+        var selectedMovieIds = _showtimeFiltering.MovieCheckList.SelectedItems.ToList();
+        for (var i = 0; i < selectedMovieIds.Count; i++)
         {
-            var movieId = selectedMovieFilters[i];
+            var movieId = selectedMovieIds[i];
             if (showtimes.All(f => f.MovieId != movieId))
             {
                 filterString += (string.IsNullOrEmpty(filterString) ? "" : "&") + $"movies[{i}]=" + movieId;
@@ -611,36 +565,30 @@ else
 
     private async Task UpdateFilters((List<int> selectedMovies, List<int> selectedCinemas, DateTime startDate, DateTime EndDate) filters)
     {
-        selectedCinemaFilters = filters.selectedCinemas;
-        selectedMovieFilters = filters.selectedMovies;
-        _startDate = filters.startDate;
-        _endDate = filters.EndDate;
         
         _loading = true;
         var newFilterstring = "";
         var cinemaIndex = 0;
         var movieIndex = 0;
 
-        if (selectedCinemaFilters.Count == 0 && selectedMovieFilters.Count == 0)
+        if (_showtimeFiltering.MovieCheckList.SelectedItems.Count == 0 && _showtimeFiltering.CinemaCheckList.SelectedItems.Count == 0)
         {
             showtimes = new List<Showtime>();
             _loading = false;
             _noFilters = true;
             return;
         }
-        else
-        {
-            _noFilters = false;
-        }
 
-        foreach (var selectedCinema in selectedCinemaFilters)
+        _noFilters = false;
+
+        foreach (var selectedCinema in _showtimeFiltering.CinemaCheckList.SelectedItems)
         {
             var cinemaId = CinemaIdAndName.FirstOrDefault(x => x.Key == selectedCinema).Key;
             newFilterstring += (string.IsNullOrEmpty(newFilterstring) ? "" : "&") + $"cinemas[{cinemaIndex}]=" + cinemaId;
             cinemaIndex++;
         }
 
-        foreach (var selectedMovie in selectedMovieFilters)
+        foreach (var selectedMovie in _showtimeFiltering.MovieCheckList.SelectedItems)
         {
             var movieId = MovieIdAndName.FirstOrDefault(x => x.Key == selectedMovie).Key;
             newFilterstring += (string.IsNullOrEmpty(newFilterstring) ? "" : "&") + $"movies[{movieIndex}]=" + movieId;
@@ -648,10 +596,10 @@ else
         }
 
         //Handles start date filter
-        newFilterstring += "&date=" + _startDate;
+        newFilterstring += "&date=" + _showtimeFiltering.StartDate;
 
         //Handles end date filter
-        newFilterstring += "&date=" + _endDate;
+        newFilterstring += "&date=" + _showtimeFiltering.EndDate;
 
         filterString = newFilterstring;
         MovieIdAndName = new Dictionary<int, string>();
@@ -673,7 +621,7 @@ else
 
         CinemaIdAndName = new Dictionary<int, string>();
         MovieIdAndName = new Dictionary<int, string>();
-        GenrerIdAndName = new Dictionary<int, string>();
+        GenreIdAndName = new Dictionary<int, string>();
 
         Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(json);
 
@@ -691,7 +639,7 @@ else
 
         foreach (var genrerOptions in myDeserializedClass.Content.Content.Facets.Genres.Options)
         {
-            GenrerIdAndName.Add(genrerOptions.Key, genrerOptions.Value);
+            GenreIdAndName.Add(genrerOptions.Key, genrerOptions.Value);
             genreStrings.Add(genrerOptions.Value);
         }
 
@@ -788,12 +736,12 @@ else
 
                             if (DateTime.TryParseExact(dateString, dateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime))
                             {
-                                if (_startDate != DateTime.MinValue && dateTime < _startDate)
+                                if (_showtimeFiltering.StartDate != DateTime.MinValue && dateTime < _showtimeFiltering.StartDate)
                                 {
                                     continue;
                                 }
 
-                                if (_endDate != DateTime.MinValue && dateTime > _endDate)
+                                if (_showtimeFiltering.EndDate != DateTime.MinValue && dateTime > _showtimeFiltering.EndDate)
                                 {
                                     continue;
                                 }
@@ -987,7 +935,7 @@ else
         if (datesFilter.Count >= 1)
         {
             startDate = DateTime.Parse(datesFilter.FirstOrDefault()).Date;
-            _startDate = startDate;
+            _showtimeFiltering.StartDate = startDate;
         }
 
 
@@ -996,13 +944,13 @@ else
         if (datesFilter.Count > 1)
         {
             endDate = DateTime.Parse(datesFilter.Last()).Date.AddHours(23).AddMinutes(59);
-            _endDate = endDate;
+            _showtimeFiltering.EndDate = endDate;
         }
 
 
         CinemaIdAndName = new Dictionary<int, string>();
         MovieIdAndName = new Dictionary<int, string>();
-        GenrerIdAndName = new Dictionary<int, string>();
+        GenreIdAndName = new Dictionary<int, string>();
 
         Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(json);
 
@@ -1020,7 +968,7 @@ else
 
         foreach (var genrerOptions in myDeserializedClass.Content.Content.Facets.Genres.Options)
         {
-            GenrerIdAndName.Add(genrerOptions.Key, genrerOptions.Value);
+            GenreIdAndName.Add(genrerOptions.Key, genrerOptions.Value);
             genreStrings.Add(genrerOptions.Value);
         }
 
@@ -1158,7 +1106,7 @@ else
         {
             foreach (var movieFilter in moviesFilter)
             {
-                selectedMovieFilters.Add(movieFilter);
+                _showtimeFiltering.MovieCheckList.SelectedItems.Add(movieFilter);
             }
         }
 
@@ -1166,7 +1114,7 @@ else
         {
             foreach (var cinemaFilter in cinemasFilter)
             {
-                selectedCinemaFilters.Add(cinemaFilter);
+                _showtimeFiltering.CinemaCheckList.SelectedItems.Add(cinemaFilter);
             }
         }
 

@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
 
 namespace Domain.ExternalApi;
-
-
     public class Root
     {
         [JsonProperty("content")] public ContentLevel1 Content { get; set; }
@@ -74,10 +72,10 @@ namespace Domain.ExternalApi;
 
         [JsonProperty("time")] public string Time { get; set; }
 
-        [JsonProperty("room")] public Room Room { get; set; }
+        [JsonProperty("room")] public RoomContent RoomContent { get; set; }
     }
 
-    public class Room
+    public class RoomContent
     {
         [JsonProperty("type")] public string Type { get; set; }
 

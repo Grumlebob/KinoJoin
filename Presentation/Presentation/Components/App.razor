@@ -15,6 +15,62 @@
 <Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)"/>
 <script src="_framework/blazor.web.js"></script>
 <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+
+
+<script>
+    customFunctions={
+        
+        showDialog:function (dialogId) {
+            var dialog = document.getElementById(dialogId);
+            if (dialog) {
+                dialog.showModal();
+            }
+        },
+        
+        hideDialog: function (dialogId) {
+            var dialog = document.getElementById(dialogId);
+            if (dialog) {
+                dialog.close();
+            }
+        },
+        
+        scrollToBottom: function() {
+               window.scrollTo({
+                    top: document.body.scrollHeight,
+                    behavior: 'smooth'
+                });
+        },
+        
+        scrollToBottomIncrementally: function() {
+            const totalHeight = document.body.scrollHeight;
+            let currentScroll = window.scrollY;
+            const step = 50; // Adjust the step size as needed
+        
+            function scrollStep() {
+                if (currentScroll < totalHeight) {
+                    window.scrollTo(0, currentScroll);
+                    currentScroll += step;
+                    requestAnimationFrame(scrollStep);
+                }
+            }
+        
+            scrollStep();
+        },
+        
+    }
+    
+    window.downloadFileFromStream = async (fileName, contentStreamReference) => {
+                    const arrayBuffer = await contentStreamReference.arrayBuffer();
+                    const blob = new Blob([arrayBuffer]);
+                    const url = URL.createObjectURL(blob);
+                    const anchorElement = document.createElement('a');
+                    anchorElement.href = url;
+                    anchorElement.download = fileName ?? '';
+                    anchorElement.click();
+                    anchorElement.remove();
+                    URL.revokeObjectURL(url);
+                }
+    </script>
 </body>
 
 </html>

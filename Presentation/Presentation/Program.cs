@@ -1,7 +1,9 @@
 using Application;
 using Application.Interfaces;
 using Infrastructure;
+using Infrastructure.Database;
 using Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 using Presentation.Components;
 using Presentation.Endpoints;
 
@@ -25,6 +27,13 @@ builder.Services.AddCors(options =>
                 .AllowAnyMethod();
             // Do not call AllowCredentials() when using AllowAnyOrigin()
         });
+});
+
+builder.Services.AddDbContextFactory<KinoContext>(options =>
+{
+    var secret = builder.Configuration["PostgresConnection"];
+    options.UseNpgsql(secret);
+    options.EnableDetailedErrors();
 });
 
 var app = builder.Build();
@@ -51,5 +60,6 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(Presentation.Client._Imports).Assembly);
 
 app.MapMonkeyEndpoints();
+app.MapKinoJoinEndpoints();
 
 app.Run();

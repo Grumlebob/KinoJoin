@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace Domain.ExternalApi;
+﻿namespace Domain.ExternalApi;
     public class Root
     {
         [JsonProperty("content")] public ContentLevel1 Content { get; set; }

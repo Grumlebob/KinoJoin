@@ -1,0 +1,9 @@
+﻿global using Domain.Entities;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using Infrastructure.Database.Configuration;
+global using Application.DTO;
+global using Application.Interfaces;
+global using Infrastructure.Database;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;

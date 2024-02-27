@@ -1,10 +1,4 @@
-﻿using Application.DTO;
-using Application.Interfaces;
-using Domain.Entities;
-using Infrastructure.Database;
-using Microsoft.EntityFrameworkCore;
-
-namespace Infrastructure.Services;
+﻿namespace Infrastructure.Services;
 
 public class MonkeyService : IMonkeyService
 {

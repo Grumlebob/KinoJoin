@@ -1,3 +1,3 @@
-﻿namespace Application.Services;
+﻿namespace Infrastructure.External;
 
 public class Dummy7 { }

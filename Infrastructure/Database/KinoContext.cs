@@ -1,7 +1,4 @@
-﻿using Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-
-namespace Infrastructure.Database;
+﻿namespace Infrastructure.Database;
 
 public class KinoContext : DbContext
 {

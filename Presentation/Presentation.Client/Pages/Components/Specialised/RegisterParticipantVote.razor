@@ -1,0 +1,132 @@
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
+
+@if (AlreadyAnswered)
+    {
+        <p>Du har allerede svaret</p>
+    }
+    else if (!_answerSaved)
+    {
+        <div>
+            <input placeholder="Indtast dit navn" value="@Nickname" onchange="@(async (ChangeEventArgs v) => { await NicknameChanged.InvokeAsync((string)v.Value);})" required="required"/>
+            <input placeholder="Skriv din email (valgfrit)" type="email" @bind="@Email"/>
+            <div>
+                <textarea style="margin-bottom: 5px;margin-top: 5px;width: 300px" type="text"   placeholder="Note (valgfrit)"  @bind="Note"></textarea>
+            </div>
+            <button onclick="@(async () => { await SaveParticipantAnswer(false); })">
+                Send svar
+            </button>
+            @if (_confirmSubmit)
+            {
+                <div>
+                    <p>Du har ikke valgt nogen tider. Vil du indsende dit svar alligevel?</p>
+                    <div style="display: inline-block">
+                        <button onclick="@(async () => { await SaveParticipantAnswer(true); })">
+                            Ja
+                        </button>
+                        <button onclick="@(() => { _confirmSubmit = false; })">Nej</button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    
+    
+    @if (_infoMessage is not null)
+    {
+        <p>@_infoMessage</p>
+    }
+
+<dialog id="same-name-dialog">
+        <h4>Der er allerede en deltager med dette navn. Ønsker du at sende et nyt svar i samme navn?</h4>
+        <button @onclick="@(async () => { await SaveParticipantAnswer(true); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Ja</button>
+        <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Nej</button>
+    </dialog>
+
+@code {
+    
+    [Parameter]
+    public bool AlreadyAnswered { get; set; }
+    
+    [Parameter]
+    public JoinEvent? Event { get; set; }
+    
+    private bool _answerSaved { get; set; }
+    
+    [Parameter]
+    public string? Nickname { get; set; }
+    
+    [Parameter]
+    public EventCallback<string?> NicknameChanged { get; set; }
+    
+    [Parameter]
+    public List<ParticipantVote> VotedFor { get; set; } = [];
+    
+    [Parameter]
+    public string LoggedInUserId { get; set; }
+    
+    [Parameter]
+    public EventCallback OnAnswerSaved { get; set; }
+    
+    private string? Email { get; set; }
+    private string? Note { get; set; }
+    
+    private string? _infoMessage;
+    
+    private bool _confirmSubmit;
+    
+    private async Task SaveParticipantAnswer(bool confirmed)
+    {
+        if (!confirmed)
+        {
+            _infoMessage = "";
+            if (Nickname is null or "")
+            {
+                _infoMessage = "Indtast venligst et navn";
+                return;
+            }
+
+
+            if (VotedFor.All(v => v.Vote == Vote.No))
+            {
+                _confirmSubmit = true;
+                return;
+            }
+
+            if (Event.Participants is not null && Event.Participants.Any(p => p.Nickname == Nickname))
+            {
+                await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "same-name-dialog");
+                return;
+            }
+        }
+
+        if (Email?.Trim() == "") Email = null;
+        if (Email != null)
+        {
+            if (Event.Participants is not null && Event.Participants.Any(p => p.Email == Email))
+            {
+                _infoMessage = "Du har allerede svaret";
+                return;
+            }
+        }
+
+        var p = new Participant { AuthId = LoggedInUserId, Nickname = Nickname, Email = Email, Note = Note, VotedFor = VotedFor.ToList(), JoinEventId = Event.Id };
+        var httpClient = new HttpClient();
+        var response = await httpClient.PutAsJsonAsync($"{NavigationManager.BaseUri}participate/{Event.Id}", p);
+        if (response.IsSuccessStatusCode)
+        {
+            _infoMessage = "Svar gemt";
+            _answerSaved = true;
+            p.Id = int.Parse(await response.Content.ReadAsStringAsync());
+            Event.Participants.Add(p);
+            await OnAnswerSaved.InvokeAsync();
+
+            StateHasChanged();
+        }
+        else
+        {
+            _infoMessage = "Noget gik galt. Prøv igen.";
+        }
+    }
+    
+}

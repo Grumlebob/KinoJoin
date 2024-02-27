@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+* {
+    font-family: 'basier_squareregular', 'Helvetica', 'Arial', 'sans-serif';
+}

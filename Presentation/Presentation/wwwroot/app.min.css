@@ -444,6 +444,10 @@ video {
   display: none;
 }
 
+* {
+  font-family: basier-square, sans-serif;
+}
+
 *, ::before, ::after {
   --tw-border-spacing-x: 0;
   --tw-border-spacing-y: 0;
@@ -795,10 +799,6 @@ video {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
-}
-
-* {
-  font-family: 'basier square', 'Helvetica', 'Arial', 'sans-serif';
 }
 
 .hover\:bg-blue-700:hover {

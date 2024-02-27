@@ -6,8 +6,10 @@ module.exports = {
         './wwwroot/index.html' //not necessary if you use Blazor 8 Web App (not just standalone wasm app)
       ],
   theme: {
+      fontFamily:{
+          'sans': ['basier-square']
+      }
     extend: {},
   },
   plugins: [],
 }
-

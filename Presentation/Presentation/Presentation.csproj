@@ -19,4 +19,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\style\app.css" />
+    <_ContentIncludedByDefault Remove="wwwroot\style\app.min.css" />
+  </ItemGroup>
+
 </Project>

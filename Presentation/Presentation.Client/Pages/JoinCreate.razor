@@ -271,7 +271,7 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
         </div>
     }
     
-    <SearchFilters/>
+    <SearchFilters CinemaIdAndName="CinemaIdAndName" MovieIdAndName="MovieIdAndName"  selectedCinemaFilters="selectedCinemaFilters" selectedMovieFilters="selectedMovieFilters" _startDate="_startDate" _endDate="_endDate" UpdateFilters="UpdateFilters" />
 
     @if (showtimes.Count == 0)
     {
@@ -609,8 +609,13 @@ else
         return missingMovies.ToList();
     }
 
-    private async Task UpdateFilters()
+    private async Task UpdateFilters((List<int> selectedMovies, List<int> selectedCinemas, DateTime startDate, DateTime EndDate) filters)
     {
+        selectedCinemaFilters = filters.selectedCinemas;
+        selectedMovieFilters = filters.selectedMovies;
+        _startDate = filters.startDate;
+        _endDate = filters.EndDate;
+        
         _loading = true;
         var newFilterstring = "";
         var cinemaIndex = 0;

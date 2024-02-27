@@ -64,26 +64,34 @@
 <p style="margin-bottom: 0px">Slut Dato</p>
 <input style="margin-bottom: 10px" type="date" @bind="EndDate"/>
 
-<button @onclick="UpdateFilters">Opdater filtrer</button>
+<button @onclick="@(async () => { await UpdateFilters.InvokeAsync((selectedMovieFilters, selectedCinemaFilters, _startDate, _endDate));})">Opdater filtrer</button>
 
 @code {
 
     //FILTERS
     [Parameter]
     public List<int> selectedMovieFilters { get; set; } = new List<int>();
+    
     [Parameter]
-    private List<int> selectedCinemaFilters { get; set; } = new List<int>();
+    public List<int> selectedCinemaFilters { get; set; } = new List<int>();
+    
     [Parameter]
-    Dictionary<int, string> CinemaIdAndName { get; set; } = new Dictionary<int, string>();
+    public DateTime _startDate { get; set; } = DateTime.Today;
+    
     [Parameter]
-    Dictionary<int, string> MovieIdAndName { get; set; } = new Dictionary<int, string>();
+    public DateTime _endDate { get; set; } = DateTime.Today.AddDays(30);
+    
     [Parameter]
-    Dictionary<int, string> GenrerIdAndName { get; set; } = new Dictionary<int, string>();
+    public Dictionary<int, string> CinemaIdAndName { get; set; } = new Dictionary<int, string>();
+    [Parameter]
+    public Dictionary<int, string> MovieIdAndName { get; set; } = new Dictionary<int, string>();
+    [Parameter]
+    public Dictionary<int, string> GenrerIdAndName { get; set; } = new Dictionary<int, string>();
 
-    public EventCallback etellerandet { get; set; }
+    [Parameter]
+    public EventCallback<(List<int> selectedMovies, List<int> selectedCinemas, DateTime startDate, DateTime EndDate)> UpdateFilters { get; set; }
 
-    private DateTime _startDate = DateTime.Today;
-    private DateTime _endDate = DateTime.Today.AddDays(30);
+   
 
     private DateTime StartDate
     {

@@ -4,6 +4,19 @@
 
 <PageTitle>Home</PageTitle>
 
+<h2>Test links</h2>
+<a href="@baseUriWithoutTrailingSlash/joinCreate/cinemas=53&cinemas=4&sort=most_purchased"> Med cinema filtre</a>
+<br/>
+<a href="@baseUriWithoutTrailingSlash/joinCreate/movies=76769&movies=35883&sort=most_purchased"> Med movie filtre</a>
+<br/>
+<a href="@baseUriWithoutTrailingSlash/joinCreate/cinemas=53&cinemas=52&movies=76769&movies=35883&sort=most_purchased"> Med movie og cinema filtre</a>
+<br/>
+<a href="@baseUriWithoutTrailingSlash/joinCreate/cinemas=53&cinemas=4&cinemas=49&genres=96&movies=76769&movies=35883&movies=76769&sort=most_purchased"> Med alle filtre uden tid</a>
+<br/>
+<a href="@baseUriWithoutTrailingSlash/joinCreate/cinemas=53&cinemas=4&cinemas=49&genres=96&movies=76769&movies=35883&movies=76769&sort=most_purchased&date=2024-01-16T10:07:00.000Z&date=2024-02-27T10:07:00.000Z"> Med alle filtre med tid</a>
+<br/>
+
+
 <button class="mt-4 bg-gradient-to-br from-green-600 to-green-500 hover:from-green-500 hover:to-green-600 text-white p-2 rounded border border-green-600" onclick="@CreateMonkey">Create Monkey</button>
 
 <div class="max-w-sm rounded overflow-hidden shadow-lg">
@@ -27,10 +40,21 @@
 
 @code
 {
+    string baseUriWithoutTrailingSlash = "";
+    
     private async Task CreateMonkey()
     {
         var httpClient = new HttpClient();
         var content = new CreateMonkeyDto("Jens", 30);
         await httpClient.PostAsJsonAsync(NavigationManager.BaseUri + "monkeys", content);
     }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = new HttpClient();
+
+        baseUriWithoutTrailingSlash = NavigationManager.BaseUri.TrimEnd('/');
+    }
+    
+
 }

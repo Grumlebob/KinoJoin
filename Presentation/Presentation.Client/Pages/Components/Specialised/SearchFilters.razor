@@ -1,0 +1,167 @@
+﻿<h2 style="margin-top: 10px">Tilpas filtrer</h2>
+
+<!-- Movies Section -->
+<p style="margin-bottom: 0px">Film</p>
+<div style="display: flex; flex-direction: column; width: 400px;">
+    <input type="text" placeholder="Search Movies" @oninput="OnMovieSearchTermChanged"/>
+    <div style="display: inline-block; max-height: 100px; overflow-y: auto;">
+        @foreach (var movie in MovieIdAndName.Where(m => m.Value.ToLowerInvariant().Contains(movieSearchTerm.ToLowerInvariant())))
+        {
+            <div style="display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(40ch + 20px);">
+                <input type="checkbox" id="@($"movie-{movie.Key}")"
+                       value="@movie.Key"
+                       @onchange="@(e => HandleMovieCheckboxChange(e, movie.Key))"
+                       checked="@(selectedMovieFilters.Contains(movie.Key))"/>
+                <label for="@($"movie-{movie.Key}")" style="flex-grow: 1; text-overflow: ellipsis; overflow: hidden; margin-left: 5px;">@movie.Value</label>
+            </div>
+        }
+    </div>
+    <!-- Movie Chips -->
+    <div>
+        @foreach (var movieId in selectedMovieFilters)
+        {
+            <span class="chip">
+                @MovieIdAndName[movieId]
+                <button @onclick="() => RemoveMovieFilter(movieId)">X</button>
+            </span>
+        }
+    </div>
+</div>
+
+<!-- Cinemas Section -->
+<p style="margin-bottom: 0px">Biograf</p>
+<div style="display: flex; flex-direction: column; width: 400px;">
+    <input type="text" placeholder="Search Cinemas" @oninput="OnCinemaSearchTermChanged"/>
+    <div style="display: inline-block; max-height: 100px; overflow-y: auto;">
+        @foreach (var cinema in CinemaIdAndName.Where(c => c.Value.ToLowerInvariant().Contains(cinemaSearchTerm.ToLowerInvariant())))
+        {
+            <div style="display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(40ch + 20px);">
+                <input type="checkbox" id="@($"cinema-{cinema.Key}")"
+                       value="@cinema.Key"
+                       @onchange="@(e => HandleCinemaCheckboxChange(e, cinema.Key))"
+                       checked="@(selectedCinemaFilters.Contains(cinema.Key))"/>
+                <label for="@($"cinema-{cinema.Key}")" style="flex-grow: 1; text-overflow: ellipsis; overflow: hidden; margin-left: 5px;">@cinema.Value</label>
+            </div>
+        }
+    </div>
+    <!-- Cinema Chips -->
+    <div>
+        @foreach (var cinemaId in selectedCinemaFilters)
+        {
+            <span class="chip">
+                @CinemaIdAndName[cinemaId]
+                <button @onclick="() => RemoveCinemaFilter(cinemaId)">X</button>
+            </span>
+        }
+    </div>
+</div>
+
+<p style="margin-bottom: 0px">Start Dato</p>
+<input style="margin-bottom: 10px" type="date" @bind="StartDate"/>
+
+<br/>
+
+<p style="margin-bottom: 0px">Slut Dato</p>
+<input style="margin-bottom: 10px" type="date" @bind="EndDate"/>
+
+<button @onclick="UpdateFilters">Opdater filtrer</button>
+
+@code {
+
+    //FILTERS
+    [Parameter]
+    public List<int> selectedMovieFilters { get; set; } = new List<int>();
+    [Parameter]
+    private List<int> selectedCinemaFilters { get; set; } = new List<int>();
+    [Parameter]
+    Dictionary<int, string> CinemaIdAndName { get; set; } = new Dictionary<int, string>();
+    [Parameter]
+    Dictionary<int, string> MovieIdAndName { get; set; } = new Dictionary<int, string>();
+    [Parameter]
+    Dictionary<int, string> GenrerIdAndName { get; set; } = new Dictionary<int, string>();
+
+    public EventCallback etellerandet { get; set; }
+
+    private DateTime _startDate = DateTime.Today;
+    private DateTime _endDate = DateTime.Today.AddDays(30);
+
+    private DateTime StartDate
+    {
+        get => _startDate;
+        set
+        {
+            if (_startDate != value)
+            {
+                _startDate = value;
+            }
+        }
+    }
+
+    private DateTime EndDate
+    {
+        get => _endDate;
+        set
+        {
+            if (_endDate != value)
+            {
+                _endDate = value;
+            }
+        }
+    }
+
+    private string movieSearchTerm = string.Empty;
+    private string cinemaSearchTerm = string.Empty;
+
+    private void OnMovieSearchTermChanged(ChangeEventArgs e)
+    {
+        movieSearchTerm = e.Value?.ToString() ?? string.Empty;
+    }
+
+    private void OnCinemaSearchTermChanged(ChangeEventArgs e)
+    {
+        cinemaSearchTerm = e.Value?.ToString() ?? string.Empty;
+    }
+
+    private void RemoveMovieFilter(int movieId)
+    {
+        selectedMovieFilters.Remove(movieId);
+    }
+
+    private void RemoveCinemaFilter(int cinemaId)
+    {
+        selectedCinemaFilters.Remove(cinemaId);
+    }
+
+    private void HandleMovieCheckboxChange(ChangeEventArgs e, int movieId)
+    {
+        if ((bool)e.Value)
+        {
+            if (!selectedMovieFilters.Contains(movieId))
+            {
+                selectedMovieFilters.Add(movieId);
+            }
+        }
+        else
+        {
+            selectedMovieFilters.Remove(movieId);
+        }
+    }
+
+    private void HandleCinemaCheckboxChange(ChangeEventArgs e, int cinemaId)
+    {
+        if (e.Value.ToString() == "True")
+        {
+            if (!selectedCinemaFilters.Contains(cinemaId))
+            {
+                selectedCinemaFilters.Add(cinemaId);
+            }
+        }
+        else
+        {
+            if (selectedCinemaFilters.Contains(cinemaId))
+            {
+                selectedCinemaFilters.Remove(cinemaId);
+            }
+        }
+    }
+}

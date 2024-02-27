@@ -1,0 +1,153 @@
+@inject IJSRuntime JsRuntime
+
+  <span style="background-color: lightgray">Kan ikke</span>
+  <span style="background-color: lightgreen">Kan godt</span>
+  <span style="background-color: orange">Hvis Nødvendigt (Klik to gange)</span>
+
+
+@if (Event.Showtimes.Count == 0)
+{
+    <p>Ingen showtimes fundet</p>
+    return;
+}
+
+@foreach (var showtimesByMovie in Event.Showtimes.GroupBy(s => s.Movie.Id))
+{
+    Movie movie = showtimesByMovie.First().Movie;
+    <div class="Redbox">
+        <div class="PosterImage">
+            <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
+                <img src="@movie.ImageUrl" alt="Movie Poster" width="200" height="300"/>
+            </a>
+            <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
+                <button style="margin-top: 3px">Læs mere</button>
+            </a>
+
+            <button style="margin-top: 3px" @onclick="async () => { await ShowMovieTrailer(movie); }">Se trailer</button>
+
+        </div>
+        <div class="MovieDetails">
+            <div class="MovieHeader">
+                <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank" style="text-decoration: none; color: black">
+                    <h2>@movie.Title</h2>
+                </a>
+
+                <div class="movie-info">
+                    <span class="premiere">Premiere @movie.PremiereDate | </span>
+                    <span class="duration">Varighed @movie.Duration min</span>
+                </div>
+
+            </div>
+            @foreach (var showtimesByCinema in showtimesByMovie.GroupBy(s => s.Cinema.Id))
+            {
+                var cinema = showtimesByCinema.First().Cinema;
+                <div class="CinemaLocation">
+                    <h2 id="@cinema.Id">@cinema.Name</h2>
+                </div>
+                @foreach (var showtimesByVersionTag in showtimesByCinema.GroupBy(s => s.VersionTag.Id))
+                {
+                    var versionTag = showtimesByVersionTag.First().VersionTag;
+                    <div class="Version">
+                        <strong>@versionTag.Type</strong>
+                        <div class="Showtimes">
+                            <div class="table-container">
+                                <table>
+                                    <tr>
+                                        @{
+                                            // Determine the start and end dates of the interval
+                                            var startDate = Event.Showtimes.Min(s => s.Playtime.StartTime.ToLocalTime());
+                                            var endDate = Event.Showtimes.Max(s => s.Playtime.StartTime.ToLocalTime());
+
+                                            var latestDateForSpecificCinemaVersion = Event.Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key).Max(s => s.Playtime.StartTime.ToLocalTime().Date);
+
+
+                                            // Loop through each date in the interval
+                                            for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
+                                            {
+                                                <th>@date.ToString("dd. MMM")</th>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <!-- Create table data for each showtime within the grouped date -->
+                                        @for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
+                                        {
+                                            //Check if it exists if not, else
+                                            @if (Event.Showtimes.Any(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
+                                            {
+                                                <td>
+                                                    @foreach (var showtime in Event.Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
+                                                    {
+                                                        var index = VotedFor.IndexOf(VotedFor.First(v => v.ShowtimeId == showtime.Id));
+                                                        <div class="showtime-label" style="background-color: @(VotedFor[index].Vote switch { Vote.No => "lightgray", Vote.Yes => "lightgreen", Vote.IfNeedBe => "orange", _ => "" })" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(async () => { var next = ((int)VotedFor[index].Vote + 1) % Enum.GetValues(typeof(Vote)).Length; VotedFor[index].Vote = (Vote)Enum.GetValues(typeof(Vote)).GetValue(next)!; await VotedForChanged.InvokeAsync(VotedFor);})">
+                                                            <div class="showtime-room">@showtime.Room.Name</div>
+                                                            <div class="showtime-time">@showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm")</div>
+                                                        </div>
+                                                    }
+                                                </td>
+                                            }
+                                            else
+                                            {
+                                                <td>
+                                                    <div class="empty-showtime">
+                                                    </div>
+                                                </td>
+                                            }
+                                        }
+                                    </tr>
+                                </table >
+                            </div >
+                        </div >
+                    </div>
+                }
+            }
+        </div>
+    </div>
+}
+
+@if (_trailerUrl != null)
+{
+    <div id="trailerPopUp">
+        <iframe src="@_trailerUrl" width="60%" height="60%" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
+        </iframe>
+        <button onclick="@(() => { _trailerUrl = null; })">Luk</button>
+    </div>
+}
+
+
+@code {
+
+    [Parameter] 
+    public JoinEvent Event { get; set; }
+    
+    [Parameter]
+    public List<ParticipantVote> VotedFor { get; set; } = [];
+    
+    [Parameter]
+    public EventCallback<List<ParticipantVote>> VotedForChanged { get; set; }
+    
+    
+
+    private string? _trailerUrl;
+
+    private async Task ShowMovieTrailer(Movie movie)
+    {
+        var client = new HttpClient();
+        var apiString = $"https://api.kino.dk{movie.KinoURL}?region=content&format=json";
+        var json = await client.GetStringAsync(apiString);
+
+        MovieRoot? movieRoot = JsonConvert.DeserializeObject<MovieRoot>(json);
+        if (movieRoot?.Content?.field_trailer?.FieldMediaOembedVideo?.trailerUrl == null) //no video found
+        {
+            await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
+            return;
+        }
+
+        var uri = new Uri(movieRoot.Content.field_trailer.FieldMediaOembedVideo.trailerUrl);
+        var videoId = uri.Segments.Last() == "watch" ? HttpUtility.ParseQueryString(uri.Query)["v"] : uri.Segments.Last();
+
+        if (videoId == null) await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
+        else _trailerUrl = $"https://www.youtube.com/embed/{videoId}";
+    }
+
+}

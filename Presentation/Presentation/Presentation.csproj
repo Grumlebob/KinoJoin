@@ -7,6 +7,30 @@
     <UserSecretsId>14fb738c-1a8c-4d4e-8cdc-9b0d463d6f66</UserSecretsId>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <TailwindToolsVersion>3.4.1</TailwindToolsVersion>
+  </PropertyGroup>
+
+  <!-- <Settings and download> -->
+  <Target Name="AcquireTailwindTooling" DependsOnTargets="GetTailwindToolingInputs" Condition="!Exists('$([System.IO.Path]::Combine($(TailwindExeDir),$(TailwindToolsVersion))).txt')">
+    <Message Importance="high" Text="Downloading Tailwind Cli" />
+    <DownloadFile SourceUrl="https://github.com/tailwindlabs/tailwindcss/releases/download/v$(TailwindToolsVersion)/$(TailwindDownloadName)" DestinationFileName="$(TailwindExeName)" DestinationFolder="$(TailwindExeDir)" />
+    <WriteLinesToFile File="$([System.IO.Path]::Combine($(TailwindExeDir),$(TailwindToolsVersion))).txt" Lines="Downloaded"/>
+    <Exec Condition="!$([MSBuild]::IsOSPlatform('Windows'))" Command="chmod +x '$(TailwindExePath)'" />
+  </Target>
+
+  <Target Name="GetTailwindToolingInputs">
+    <PropertyGroup>
+      <TailwindDownloadName Condition="$([MSBuild]::IsOSPlatform('Windows'))">tailwindcss-windows-x64.exe</TailwindDownloadName>
+      <TailwindDownloadName Condition="$([MSBuild]::IsOSPlatform('Linux'))">tailwindcss-linux-x64</TailwindDownloadName>
+      <TailwindDownloadName Condition="$([MSBuild]::IsOSPlatform('OSX'))">tailwindcss-macos-x64</TailwindDownloadName>
+      <TailwindExeDir>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), ".tailwind"))</TailwindExeDir>
+      <TailwindExeName>tailwindcss$([System.IO.Path]::GetExtension($(TailwindDownloadName)))</TailwindExeName>
+      <TailwindExePath>$([System.IO.Path]::Combine($(TailwindExeDir), $(TailwindExeName)))</TailwindExePath>
+    </PropertyGroup>
+  </Target>
+  <!-- </Settings and download> -->
+
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">

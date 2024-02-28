@@ -32,7 +32,8 @@
     [Parameter]
     public Dictionary<int, string> IdsToLabels { get; set; } = new();
     
-    public HashSet<int> SelectedItems { get; } = [];
+    [Parameter]
+    public HashSet<int> SelectedItems { get; set; } = [];
 
     private string _searchTerm = string.Empty;
     private readonly Guid _uniqueId = Guid.NewGuid(); //this is used to generate unique ids for checkbox items

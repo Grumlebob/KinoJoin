@@ -1,4 +1,5 @@
-﻿<h2 style="margin-top: 10px">Tilpas filtrer</h2>
+﻿@using Microsoft.Extensions.Primitives
+<h2 style="margin-top: 10px">Tilpas filtrer</h2>
 
 <p style="margin-bottom: 0">Film</p>
 <SearchableCheckboxList @ref="MovieCheckList" IdsToLabels="@MovieIdsToNames"/>
@@ -36,13 +37,37 @@
 
     public async Task<List<Showtime>> GetShowtimesFromFilter()
     {
-        var movieIds = MovieCheckList.SelectedItems;
-        var cinemaIds = CinemaCheckList.SelectedItems;
-        var genreIds = GenreCheckList.SelectedItems;
+        var movieIds = MovieCheckList.SelectedItems.ToList();
+        var cinemaIds = CinemaCheckList.SelectedItems.ToList();
+        var genreIds = GenreCheckList.SelectedItems.ToList();
         var fromDate = StartDate.ToString("format here");
         var toDate = EndDate.ToString("format here");
-        //TODO: use vars above to call interface that fetches lists of show times. Return result
-        await Task.Delay(3);
+        
+        var filterString = new StringBuilder();
+        
+        for (var i = 0; i < movieIds.Count; i++)
+        {
+            filterString.Append($"&movies[{i}]={movieIds[i]}");
+        }
+        for (var i = 0; i < cinemaIds.Count; i++)
+        {
+            filterString.Append($"&cinemas[{i}]={cinemaIds[i]}");
+        }
+        for (var i = 0; i < genreIds.Count; i++)
+        {
+            filterString.Append($"&genres[{i}]={genreIds[i]}");
+        }
+
+        filterString.Append($"STARTDATE??={fromDate}"); //format=2024-02-28T08:12:00.000Z
+        filterString.Append($"ENDDATE??={toDate}"); //format=2024-03-01T08:12:00.000Z
+        
+        var apiUrl = "https://api.kino.dk/ticketflow/showtimes?sort=most_purchased" + filterString
+                     +"&format=json";
+        var httpClient = new HttpClient();
+        var json = await httpClient.GetStringAsync(apiUrl);
+        
+        //convert json to showtimes
+        
         return [];
     }
     

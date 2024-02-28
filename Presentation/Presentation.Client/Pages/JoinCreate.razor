@@ -272,7 +272,7 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
     }
     
     <ShowtimeFilters @ref="_showtimeFiltering" CinemaIdsToNames="CinemaIdAndName" MovieIdsToNames="MovieIdAndName" GenreIdsToNames="GenreIdAndName"/>
-    <button @onclick="@(async () => { showtimes = await _showtimeFiltering.GetShowtimesFromFilter();})">Opdater filtrer</button>
+    <button @onclick="@(async () => { await UpdateFilters();})">Opdater filtrer</button>
     
     if (showtimes.Count == 0)
     {
@@ -563,7 +563,7 @@ else
         return missingMovies.ToList();
     }
 
-    private async Task UpdateFilters((List<int> selectedMovies, List<int> selectedCinemas, DateTime startDate, DateTime EndDate) filters)
+    private async Task UpdateFilters()
     {
         
         _loading = true;
@@ -661,11 +661,9 @@ else
 
                 Movie movieObject;
 
-                if (!movies.Any(m => m.Id == movie.Id))
+                if (movies.All(m => m.Id != movie.Id))
                 {
-                    int duration;
-
-                    int.TryParse(movie.Content.FieldPlayingTime, out duration);
+                    int.TryParse(movie.Content.FieldPlayingTime, out var duration);
 
                     if (movie.Content.URL == null)
                     {

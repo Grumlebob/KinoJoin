@@ -99,7 +99,7 @@
 
         [JsonProperty("field_premiere")] public string FieldPremiere { get; set; }
         
-        [JsonProperty("url")] public string? URL { get; set; }
+        [JsonProperty("url")] public string URL { get; set; }
     }
 
     public class FieldPoster

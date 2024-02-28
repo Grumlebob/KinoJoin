@@ -239,35 +239,48 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
     <dialog id="hostEventModal" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
         <HostEventDetails EventDetailsChanged="HandleEventDetailsChanged"/>
         <div class="flex justify-end space-x-3">
-            <button type="button" @onclick="CloseEventDetailsDialog" class="rounded-md bg-gray-500 px-4 py-2 text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">Annuller</button>
-            <button type="submit" @onclick="ValidateAndOpenConfirmationDialog" class="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Opret</button>
+            <button type="button" @onclick="CloseEventDetailsDialog" class="rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400">Annuller</button>
+            <button type="submit" @onclick="ValidateAndOpenConfirmationDialog" class="rounded-md bg-green-500 px-4 py-2 text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">Opret</button>
         </div>
     </dialog>
 
 
     @* Shouldn't be a component, should stay on this parent component. *@
-    <dialog id="eventDialog">
+    <dialog id="eventDialog" class="mx-auto min-w-96 my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
         @if (!eventCreated)
         {
-            <h4>Ønsker du at oprette eventet?</h4>
-            <input id="CanAllShowtimes" type="checkbox" @bind="HostCanAllShowtimes"/>
-            <label for="CanAllShowtimes">@(HostCanAllShowtimes ? "Jeg kan alle valgte tider" : "Jeg ønsker selv at angive tider hvor jeg kan")</label>
-            <div>
-                <button style="background-color: green; color: white" @onclick="FinishJoinEvent">Opret</button>
-                <button style="background-color: red; color: white" @onclick="CloseDialog">Rediger videre</button>
+            <p class="text-lg font-semibold text-blue-600 mb-0.5">Bekræft oprettelse</p>
+            <div class="flex items-center mb-4">
+                <input id="CanAllShowtimes" type="checkbox" @bind="HostCanAllShowtimes" class="mr-2"/>
+                <label for="CanAllShowtimes" class="text-md">
+                    @(HostCanAllShowtimes ? "Jeg kan alle valgte tider" : "Jeg ønsker selv at angive tider hvor jeg kan")
+                </label>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button @onclick="CloseDialog" class="rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400">Rediger videre</button>
+                <button @onclick="FinishJoinEvent" class="rounded-md bg-green-500 px-4 py-2 text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">Opret</button>
             </div>
         }
         else
         {
-            <h4>Event oprettet</h4>
-
-            <p>Send dette link til dine venner</p>
-            <a href="@(baseUrl + "filling/" + _joinEventId)">@(baseUrl + "filling/" + _joinEventId)</a>
-            <button @onclick="ShareEvent">Del</button>
-            if (!HostCanAllShowtimes)
-            {
-                <p>Angiv hvilke tider du selv kan ved at gå ind på linket</p>
-            }
+            <div class="space-y-1">
+                <p class="text-lg font-semibold text-blue-600 mb-0.5">Dit event er nu oprettet</p>
+                <p class="font-semibold">Send dette link til dine venner</p>
+                <div class="flex items-center gap-4">
+                    <a href="@(baseUrl + "filling/" + _joinEventId)" class="text-blue-600 hover:text-blue-700 text-lg">
+                        @(baseUrl + "filling/" + _joinEventId)
+                    </a>
+                    <button @onclick="ShareEvent" class="p-2 rounded-full bg-blue-400 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 30 30">
+                            <path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"></path>
+                        </svg>
+                    </button>
+                </div>
+                @if (!HostCanAllShowtimes)
+                {
+                    <p>Angiv hvilke tider du selv kan ved at gå ind på linket</p>
+                }
+            </div>
         }
     </dialog>
 

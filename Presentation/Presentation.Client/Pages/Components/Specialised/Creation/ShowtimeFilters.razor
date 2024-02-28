@@ -35,7 +35,7 @@
     public DateTime StartDate { get; set; } = DateTime.Today;
     public DateTime EndDate { get; set; } = DateTime.Today.AddDays(30);
 
-    public async Task<List<Showtime>> GetShowtimesFromFilter()
+    public async Task<List<Showtime>> UpdateShowtimeFilters()
     {
         var movieIds = MovieCheckList.SelectedItems.ToList();
         var cinemaIds = CinemaCheckList.SelectedItems.ToList();
@@ -61,12 +61,150 @@
         filterString.Append($"STARTDATE??={fromDate}"); //format=2024-02-28T08:12:00.000Z
         filterString.Append($"ENDDATE??={toDate}"); //format=2024-03-01T08:12:00.000Z
         
-        var apiUrl = "https://api.kino.dk/ticketflow/showtimes?sort=most_purchased" + filterString
-                     +"&format=json";
+        var apiUrl = "https://api.kino.dk/ticketflow/showtimes?region=content&format=json" + filterString
+                     +"&sort=most_purchased";
         var httpClient = new HttpClient();
         var json = await httpClient.GetStringAsync(apiUrl);
         
         //convert json to showtimes
+        var apiResultObject = JsonConvert.DeserializeObject<Root>(json);
+        if (apiResultObject == null) return [];
+
+        var idToMovieObject = new Dictionary<int, Movie>();
+        
+        foreach (var jsonCinema in apiResultObject.Content.Content.Content.Content)
+        {
+            var cinemaObject = new Cinema()
+            {
+                Id = jsonCinema.Id,
+                Name = CinemaIdsToNames[jsonCinema.Id]
+            };
+
+            foreach (var jsonMovie in jsonCinema.Movies) {
+
+                Movie? movieObject;
+
+                if (!idToMovieObject.TryGetValue(jsonMovie.Id, out movieObject))
+                {
+                    movieObject = new Movie()
+                    {
+                        Id = jsonMovie.Id,
+                        Title = MovieIdsToNames[jsonMovie.Id],
+                        PremiereDate = jsonMovie.Content.FieldPremiere,
+                        KinoURL = jsonMovie.Content.URL,
+                        AgeRating = jsonMovie.Content.FieldCensorshipIcon,
+                        ImageUrl = jsonMovie.Content.FieldPoster.FieldMediaImage.Sources[0].Srcset,
+                        Duration = duration,
+                        Showtimes = new List<Showtime>()
+                    }
+                }
+
+                if (movies.All(m => m.Id != jsonMovie.Id))
+                {
+                    int.TryParse(jsonMovie.Content.FieldPlayingTime, out var duration);
+
+                    if (jsonMovie.Content.URL == null)
+                    {
+                        Console.WriteLine("KINO URL NULL, BØR IKKE SKE");
+                    }
+
+                    movieObject = new Movie()
+                    {
+                        Id = jsonMovie.Id,
+                        Title = MovieIdAndName[jsonMovie.Id],
+                        PremiereDate = jsonMovie.Content.FieldPremiere,
+                        KinoURL = jsonMovie.Content.URL,
+                        AgeRating = jsonMovie.Content.FieldCensorshipIcon,
+                        ImageUrl = jsonMovie.Content.FieldPoster.FieldMediaImage.Sources[0].Srcset,
+                        Duration = duration,
+                        Showtimes = new List<Showtime>()
+                    };
+                    movies.Add(movieObject);
+                }
+                else
+                {
+                    movieObject = movies.First(m => m.Id == jsonMovie.Id);
+                }
+
+
+                foreach (var versions in jsonMovie.Versions)
+                {
+                    if (versions.Label.ToLower().Contains("lukket forestilling"))
+                    {
+                        continue;
+                    }
+
+                    VersionTag versionObject;
+                    versionObject = new VersionTag()
+                    {
+                        Type = versions.Label
+                    };
+
+
+                    foreach (var showtimeDate in versions.Dates)
+                    {
+                        foreach (var showtimeItem in showtimeDate.Showtimes)
+                        {
+                            //Skip if no more seats left
+                            if (showtimeItem.AvailableSeats == 0)
+                            {
+                                continue;
+                            }
+
+                            Room roomObject;
+                            roomObject = new Room()
+                            {
+                                Id = showtimeItem.RoomContent.Id,
+                                Name = showtimeItem.RoomContent.Label
+                            };
+
+
+                            Playtime playtimeObject;
+                            var dateString = (showtimeDate.Date + " " + showtimeItem.Time);
+                            var commaIndex = dateString.IndexOf(',');
+                            if (commaIndex > 0)
+                            {
+                                dateString = dateString.Substring(commaIndex + 2);
+                            }
+
+                            var dateTimeFormat = "dd/MM HH:mm";
+                            DateTime dateTime;
+
+                            if (DateTime.TryParseExact(dateString, dateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime))
+                            {
+                                if (_showtimeFiltering.StartDate != DateTime.MinValue && dateTime < _showtimeFiltering.StartDate)
+                                {
+                                    continue;
+                                }
+
+                                if (_showtimeFiltering.EndDate != DateTime.MinValue && dateTime > _showtimeFiltering.EndDate)
+                                {
+                                    continue;
+                                }
+                            }
+
+
+                            playtimeObject = new Playtime()
+                            {
+                                StartTime = dateTime
+                            };
+
+
+                            var showtimeObject = new Showtime()
+                            {
+                                Id = showtimeItem.Id,
+                                Movie = movieObject,
+                                Cinema = cinemaObject,
+                                VersionTag = versionObject,
+                                Room = roomObject,
+                                Playtime = playtimeObject
+                            };
+                            showtimes.Add(showtimeObject);
+                        }
+                    }
+                }
+            }
+        }
         
         return [];
     }

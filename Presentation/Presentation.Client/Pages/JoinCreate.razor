@@ -222,7 +222,6 @@
 </style>
 
 @* Shouldn't be a component, should stay on this parent component. *@
-<h1>Planlæg dit biograf event</h1>
 @if (_loading)
 {
     <p>Indlæser...</p>
@@ -230,6 +229,10 @@
 
 else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
 {
+    <h1 class="text-2xl md:text-2xl lg:text-3xl font-bold text-gray-800 leading-tight mb-6">
+        Velkommen til KinoJoin - Planlæg dit biograf event her
+    </h1>
+
     @* Shouldn't be a component, should stay on this parent component. *@
     <button style="margin-bottom: 5px;width: 200px;height: 50px;bottom: 3rem; right: 3rem; position: fixed; z-index: 1" @onclick="OpenDialog">Opret Event</button>
     

@@ -1,0 +1,22 @@
+<input style="margin-bottom: 5px; width: 300px" type="text" placeholder="Title" 
+       @bind="_eventDetails.EventTitle" @bind:event="oninput" @onchange="UpdateEventDetails"/>
+<br/>
+<textarea style="margin-bottom: 5px; width: 300px" placeholder="Description (optional)" 
+          @bind="_eventDetails.EventDescription" @bind:event="oninput" @onchange="UpdateEventDetails"></textarea>
+<br/>
+<p>Deadline</p>
+<input style="margin-bottom: 5px; width: 300px" type="date" placeholder="Deadline" 
+       @bind="_eventDetails.Deadline" @bind:event="oninput" @onchange="UpdateEventDetails"/>
+<br/>
+
+@code {
+    private HostJoinEventDetails _eventDetails = new(){EventTitle = null, EventDescription = null, Deadline= DateTime.Now.AddDays(30)};
+
+    [Parameter]
+    public EventCallback<HostJoinEventDetails> EventDetailsChanged { get; set; }
+
+    private void UpdateEventDetails()
+    {
+        EventDetailsChanged.InvokeAsync(_eventDetails);
+    }
+}

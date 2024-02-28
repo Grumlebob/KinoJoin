@@ -221,24 +221,21 @@
 
 </style>
 
-
+@* Shouldn't be a component, should stay on this parent component. *@
 <h1>Planlæg dit biograf event</h1>
 @if (_loading)
 {
     <p>Indlæser...</p>
 }
+
 else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
 {
-    <input style="margin-bottom: 5px; width: 300px" type="text" placeholder="Titel" @bind-value="_eventTitle"/>
-    <br/>
-    <textarea style="margin-bottom: 5px;width: 300px" type="text" placeholder="Beskrivelse (valgfrit)"  @bind="_eventDescription"></textarea>
-    <br/>
-    <p style="margin-bottom: 0px">Deadline</p>
-    <input style="margin-bottom: 5px; margin-top: 0px;width: 300px" type="date" placeholder="Deadline" @bind="@_deadline"/>
-    <br/>
+    @* Shouldn't be a component, should stay on this parent component. *@
     <button style="margin-bottom: 5px;width: 200px;height: 50px;bottom: 3rem; right: 3rem; position: fixed; z-index: 1" @onclick="OpenDialog">Opret Event</button>
-    <br/>
+    
+    <HostEventDetails EventDetailsChanged="HandleEventDetailsChanged" />
 
+    @* Shouldn't be a component, should stay on this parent component. *@
     <dialog id="eventDialog">
         @if (!eventCreated)
         {
@@ -264,6 +261,7 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
         }
     </dialog>
 
+    @* Shouldn't be a component, should stay on this parent component. *@
     @if (_showSnackbar)
     {
         <div class="snackbar">
@@ -273,7 +271,8 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
     
     <ShowtimeFilters @ref="_showtimeFiltering" CinemaIdsToNames="CinemaIdAndName" MovieIdsToNames="MovieIdAndName" GenreIdsToNames="GenreIdAndName"/>
     <button @onclick="@(async () => { await UpdateFilters();})">Opdater filtrer</button>
-    
+
+    @* Shuold maybe change data structure / put into the filter componont *@
     if (showtimes.Count == 0)
     {
         if ((_showtimeFiltering.CinemaCheckList.SelectedItems.Count > 0 || _showtimeFiltering.MovieCheckList.SelectedItems.Count > 0) && !_noFilters)
@@ -286,6 +285,7 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
         }
     }
 
+    @* Albert is making this into a component but starting with the filling version*@
     @foreach (var movie in showtimes.GroupBy(s => s.Movie))
     {
         <div class="Redbox">
@@ -392,6 +392,7 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
         </div>
     }
 
+    @* Bør blive supported af det component ovenover Albert laver! *@
     if (showtimes.Count > 0)
     {
         foreach (var movie in moviesWithoutShowtimes)
@@ -425,6 +426,7 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
         }
     }
 
+    @* Bør blive supported af det component ovenover Albert laver! *@
     if (_trailerUrl != null)
     {
         <div id="trailerPopUp">
@@ -436,22 +438,26 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
 }
 else
 {
+    @* Shouldn't be a component, should stay on this parent component. *@
     <p>Du skal vælge mindst en film eller biograf som filter</p>
     <button onclick="@(async () => { await JsRuntime.InvokeVoidAsync("history.back"); })">Gå Tilbage</button>
 }
 
-
 @code {
+    //----Event details start---
+    private HostJoinEventDetails _eventDetails = new HostJoinEventDetails();
+    
+    private void HandleEventDetailsChanged(HostJoinEventDetails details)
+    {
+        _eventDetails = details;
+    }
+    //---Event details end-----
 
+    
     [Parameter] public string filterString { get; set; }
-
-
+    
     string json;
 
-    private string _eventTitle;
-    private string? _eventDescription;
-
-    private DateTime _deadline = DateTime.Now.AddDays(30);
 
     private bool eventCreated = false;
 
@@ -502,8 +508,8 @@ else
     {
         var data = new
         {
-            title = _eventTitle,
-            text = _eventDescription ?? "",
+            title = _eventDetails.EventTitle,
+            text = _eventDetails.EventDescription ?? "",
             url = baseUrl + "filling/" + _joinEventId
         };
 
@@ -1129,13 +1135,13 @@ else
             _showSnackbar = true;
             await Task.Delay(3000).ContinueWith(_ => _showSnackbar = false);
         }
-        else if (string.IsNullOrEmpty(_eventTitle))
+        else if (string.IsNullOrEmpty(_eventDetails.EventTitle))
         {
             _snackbarMessage = "Eventet skal have en titel";
             _showSnackbar = true;
             await Task.Delay(3000).ContinueWith(_ => _showSnackbar = false);
         }
-        else if (_deadline < DateTime.Now)
+        else if (_eventDetails.Deadline < DateTime.Now)
         {
             _snackbarMessage = "Deadline skal være i fremtiden";
             _showSnackbar = true;
@@ -1196,9 +1202,9 @@ else
         {
             Showtimes = pickedShowtimes,
             Host = host,
-            Title = _eventTitle,
-            Description = _eventDescription ?? "",
-            Deadline = _deadline,
+            Title = _eventDetails.EventTitle,
+            Description = _eventDetails.EventDescription ?? "",
+            Deadline = _eventDetails.Deadline,
         };
 
 

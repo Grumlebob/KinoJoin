@@ -222,7 +222,6 @@
 </style>
 
 @* Shouldn't be a component, should stay on this parent component. *@
-<h1>Planlæg dit biograf event</h1>
 @if (_loading)
 {
     <p>Indlæser...</p>
@@ -230,34 +229,58 @@
 
 else if (_cinemaIdsToNames.Count > 0 || _movieIdsToNames.Count > 0)
 {
-    @* Shouldn't be a component, should stay on this parent component. *@
-    <button style="margin-bottom: 5px;width: 200px;height: 50px;bottom: 3rem; right: 3rem; position: fixed; z-index: 1" @onclick="OpenDialog">Opret Event</button>
+    <h1 class="mb-6 text-2xl font-bold leading-tight text-gray-800 md:text-2xl lg:text-3xl">
+        Velkommen til KinoJoin - Planlæg dit biograf event her
+    </h1>
 
-    <HostEventDetails EventDetailsChanged="HandleEventDetailsChanged"/>
+    @* Shouldn't be a component, should stay on this parent component. *@
+    <button style="margin-bottom: 5px;width: 200px;height: 50px;bottom: 3rem; right: 3rem; position: fixed; z-index: 1" @onclick="OpenEventDetailsDialog">Opret Event</button>
+
+    <dialog id="hostEventModal" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
+        <HostEventDetails EventDetailsChanged="HandleEventDetailsChanged"/>
+        <div class="flex justify-end space-x-3">
+            <button type="button" @onclick="CloseEventDetailsDialog" class="rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400">Annuller</button>
+            <button type="submit" @onclick="ValidateAndOpenConfirmationDialog" class="rounded-md bg-green-500 px-4 py-2 text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">Opret</button>
+        </div>
+    </dialog>
+
 
     @* Shouldn't be a component, should stay on this parent component. *@
-    <dialog id="eventDialog">
+    <dialog id="eventDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl min-w-96">
         @if (!eventCreated)
         {
-            <h4>Ønsker du at oprette eventet?</h4>
-            <input id="CanAllShowtimes" type="checkbox" @bind="HostCanAllShowtimes"/>
-            <label for="CanAllShowtimes">@(HostCanAllShowtimes ? "Jeg kan alle valgte tider" : "Jeg ønsker selv at angive tider hvor jeg kan")</label>
-            <div>
-                <button style="background-color: green; color: white" @onclick="FinishJoinEvent">Opret</button>
-                <button style="background-color: red; color: white" @onclick="CloseDialog">Rediger videre</button>
+            <p class="text-lg font-semibold text-blue-600 mb-0.5">Bekræft oprettelse</p>
+            <div class="mb-4 flex items-center">
+                <input id="CanAllShowtimes" type="checkbox" @bind="HostCanAllShowtimes" class="mr-2"/>
+                <label for="CanAllShowtimes" class="text-md">
+                    @(HostCanAllShowtimes ? "Jeg kan alle valgte tider" : "Jeg ønsker selv at angive tider hvor jeg kan")
+                </label>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button @onclick="CloseDialog" class="rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400">Rediger videre</button>
+                <button @onclick="FinishJoinEvent" class="rounded-md bg-green-500 px-4 py-2 text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">Opret</button>
             </div>
         }
         else
         {
-            <h4>Event oprettet</h4>
-
-            <p>Send dette link til dine venner</p>
-            <a href="@(_baseUrl + "filling/" + _joinEventId)">@(_baseUrl + "filling/" + _joinEventId)</a>
-            <button @onclick="ShareEvent">Del</button>
-            if (!HostCanAllShowtimes)
-            {
-                <p>Angiv hvilke tider du selv kan ved at gå ind på linket</p>
-            }
+            <div class="space-y-1">
+                <p class="text-lg font-semibold text-blue-600 mb-0.5">Dit event er nu oprettet</p>
+                <p class="font-semibold">Send dette link til dine venner</p>
+                <div class="flex items-center gap-4">
+                    <a href="@(_baseUrl + "filling/" + _joinEventId)" class="text-lg text-blue-600 hover:text-blue-700">
+                        @(_baseUrl + "filling/" + _joinEventId)
+                    </a>
+                    <button @onclick="ShareEvent" class="rounded-full bg-blue-400 p-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 30 30">
+                            <path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"></path>
+                        </svg>
+                    </button>
+                </div>
+                @if (!HostCanAllShowtimes)
+                {
+                    <p>Angiv hvilke tider du selv kan ved at gå ind på linket</p>
+                }
+            </div>
         }
     </dialog>
 
@@ -473,6 +496,20 @@ else
     }
     //---Event details end-----
 
+    private async Task OpenEventDetailsDialog()
+    {
+        if (selectedShowtimeIds.Count < 1)
+        {
+            _snackbarMessage = "Vælg mindst en mulig forestilling";
+            _showSnackbar = true;
+            await Task.Delay(3000).ContinueWith(_ => _showSnackbar = false);
+        }
+        else
+        {
+            await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "hostEventModal");
+        }
+    }
+
 
     [Parameter] public string FilterString { get; set; } = "";
 
@@ -632,7 +669,7 @@ else
         var apiString = $"https://api.kino.dk{movie.KinoURL}?region=content&format=json";
         var json = await client.GetStringAsync(apiString);
 
-        MovieRoot? movieRoot = JsonConvert.DeserializeObject<MovieRoot>(json);
+        var movieRoot = JsonConvert.DeserializeObject<MovieRoot>(json);
         if (movieRoot?.Content?.field_trailer?.FieldMediaOembedVideo?.trailerUrl == null) //no video found
         {
             await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
@@ -652,7 +689,7 @@ else
 
         _baseUrl = NavigationManager.BaseUri;
 
-        showtimes = new List<Showtime>();
+        showtimes = [];
 
         var query = "?" + FilterString;
 
@@ -789,13 +826,8 @@ else
 
                     foreach (var jsonDate in jsonVersion.Dates)
                     {
-                        foreach (var jsonShowtime in jsonDate.Showtimes)
+                        foreach (var jsonShowtime in jsonDate.Showtimes.Where(s => s.AvailableSeats > 0))
                         {
-                            if (jsonShowtime.AvailableSeats == 0)
-                            {
-                                continue;
-                            }
-
                             var roomObject = new Room
                             {
                                 Id = jsonShowtime.RoomContent.Id,
@@ -851,7 +883,7 @@ else
     }
 
 
-    private async Task OpenDialog()
+    private async Task ValidateAndOpenConfirmationDialog()
     {
         if (selectedShowtimeIds.Count < 1)
         {
@@ -884,6 +916,12 @@ else
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDialog");
     }
 
+    private async Task CloseEventDetailsDialog()
+    {
+        // Hide the dialog using JavaScript interop
+        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "hostEventModal");
+    }
+
     private async Task CopyLink()
     {
         // Hide the dialog using JavaScript interop
@@ -899,7 +937,7 @@ else
 
         var pickedShowtimes = selectedShowtimeIds.Select(id => showtimes.First(s => s.Id == id)).ToList();
 
-        var movieId = pickedShowtimes.FirstOrDefault().Movie.Id;
+        var movieId = pickedShowtimes.First().Movie.Id;
 
         var authenticationState = await AuthenticationStateTask;
 

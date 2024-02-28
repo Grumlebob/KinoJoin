@@ -20,7 +20,8 @@ else if (!_answerSaved)
         @if (_confirmSubmit)
         {
             <div class="mt-4">
-                <p>Du har ikke valgt nogen tider. Vil du indsende dit svar alligevel?</p>
+                <h4 class="font-bold">Obs! Du har ikke valgt nogen tider.</h4>
+                <h4 class="font-semibold mb-0.5">Vil du indsende et tomt svar, der viser du ikke kan nogen tider?</h4>
                 <div class="inline-flex space-x-2">
                     <button class="rounded bg-blue-500 p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(true,false); })">Ja</button>
                     <button class="rounded bg-red-500 p-2 text-white" @onclick="@(() => { _confirmSubmit = false; })">Nej</button>
@@ -36,8 +37,9 @@ else if (!_answerSaved)
 }
 
 <dialog id="same-name-dialog" class="rounded p-4">
-    <h4 class="font-bold">Der er allerede en deltager med dette navn. Ønsker du at sende et nyt svar i samme navn?</h4>
-    <div class="mt-4 flex justify-around">
+    <h4 class="font-bold">Der er allerede en deltager med dette navn</h4>
+    <h4 class="font-bold">Ønsker du at sende et nyt svar i samme navn?</h4>
+    <div class="inline-flex space-x-2">
         <button class="rounded bg-blue-500 p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(true,true); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Ja</button>
         <button class="rounded bg-red-500 p-2 text-white" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Nej</button>
     </div>

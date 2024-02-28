@@ -229,15 +229,9 @@
 }
 else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
 {
-    <input style="margin-bottom: 5px; width: 300px" type="text" placeholder="Titel" @bind-value="_eventTitle"/>
-    <br/>
-    <textarea style="margin-bottom: 5px;width: 300px" type="text" placeholder="Beskrivelse (valgfrit)"  @bind="_eventDescription"></textarea>
-    <br/>
-    <p style="margin-bottom: 0px">Deadline</p>
-    <input style="margin-bottom: 5px; margin-top: 0px;width: 300px" type="date" placeholder="Deadline" @bind="@_deadline"/>
-    <br/>
     <button style="margin-bottom: 5px;width: 200px;height: 50px;bottom: 3rem; right: 3rem; position: fixed; z-index: 1" @onclick="OpenDialog">Opret Event</button>
-    <br/>
+    
+    <HostEventDetails EventDetailsChanged="HandleEventDetailsChanged" />
 
     <dialog id="eventDialog">
         @if (!eventCreated)
@@ -439,18 +433,21 @@ else
     <button onclick="@(async () => { await JsRuntime.InvokeVoidAsync("history.back"); })">Gå Tilbage</button>
 }
 
-
 @code {
+    //----Event details start---
+    private HostJoinEventDetails _eventDetails = new HostJoinEventDetails();
+    
+    private void HandleEventDetailsChanged(HostJoinEventDetails details)
+    {
+        _eventDetails = details;
+    }
+    //---Event details end-----
 
+    
     [Parameter] public string filterString { get; set; }
-
-
+    
     string json;
 
-    private string _eventTitle;
-    private string? _eventDescription;
-
-    private DateTime _deadline = DateTime.Now.AddDays(30);
 
     private bool eventCreated = false;
 
@@ -549,8 +546,8 @@ else
     {
         var data = new
         {
-            title = _eventTitle,
-            text = _eventDescription ?? "",
+            title = _eventDetails.EventTitle,
+            text = _eventDetails.EventDescription ?? "",
             url = baseUrl + "filling/" + _joinEventId
         };
 
@@ -1183,13 +1180,13 @@ else
             _showSnackbar = true;
             await Task.Delay(3000).ContinueWith(_ => _showSnackbar = false);
         }
-        else if (string.IsNullOrEmpty(_eventTitle))
+        else if (string.IsNullOrEmpty(_eventDetails.EventTitle))
         {
             _snackbarMessage = "Eventet skal have en titel";
             _showSnackbar = true;
             await Task.Delay(3000).ContinueWith(_ => _showSnackbar = false);
         }
-        else if (_deadline < DateTime.Now)
+        else if (_eventDetails.Deadline < DateTime.Now)
         {
             _snackbarMessage = "Deadline skal være i fremtiden";
             _showSnackbar = true;
@@ -1250,9 +1247,9 @@ else
         {
             Showtimes = pickedShowtimes,
             Host = host,
-            Title = _eventTitle,
-            Description = _eventDescription ?? "",
-            Deadline = _deadline,
+            Title = _eventDetails.EventTitle,
+            Description = _eventDetails.EventDescription ?? "",
+            Deadline = _eventDetails.Deadline,
         };
 
 

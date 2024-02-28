@@ -1,13 +1,22 @@
-<input style="margin-bottom: 5px; width: 300px" type="text" placeholder="Title" 
+<!-- Text Input for Title -->
+
+<input class="mb-2 w-72 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+       type="text" placeholder="Title" 
        @bind="_eventDetails.EventTitle" @bind:event="oninput" @onchange="UpdateEventDetails"/>
-<br/>
-<textarea style="margin-bottom: 5px; width: 300px" placeholder="Description (optional)" 
+
+<!-- Textarea for Description -->
+<textarea class="mb-2 w-72 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Description (optional)" 
           @bind="_eventDetails.EventDescription" @bind:event="oninput" @onchange="UpdateEventDetails"></textarea>
-<br/>
-<p>Deadline</p>
-<input style="margin-bottom: 5px; width: 300px" type="date" placeholder="Deadline" 
+
+<!-- Paragraph for Deadline -->
+<p class="font-semibold text-lg mb-2">Deadline</p>
+
+<!-- Date Input for Deadline -->
+<input class="mb-2 w-72 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+       type="date" placeholder="Deadline" 
        @bind="_eventDetails.Deadline" @bind:event="oninput" @onchange="UpdateEventDetails"/>
-<br/>
+
 
 @code {
     private HostJoinEventDetails _eventDetails = new(){EventTitle = null, EventDescription = null, Deadline= DateTime.Now.AddDays(30)};

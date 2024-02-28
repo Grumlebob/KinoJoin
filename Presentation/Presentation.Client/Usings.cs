@@ -1,6 +1,3 @@
 ﻿namespace Presentation.Client;
 
-public class Usings
-{
-    
-}
+public class Usings { }

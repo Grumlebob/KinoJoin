@@ -221,18 +221,21 @@
 
 </style>
 
-
+@* Shouldn't be a component, should stay on this parent component. *@
 <h1>Planlæg dit biograf event</h1>
 @if (_loading)
 {
     <p>Indlæser...</p>
 }
+
 else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
 {
+    @* Shouldn't be a component, should stay on this parent component. *@
     <button style="margin-bottom: 5px;width: 200px;height: 50px;bottom: 3rem; right: 3rem; position: fixed; z-index: 1" @onclick="OpenDialog">Opret Event</button>
     
     <HostEventDetails EventDetailsChanged="HandleEventDetailsChanged" />
 
+    @* Shouldn't be a component, should stay on this parent component. *@
     <dialog id="eventDialog">
         @if (!eventCreated)
         {
@@ -258,6 +261,7 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
         }
     </dialog>
 
+    @* Shouldn't be a component, should stay on this parent component. *@
     @if (_showSnackbar)
     {
         <div class="snackbar">
@@ -267,6 +271,7 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
     
     <SearchFilters CinemaIdAndName="CinemaIdAndName" MovieIdAndName="MovieIdAndName"  selectedCinemaFilters="selectedCinemaFilters" selectedMovieFilters="selectedMovieFilters" _startDate="_startDate" _endDate="_endDate" UpdateFilters="UpdateFilters" />
 
+    @* Shuold maybe change data structure / put into the filter componont *@
     @if (showtimes.Count == 0)
     {
         if ((selectedCinemaFilters.Count > 0 || selectedMovieFilters.Count > 0) && !_noFilters)
@@ -279,6 +284,7 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
         }
     }
 
+    @* Albert is making this into a component but starting with the filling version*@
     @foreach (var movie in showtimes.GroupBy(s => s.Movie))
     {
         <div class="Redbox">
@@ -385,6 +391,7 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
         </div>
     }
 
+    @* Bør blive supported af det component ovenover Albert laver! *@
     if (showtimes.Count > 0)
     {
         foreach (var movie in moviesWithoutShowtimes)
@@ -418,6 +425,7 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
         }
     }
 
+    @* Bør blive supported af det component ovenover Albert laver! *@
     if (_trailerUrl != null)
     {
         <div id="trailerPopUp">
@@ -429,6 +437,7 @@ else if (CinemaIdAndName.Count > 0 || MovieIdAndName.Count > 0)
 }
 else
 {
+    @* Shouldn't be a component, should stay on this parent component. *@
     <p>Du skal vælge mindst en film eller biograf som filter</p>
     <button onclick="@(async () => { await JsRuntime.InvokeVoidAsync("history.back"); })">Gå Tilbage</button>
 }

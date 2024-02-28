@@ -2,81 +2,75 @@
 @inject NavigationManager NavigationManager
 
 @if (AlreadyAnswered)
-    {
-        <p>Du har allerede svaret</p>
-    }
-    else if (!_answerSaved)
-    {
+{
+    <p class="font-semibold text-green-700 text-xl">Du har allerede indsendt et svar på dette event</p>
+}
+else if (!_answerSaved)
+{
+    <div class="w-80 space-y-4">
+        <h3 class="font-bold">Dine oplysninger</h3>
+        <input class="w-full border p-2" placeholder="Indtast dit navn" value="@Nickname" @onchange="@(async v => { await NicknameChanged.InvokeAsync((string)v.Value); })" required/>
+        <input class="w-full border p-2" placeholder="Skriv din email (valgfrit)" type="email" @bind="@Email"/>
         <div>
-            <input placeholder="Indtast dit navn" value="@Nickname" onchange="@(async (ChangeEventArgs v) => { await NicknameChanged.InvokeAsync((string)v.Value);})" required="required"/>
-            <input placeholder="Skriv din email (valgfrit)" type="email" @bind="@Email"/>
-            <div>
-                <textarea style="margin-bottom: 5px;margin-top: 5px;width: 300px" type="text"   placeholder="Note (valgfrit)"  @bind="Note"></textarea>
-            </div>
-            <button onclick="@(async () => { await SaveParticipantAnswer(false); })">
-                Send svar
-            </button>
-            @if (_confirmSubmit)
-            {
-                <div>
-                    <p>Du har ikke valgt nogen tider. Vil du indsende dit svar alligevel?</p>
-                    <div style="display: inline-block">
-                        <button onclick="@(async () => { await SaveParticipantAnswer(true); })">
-                            Ja
-                        </button>
-                        <button onclick="@(() => { _confirmSubmit = false; })">Nej</button>
-                    </div>
-                </div>
-            }
+            <textarea class="h-32 w-full resize-none border p-2" placeholder="Note (valgfrit)" @bind="Note"></textarea>
         </div>
-    }
-    
-    
-    @if (_infoMessage is not null)
-    {
-        <p>@_infoMessage</p>
-    }
+        <button class="rounded bg-blue-500 p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(false, false); })">
+            Send svar
+        </button>
+        @if (_confirmSubmit)
+        {
+            <div class="mt-4">
+                <p>Du har ikke valgt nogen tider. Vil du indsende dit svar alligevel?</p>
+                <div class="inline-flex space-x-2">
+                    <button class="rounded bg-blue-500 p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(true,false); })">Ja</button>
+                    <button class="rounded bg-red-500 p-2 text-white" @onclick="@(() => { _confirmSubmit = false; })">Nej</button>
+                </div>
+            </div>
+        }
+    </div>
+}
 
-<dialog id="same-name-dialog">
-        <h4>Der er allerede en deltager med dette navn. Ønsker du at sende et nyt svar i samme navn?</h4>
-        <button @onclick="@(async () => { await SaveParticipantAnswer(true); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Ja</button>
-        <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Nej</button>
-    </dialog>
+@if (_infoMessage is not null)
+{
+    <p class="text-gray-700">@_infoMessage</p>
+}
+
+<dialog id="same-name-dialog" class="rounded p-4">
+    <h4 class="font-bold">Der er allerede en deltager med dette navn. Ønsker du at sende et nyt svar i samme navn?</h4>
+    <div class="mt-4 flex justify-around">
+        <button class="rounded bg-blue-500 p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(true,true); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Ja</button>
+        <button class="rounded bg-red-500 p-2 text-white" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Nej</button>
+    </div>
+</dialog>
 
 @code {
-    
-    [Parameter]
-    public bool AlreadyAnswered { get; set; }
-    
-    [Parameter]
-    public JoinEvent? Event { get; set; }
-    
+
+    [Parameter] public bool AlreadyAnswered { get; set; }
+
+    [Parameter] public JoinEvent? Event { get; set; }
+
     private bool _answerSaved { get; set; }
-    
-    [Parameter]
-    public string? Nickname { get; set; }
-    
-    [Parameter]
-    public EventCallback<string?> NicknameChanged { get; set; }
-    
-    [Parameter]
-    public List<ParticipantVote> VotedFor { get; set; } = [];
-    
-    [Parameter]
-    public string LoggedInUserId { get; set; }
-    
-    [Parameter]
-    public EventCallback OnAnswerSaved { get; set; }
-    
+
+    [Parameter] public string? Nickname { get; set; }
+
+    [Parameter] public EventCallback<string?> NicknameChanged { get; set; }
+
+    [Parameter] public List<ParticipantVote> VotedFor { get; set; } = [];
+
+    [Parameter] public string LoggedInUserId { get; set; }
+
+    [Parameter] public EventCallback OnAnswerSaved { get; set; }
+
     private string? Email { get; set; }
     private string? Note { get; set; }
-    
+
     private string? _infoMessage;
-    
+
     private bool _confirmSubmit;
-    
-    private async Task SaveParticipantAnswer(bool confirmed)
+
+    private async Task SaveParticipantAnswer(bool confirmed, bool sameNameConfirmed)
     {
+        
         if (!confirmed)
         {
             _infoMessage = "";
@@ -86,19 +80,21 @@
                 return;
             }
 
-
             if (VotedFor.All(v => v.Vote == Vote.No))
             {
                 _confirmSubmit = true;
                 return;
             }
-
+        }
+        if (!sameNameConfirmed)
+        {
             if (Event.Participants is not null && Event.Participants.Any(p => p.Nickname == Nickname))
             {
                 await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "same-name-dialog");
                 return;
             }
         }
+        
 
         if (Email?.Trim() == "") Email = null;
         if (Email != null)
@@ -128,5 +124,5 @@
             _infoMessage = "Noget gik galt. Prøv igen.";
         }
     }
-    
+
 }

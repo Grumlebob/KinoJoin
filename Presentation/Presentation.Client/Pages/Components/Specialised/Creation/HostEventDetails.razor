@@ -17,6 +17,10 @@
        type="date" placeholder="Deadline" 
        @bind="_eventDetails.Deadline" @bind:event="oninput" @onchange="UpdateEventDetails"/>
 
+<div class="flex-row border-blue-50">
+    
+</div>
+
 
 @code {
     private HostJoinEventDetails _eventDetails = new(){EventTitle = null, EventDescription = null, Deadline= DateTime.Now.AddDays(30)};

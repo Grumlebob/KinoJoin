@@ -1,6 +1,189 @@
 @inject IJSRuntime JsRuntime
 
-  <span style="background-color: lightgray">Kan ikke</span>
+<style>
+/* Base container for each movie */
+.Redbox {
+    display: flex;
+    align-items: flex-start; /* Align the start of the items */
+    margin-bottom: 20px;
+}
+
+/* Styling for the poster image */
+.PosterImage {
+    position: sticky;
+    top: 65px;
+    margin-right: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* Container for movie details */
+.MovieDetails {
+    flex-grow: 1; /* Allow the movie details to fill the remaining space */
+}
+
+/* Header for each movie */
+.MovieHeader h2 {
+    margin-top: 0; /* Remove top margin for the movie title */
+    margin-bottom: 0.5em; /* Add a little space below the title */
+}
+
+.MovieHeader p {
+    margin-top: 0; /* Remove top margin for other details */
+    margin-bottom: 0.5em; /* Consistent space below each detail */
+}
+
+/* Styling for cinema location */
+.CinemaLocation {
+    margin-top: 1em; /* Add space above the cinema location */
+    margin-bottom: 0.5em; /* Add space below the cinema location */
+}
+
+/* Styling for versions and showtimes */
+.Version {
+    margin-bottom: 1em; /* Add space below each version */
+}
+
+/* Base styles for the showtime labels */
+.Showtimes .showtime-label {
+
+    display: block; /* or inline-block, depending on how you want to handle the layout */
+    padding: 4px; /* Adjust padding as necessary */
+    margin-bottom: 4px;
+    
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    background-color: #eee;
+    border-radius: 4px;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+    white-space: nowrap; /* Keep text in a single line */
+    width: 100px;
+}
+
+/* Style for the room name */
+.Showtimes .showtime-room {
+    font-size: 14px; /* Smaller font size for sal name */
+    margin-bottom: 2px; /* Space between sal name and playtime */
+    overflow: hidden; /* Ensures the content does not expand the container */
+    text-overflow: ellipsis; /* Adds an ellipsis when the text overflows */
+    white-space: nowrap; /* Prevents the text from wrapping to the next line */
+   
+}
+
+/* Style for the playtime */
+.Showtimes .showtime-time {
+    font-weight: bold;
+    font-size: 24px; /* Larger font size for playtime */
+}
+
+.Showtimes .table-container {
+    overflow-x: auto; /* Adds horizontal scrollbar if the table exceeds the container width */
+
+}
+
+.Showtimes table {
+    border-collapse: collapse; /* Collapse borders for a clean look */
+}
+
+/* Style for the table headers and cells to have a fixed width */
+.Showtimes th,
+.Showtimes td {
+    width: 10px; /* Fixed width */
+    text-align: left; /* Align text to the left */
+    padding: 8px; /* Add some padding */
+    white-space: nowrap; /* Keep the content in a single line */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add an ellipsis to clipped text */
+    border-bottom: 1px solid #ddd; /* Add a bottom border for separation */
+    vertical-align: top; /* Align the content to the top of the cell */
+}
+
+.Showtimes td {
+    padding: 8px; /* Add some padding */
+}
+
+
+.movie-info {
+    background-color: #E0E0E0; /* Light gray background */
+    padding: 5px;
+    border-radius: 5px; /* Optional: rounds the corners of the background */
+    display: inline-flex; /* Places children next to each other */
+    align-items: center; /* Aligns children vertically in the center */
+    justify-content: center; /* Centers children horizontally */
+    gap: 10px; /* Creates space between the children */
+}
+
+.movie-info .premiere,
+.movie-info .duration {
+    color: #333; /* Dark gray text color for better contrast */
+    font-size: 14px; /* Adjust font size as needed */
+}
+
+.tooltip-container:hover {
+    background-color: grey;
+}
+
+.tooltip-container:hover .tooltip-content {
+    visibility: visible;
+}
+
+.tooltip-content {
+    visibility: hidden;
+    position: absolute;
+    z-index: 1;
+    transform: translateY(-8rem); /* hard coded for now */
+    background-color: lightgray;
+}
+
+.empty-showtime {
+    width: 100px;
+    height: 67px;
+    padding: 12px;
+    margin-top: 0px;
+    margin-bottom: 4px;
+    
+    border-radius: 4px;
+    background-image: repeating-linear-gradient(
+        +45deg,
+        #ffffff, /* Lighter shade of gray for the streak */
+        #ffffff 10px,
+        #d5d5d5 10px, /* Darker shade of gray for the space between streaks */
+        #d5d5d5 20px
+    );
+}
+
+#trailerPopUp {
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-participant-button {
+        color: red;
+        font-size: 20px;
+}
+    
+.delete-participant-button:hover {
+        background-color: lightcoral;
+        cursor: pointer;
+}
+
+
+</style>
+
+<span style="background-color: lightgray">Kan ikke</span>
   <span style="background-color: lightgreen">Kan godt</span>
   <span style="background-color: orange">Hvis Nødvendigt (Klik to gange)</span>
 

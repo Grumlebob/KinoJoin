@@ -327,156 +327,8 @@ else if (_cinemaIdsToNames.Count > 0 || _movieIdsToNames.Count > 0)
         }
     }
 
-    @* Albert is making this into a component but starting with the filling version*@
-    @foreach (var movie in showtimes.GroupBy(s => s.Movie))
-    {
-        <div class="Redbox">
-            <div class="PosterImage">
-                <a href=@($"https://kino.dk{movie.Key.KinoURL}") target="_blank">
-                    <img src="@movie.Key.ImageUrl" alt="Movie Poster" width="200" height="300"/>
-                </a>
-
-                <a href=@($"https://kino.dk{movie.Key.KinoURL}") target="_blank">
-                    <button style="margin-top: 3px">Læs mere</button>
-                </a>
-
-                <button style="margin-top: 3px" @onclick="async () => { await ShowMovieTrailer(movie.Key); }">Se trailer</button>
-
-            </div>
-            <div class="MovieDetails">
-                <div class="MovieHeader">
-                    <a href=@($"https://kino.dk{movie.Key.KinoURL}") target="_blank" style="text-decoration: none; color: black">
-                        <h2>@movie.Key.Title</h2>
-                    </a>
-
-                    <div class="movie-info">
-                        <span class="premiere">Premiere @movie.Key.PremiereDate | </span>
-                        <span class="duration">Varighed @movie.Key.Duration min</span>
-                    </div>
-
-                </div>
-                @foreach (var cinema in movie.GroupBy(s => s.Cinema))
-                {
-                    <div class="CinemaLocation">
-                        <h4>@cinema.Key.Name</h4>
-                    </div>
-                    @foreach (var version in cinema.GroupBy(s => s.VersionTag))
-                    {
-                        <!-- Assuming version is your grouped data object for a particular movie version -->
-                        <div class="Version">
-                            <strong>@version.Key.Type</strong>
-                            <div class="Showtimes">
-                                <div class="table-container">
-                                    <table>
-                                        <tr>
-                                            <!-- HEADERS GAMLE SYSTEM, KUN DE DATOER DER EKSITERER -->
-                                            <!--
-                                            @foreach (var date in version.GroupBy(s => s.Playtime.StartTime.ToLocalTime().ToString("dd. MMM")))
-                                            {
-                                                <th>@date.Key</th>
-                                            }-->
-
-                                            <!-- NYE SYSTEM HEADERS, viser tomme datoer -->
-                                            @{
-                                                // Determine the start and end dates of the interval
-                                                var startDate = showtimes.Min(s => s.Playtime.StartTime.ToLocalTime());
-                                                var endDate = showtimes.Max(s => s.Playtime.StartTime.ToLocalTime());
-
-                                                var latestDateForSpecificCinemaVersion = showtimes.Where(s => s.Movie == movie.Key && s.Cinema == cinema.Key && s.VersionTag == version.Key).Max(s => s.Playtime.StartTime.ToLocalTime().Date);
-
-                                                // Loop through each date in the interval
-                                                for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
-                                                {
-                                                    <th>@date.ToString("dd. MMM")</th>
-                                                }
-                                            }
-                                        </tr>
-                                        <tr>
-                                            <!-- Create table data for each showtime within the grouped date -->
-                                            @for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
-                                            {
-                                                //Check if it exists if not, else
-                                                @if (showtimes.Any(s => s.Movie == movie.Key && s.Cinema == cinema.Key && s.VersionTag == version.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
-                                                {
-                                                    <td>
-                                                        @foreach (var showtime in showtimes.Where(s => s.Movie == movie.Key && s.Cinema == cinema.Key && s.VersionTag == version.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
-                                                        {
-                                                            var checkboxId = "showtime_" + showtime.Id;
-                                                            var showtimeId = showtime.Id;
-                                                            var isChecked = selectedShowtimeIds.Contains(showtimeId);
-
-                                                            <div>
-                                                                <input type="checkbox" id="@checkboxId" name="showtime" value="@showtime.Playtime.StartTime.ToLocalTime()" checked="@isChecked" @onclick="() => ToggleCheckedShowtime(showtimeId)">
-                                                                <label for="@checkboxId" class="showtime-label">
-                                                                    <div class="showtime-sal">@showtime.Room.Name</div>
-                                                                    <div class="showtime-time">@showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm")</div>
-                                                                </label>
-                                                            </div>
-                                                        }
-                                                    </td>
-                                                }
-                                                else
-                                                {
-                                                    <td>
-                                                        <div class="empty-showtime">
-                                                        </div>
-                                                    </td>
-                                                }
-                                            }
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                }
-            </div>
-        </div>
-    }
-
-    @* Bør blive supported af det component ovenover Albert laver! *@
-    if (showtimes.Count > 0)
-    {
-        foreach (var movie in moviesWithoutShowtimes)
-        {
-            <div class="Redbox">
-                <div class="PosterImage">
-                    <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
-                        <img src="@movie.ImageUrl" alt="Movie Poster" width="200" height="300"/>
-                    </a>
-
-                    <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
-                        <button style="margin-top: 3px">Læs mere</button>
-                    </a>
-
-                    <button style="margin-top: 3px" @onclick="async () => { await ShowMovieTrailer(movie); }">Se trailer</button>
-
-                </div>
-                <div class="MovieDetails">
-                    <div class="MovieHeader">
-                        <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank" style="text-decoration: none; color: black">
-                            <h2>@movie.Title</h2>
-                        </a>
-
-                        <div class="movie-info">
-                            <span>Ingen forestillinger fundet for denne film med de valgte filtre</span>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        }
-    }
-
-    @* Bør blive supported af det component ovenover Albert laver! *@
-    if (_trailerUrl != null)
-    {
-        <div id="trailerPopUp">
-            <iframe src="@_trailerUrl" width="60%" height="60%" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
-            </iframe>
-            <button onclick="@(() => { _trailerUrl = null; })">Luk</button>
-        </div>
-    }
+    <ShowtimeSelector Showtimes="showtimes" MoviesWithOutShowTimes="moviesWithoutShowtimes"  VotedFor="showtimes.Select(s => (s,selectedShowtimeIds.Contains(s.Id) ? Vote.Yes : Vote.No)).ToList()"  VotedForChanged="OnVoteChange" />
+    
 }
 else
 {
@@ -521,8 +373,6 @@ else
     private string _snackbarMessage;
 
     private bool _showSnackbar;
-
-    private string? _trailerUrl;
 
     private bool HostCanAllShowtimes = true;
 
@@ -643,42 +493,7 @@ else
 
         NavigationManager.NavigateTo(_baseUrl + "JoinCreate/" + filterStringBuilder, true);
     }
-
-
-    void ToggleCheckedShowtime(int showtimeId)
-    {
-        if (selectedShowtimeIds.Contains(showtimeId))
-        {
-            // Showtime is already selected, remove it
-            selectedShowtimeIds.Remove(showtimeId);
-        }
-        else
-        {
-            // Showtime is not selected, add it
-            selectedShowtimeIds.Add(showtimeId);
-        }
-    }
-
-
-    private async Task ShowMovieTrailer(Movie movie)
-    {
-        var client = new HttpClient();
-        var apiString = $"https://api.kino.dk{movie.KinoURL}?region=content&format=json";
-        var json = await client.GetStringAsync(apiString);
-
-        var movieRoot = JsonConvert.DeserializeObject<MovieRoot>(json);
-        if (movieRoot?.Content?.field_trailer?.FieldMediaOembedVideo?.trailerUrl == null) //no video found
-        {
-            await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
-            return;
-        }
-
-        var uri = new Uri(movieRoot.Content.field_trailer.FieldMediaOembedVideo.trailerUrl);
-        var videoId = uri.Segments.Last() == "watch" ? HttpUtility.ParseQueryString(uri.Query)["v"] : uri.Segments.Last();
-
-        if (videoId == null) await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
-        else _trailerUrl = $"https://www.youtube.com/embed/{videoId}";
-    }
+    
 
     protected override async Task OnInitializedAsync()
     {
@@ -987,6 +802,11 @@ else
             var httpClient = new HttpClient();
             var participateResponse = await httpClient.PutAsJsonAsync($"{_baseUrl}participate/{_joinEventId}", p);
         }
+    }
+
+    private void OnVoteChange(List<(Showtime, Vote vote)> votes)
+    {
+        selectedShowtimeIds = votes.Where(v => v.vote == Vote.Yes).Select(v => v.Item1.Id).ToList();
     }
 
 }

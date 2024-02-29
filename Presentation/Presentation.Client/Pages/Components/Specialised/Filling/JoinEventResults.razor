@@ -198,10 +198,16 @@
      <table style="border-spacing:0.5rem;">
          <tr>
              <th style="vertical-align: bottom">Navn</th>
+             
              @{
                  var orderedShowtimes = _sortedAfter == VotesString
-                     ? _event.Showtimes.OrderByDescending(showtime => (_event.Participants ?? []).Count(p => p.VotedFor.Any(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0))) //take sum of Non-no votes
-                         .ThenByDescending(showtime => (_event.Participants ?? []).Count(p => p.VotedFor.Any(v => v.ShowtimeId == showtime.Id && v.VoteIndex == 1))) //take sum of yes votes as tie breaker
+                     ? _event.Showtimes.OrderByDescending(showtime => 
+                             _event.Participants?
+                                 .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)) ?? 0)
+                         .ThenBy(showtime => 
+                             _event.Participants?
+                                 .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)
+                                     .Sum(v => v.VoteIndex)) ?? 0) 
                          .ThenBy(s => s.Playtime.StartTime.ToLocalTime()).ToList()
                      : _event.Showtimes.OrderBy(s => s.Playtime.StartTime.ToLocalTime()).ToList();
              }
@@ -442,8 +448,24 @@ Response.Flush();
 HttpContext.Current.ApplicationInstance.CompleteRequest();
 */
     }
-    
-    
+
+    protected override void OnInitialized()
+    {
+        var sortedShowtimes = _event.Showtimes
+            .OrderByDescending(showtime => 
+                _event.Participants?
+                    .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)) ?? 0)
+            .ThenBy(showtime => 
+                _event.Participants?
+                    .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)
+                        .Sum(v => v.VoteIndex)) ?? 0);
+
+       foreach (var showtime in sortedShowtimes)
+       {
+           Console.WriteLine(showtime.Playtime.StartTime);
+       }
+    }
+
     private async Task ShareEvent()
     {
         Showtime showtime = _event.Showtimes.First(s => s.Id == _event.ChosenShowtimeId);

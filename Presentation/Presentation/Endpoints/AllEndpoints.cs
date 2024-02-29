@@ -115,15 +115,16 @@ public static class AllEndpoints
                                 Playtime = s.Playtime,
                                 Room = s.Room,
                                 VersionTag = s.VersionTag,
-                            }
-                            )
+                            })
                             .ToList(),
-                        SelectOptions = e.SelectOptions.Select(so => new SelectOption
-                        {
-                            Id = so.Id,
-                            VoteOption = so.VoteOption,
-                            Color = so.Color
-                        }).ToList()
+                        SelectOptions = e
+                            .SelectOptions.Select(so => new SelectOption
+                            {
+                                Id = so.Id,
+                                VoteOption = so.VoteOption,
+                                Color = so.Color
+                            })
+                            .ToList()
                     })
                     .FirstOrDefaultAsync(e => e.Id == id);
                 return Results.Ok(result);
@@ -515,13 +516,15 @@ public static class AllEndpoints
                 }
 
                 await context.SaveChangesAsync();
-                
+
                 //handle selectOptions
                 var selectOptionsToAttach = new List<SelectOption>();
                 foreach (var selectOption in joinEvent.SelectOptions)
                 {
-                    var existingSelectOption = await context.SelectOptions.FirstOrDefaultAsync(s =>s.VoteOption == selectOption.VoteOption && s.Color == selectOption.Color);
-                    
+                    var existingSelectOption = await context.SelectOptions.FirstOrDefaultAsync(s =>
+                        s.VoteOption == selectOption.VoteOption && s.Color == selectOption.Color
+                    );
+
                     if (existingSelectOption != null)
                     {
                         context.SelectOptions.Attach(existingSelectOption);
@@ -534,7 +537,7 @@ public static class AllEndpoints
                         selectOptionsToAttach.Add(selectOption);
                     }
                 }
-                
+
                 await context.SaveChangesAsync();
 
                 //Get id of new host

@@ -15,7 +15,7 @@ public class KinoContext : DbContext
     public DbSet<VersionTag> Versions { get; set; }
     public DbSet<Cinema> Cinemas { get; set; }
     public DbSet<Room> Rooms { get; set; }
-    
+
     public DbSet<SelectOption> SelectOptions { get; set; }
 
     public KinoContext(DbContextOptions<KinoContext> options)
@@ -34,8 +34,11 @@ public class KinoContext : DbContext
         modelBuilder.Entity<JoinEvent>().HasMany(je => je.Showtimes).WithMany(s => s.JoinEvents);
 
         modelBuilder.Entity<JoinEvent>().HasMany(je => je.Participants).WithOne(p => p.JoinEvent);
-        
-        modelBuilder.Entity<JoinEvent>().HasMany(je => je.SelectOptions).WithMany(so => so.JoinEvents);
+
+        modelBuilder
+            .Entity<JoinEvent>()
+            .HasMany(je => je.SelectOptions)
+            .WithMany(so => so.JoinEvents);
 
         // Configure primary keys
         modelBuilder.Entity<Movie>().HasKey(m => m.Id);
@@ -69,9 +72,7 @@ public class KinoContext : DbContext
             .WithMany()
             .HasForeignKey(pv => pv.ShowtimeId);
 
-        modelBuilder
-            .Entity<ParticipantVote>()
-            .Property(pv => pv.VoteIndex);
+        modelBuilder.Entity<ParticipantVote>().Property(pv => pv.VoteIndex);
 
         // Call the base method to ensure any configuration from the base class is applied
         base.OnModelCreating(modelBuilder);

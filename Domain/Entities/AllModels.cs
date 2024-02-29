@@ -40,9 +40,9 @@ public class JoinEvent
 
     public int? ChosenShowtimeId { get; set; }
     public List<Participant>? Participants { get; set; }
-    
+
     public List<SelectOption>? SelectOptions { get; set; }
-    
+
     private DateTime _deadline;
 
     public DateTime Deadline
@@ -117,7 +117,7 @@ public class SelectOption
     public int Id { get; set; }
     public string VoteOption { get; set; }
     public string Color { get; set; }
-    
+
     //navigation property
     public List<JoinEvent> JoinEvents { get; set; }
 }
@@ -160,5 +160,3 @@ public class Room
 
     public string Name { get; set; }
 }
-
-

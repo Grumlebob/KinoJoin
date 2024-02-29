@@ -92,7 +92,7 @@ public static class AllEndpoints
                                         Participant = v.Participant,
                                         ShowtimeId = v.ShowtimeId,
                                         Showtime = v.Showtime,
-                                        Vote = v.Vote
+                                        VoteIndex = v.VoteIndex
                                     })
                                     .ToList()
                             })
@@ -115,8 +115,15 @@ public static class AllEndpoints
                                 Playtime = s.Playtime,
                                 Room = s.Room,
                                 VersionTag = s.VersionTag,
-                            })
-                            .ToList()
+                            }
+                            )
+                            .ToList(),
+                        SelectOptions = e.SelectOptions.Select(so => new SelectOption
+                        {
+                            Id = so.Id,
+                            VoteOption = so.VoteOption,
+                            Color = so.Color
+                        }).ToList()
                     })
                     .FirstOrDefaultAsync(e => e.Id == id);
                 return Results.Ok(result);
@@ -291,7 +298,7 @@ public static class AllEndpoints
                         {
                             Participant = p,
                             Showtime = ShowtimesToAttach.First(s => s.Id == v.ShowtimeId),
-                            Vote = v.Vote
+                            VoteIndex = v.VoteIndex
                         })
                         .ToList()
                 };
@@ -508,6 +515,27 @@ public static class AllEndpoints
                 }
 
                 await context.SaveChangesAsync();
+                
+                //handle selectOptions
+                var selectOptionsToAttach = new List<SelectOption>();
+                foreach (var selectOption in joinEvent.SelectOptions)
+                {
+                    var existingSelectOption = await context.SelectOptions.FirstOrDefaultAsync(s =>s.VoteOption == selectOption.VoteOption && s.Color == selectOption.Color);
+                    
+                    if (existingSelectOption != null)
+                    {
+                        context.SelectOptions.Attach(existingSelectOption);
+                        selectOption.Id = existingSelectOption.Id;
+                        selectOptionsToAttach.Add(existingSelectOption);
+                    }
+                    else
+                    {
+                        context.SelectOptions.Add(selectOption);
+                        selectOptionsToAttach.Add(selectOption);
+                    }
+                }
+                
+                await context.SaveChangesAsync();
 
                 //Get id of new host
                 joinEvent.HostId = joinEvent.Host.AuthId;
@@ -548,7 +576,8 @@ public static class AllEndpoints
                         Deadline = joinEvent.Deadline,
                         HostId = joinEvent.Host.AuthId,
                         Showtimes = ShowtimesToAttach,
-                        ChosenShowtimeId = joinEvent.ChosenShowtimeId
+                        ChosenShowtimeId = joinEvent.ChosenShowtimeId,
+                        SelectOptions = selectOptionsToAttach
                     };
 
                     context.JoinEvents.Add(newJoinEvent);

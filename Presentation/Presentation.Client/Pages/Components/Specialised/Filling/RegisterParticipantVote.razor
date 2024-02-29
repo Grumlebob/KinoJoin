@@ -82,7 +82,7 @@ else if (!_answerSaved)
                 return;
             }
 
-            if (VotedFor.All(v => v.Vote == Vote.No))
+            if (VotedFor.All(v => v.VoteIndex == 0))
             {
                 _confirmSubmit = true;
                 return;

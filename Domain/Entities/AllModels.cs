@@ -40,6 +40,9 @@ public class JoinEvent
 
     public int? ChosenShowtimeId { get; set; }
     public List<Participant>? Participants { get; set; }
+    
+    public List<SelectOption>? SelectOptions { get; set; }
+    
     private DateTime _deadline;
 
     public DateTime Deadline
@@ -104,14 +107,19 @@ public class ParticipantVote
 
     public Participant Participant { get; set; } //ForeignKeys set in context
     public Showtime Showtime { get; set; }
-    public Vote Vote { get; set; }
+    public int VoteIndex { get; set; }
 }
 
 public class SelectOption
 {
-    public Vote Value { get; set; }
-    public string VoteText { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
+    public string VoteOption { get; set; }
     public string Color { get; set; }
+    
+    //navigation property
+    public List<JoinEvent> JoinEvents { get; set; }
 }
 
 public class Playtime
@@ -153,9 +161,4 @@ public class Room
     public string Name { get; set; }
 }
 
-public enum Vote
-{
-    No,
-    Yes,
-    IfNeedBe
-}
+

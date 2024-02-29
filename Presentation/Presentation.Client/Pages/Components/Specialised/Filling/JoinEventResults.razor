@@ -200,8 +200,8 @@
              <th style="vertical-align: bottom">Navn</th>
              @{
                  var orderedShowtimes = _sortedAfter == VotesString
-                     ? _event.Showtimes.OrderByDescending(showtime => (_event.Participants ?? []).Count(p => p.VotedFor.Any(v => v.ShowtimeId == showtime.Id && v.Vote != Vote.No))) //take sum of Non-no votes
-                         .ThenByDescending(showtime => (_event.Participants ?? []).Count(p => p.VotedFor.Any(v => v.ShowtimeId == showtime.Id && v.Vote == Vote.Yes))) //take sum of yes votes as tie breaker
+                     ? _event.Showtimes.OrderByDescending(showtime => (_event.Participants ?? []).Count(p => p.VotedFor.Any(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0))) //take sum of Non-no votes
+                         .ThenByDescending(showtime => (_event.Participants ?? []).Count(p => p.VotedFor.Any(v => v.ShowtimeId == showtime.Id && v.VoteIndex == 1))) //take sum of yes votes as tie breaker
                          .ThenBy(s => s.Playtime.StartTime.ToLocalTime()).ToList()
                      : _event.Showtimes.OrderBy(s => s.Playtime.StartTime.ToLocalTime()).ToList();
              }
@@ -218,7 +218,7 @@
                              d. @showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM") - kl. @showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm") - @showtime.Playtime.StartTime.ToLocalTime().AddMinutes(showtime.Movie.Duration).ToString("HH:mm")
                          </p>
                          <p style="font-weight: bold">
-                             Stemmer: @_event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == showtime.Id && v.Vote != Vote.No))
+                             Stemmer: @_event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == showtime.Id && v.VoteIndex!=0))
                          </p>
                      </div>
                  </th>
@@ -255,7 +255,7 @@
                  @foreach (var showtime in orderedShowtimes)
                  {
                      <td>
-                         <div style="height:2rem; background: @(participant.VotedFor.First(v => v.Showtime.Id == showtime.Id).Vote switch { Vote.No => "lightgray", Vote.Yes => "green", Vote.IfNeedBe => "orange", _ => "" })">
+                         <div style="height:2rem; background: @(_event.SelectOptions[participant.VotedFor.First(v => v.Showtime.Id == showtime.Id).VoteIndex].Color)">
                          </div>
                      </td>
                  }

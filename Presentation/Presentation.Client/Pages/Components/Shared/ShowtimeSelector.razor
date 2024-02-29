@@ -190,7 +190,7 @@
 
 @foreach (var option in SelectOptions)
 {
-    <span style="background-color: @option.Color">@option.VoteText</span>
+    <span style="background-color: @option.Color">@option.VoteOption</span>
 }
 
 @foreach (var showtimesByMovie in Showtimes.GroupBy(s => s.Movie.Id))
@@ -261,7 +261,7 @@
                                                     @foreach (var showtime in Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
                                                     {
                                                         var index = VotedFor.IndexOf(VotedFor.First(v => v.showtime.Id == showtime.Id));
-                                                        <div class="showtime-label" style="background-color: @SelectOptions.First(s =>VotedFor[index].vote==s.Value).Color" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(async () => { var next = ((SelectOptions.IndexOf(SelectOptions.First(s =>VotedFor[index].vote==s.Value))+1) % SelectOptions.Count); VotedFor[index] = (showtime,SelectOptions[next].Value); await VotedForChanged.InvokeAsync(VotedFor);})">
+                                                        <div class="showtime-label" style="background-color: @SelectOptions[VotedFor[index].vote].Color" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(async () => { var next = (VotedFor[index].vote+1) % SelectOptions.Count; VotedFor[index] = (showtime,next); await VotedForChanged.InvokeAsync(VotedFor);})">
                                                                                                                                                                                                                                                                                                                                                                                                                                                          <div class="showtime-room">@showtime.Room.Name</div>
                                                             <div class="showtime-time">@showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm")</div>
                                                         </div>
@@ -341,13 +341,13 @@
     public List<Movie> MoviesWithOutShowTimes { get; set; } = [];
     
     [Parameter]
-    public List<(Showtime showtime,Vote vote)> VotedFor { get; set; } = [];
+    public List<(Showtime showtime,int vote)> VotedFor { get; set; } = [];
     
     [Parameter]
-    public EventCallback<List<(Showtime,Vote vote)>> VotedForChanged { get; set; }
+    public EventCallback<List<(Showtime,int vote)>> VotedForChanged { get; set; }
     
     [Parameter]
-    public List<SelectOption> SelectOptions { get; set; } = new List<SelectOption>(){new SelectOption(){Value=Vote.No,VoteText="Kan ikke",Color="lightgray"}, new SelectOption(){Value=Vote.Yes, VoteText="Kan godt", Color="lightgreen"}};
+    public List<SelectOption> SelectOptions { get; set; } = new List<SelectOption>(){new SelectOption(){VoteOption="Kan ikke",Color="lightgray"}, new SelectOption(){VoteOption="Kan godt", Color="lightgreen"}};
     
 
     private string? _trailerUrl;

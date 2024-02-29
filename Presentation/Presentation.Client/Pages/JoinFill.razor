@@ -71,7 +71,7 @@ else
     </p>
     <p>Tidsinterval: @_event?.Showtimes?.Min(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM") - @_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM")</p>
     
-    <ShowtimeSelector Event="_event" @bind-VotedFor="_votedFor" />
+    <ShowtimeSelector SelectOptions="@(new List<SelectOption>(){new SelectOption(){Value=Vote.No,VoteText="Kan ikke",Color="lightgray"}, new SelectOption(){Value=Vote.Yes, VoteText="Kan godt", Color="lightgreen"}, new SelectOption(){Value=Vote.IfNeedBe, VoteText="Hvis Nødvendigt (Klik to gange)", Color="orange"} })" Showtimes="_event.Showtimes" VotedFor="_votedFor.Select(v => (v.Showtime,v.Vote )).ToList()"  VotedForChanged="OnVotesChanged" />
 
     <RegisterParticipantVote Event="_event" OnAnswerSaved="@StateHasChanged"  @bind-Nickname="@_nickname" AlreadyAnswered="_alreadyAnswered"  VotedFor="_votedFor" LoggedInUserId="@_loggedInUserId" />
     
@@ -162,4 +162,10 @@ else
         var response = await httpClient.PutAsJsonAsync($"{_baseUrl}putJoinEvent", _event);
         Console.WriteLine(response.IsSuccessStatusCode ? "Updated" : "Failed to update");
     }
+
+    private void OnVotesChanged(List<(Showtime, Vote vote)> votes)
+    {
+        _votedFor = votes.Select(v => new ParticipantVote { ShowtimeId = v.Item1.Id, Showtime = v.Item1, Vote = v.Item2}).ToList();
+    }
+
 }

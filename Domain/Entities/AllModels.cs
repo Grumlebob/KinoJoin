@@ -107,6 +107,13 @@ public class ParticipantVote
     public Vote Vote { get; set; }
 }
 
+public class SelectOption
+{
+    public Vote Value { get; set; }
+    public string VoteText { get; set; }
+    public string Color { get; set; }
+}
+
 public class Playtime
 {
     [Key]

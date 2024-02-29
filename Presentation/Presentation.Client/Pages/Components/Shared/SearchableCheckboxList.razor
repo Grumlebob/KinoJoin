@@ -1,40 +1,43 @@
 ﻿<div class="flex flex-col w-full">
     <!-- Accordion header -->
-    <div @onclick="toggleAccordion" class="cursor-pointer bg-blue-600 text-white px-5 py-3 rounded-t-md">
-        <span>@FilterTitle</span>
-    </div>
-
-    <!-- Selected items as chips -->
-    <div class="mt-0.5">
-        @foreach (var id in SelectedItems)
+    <div @onclick="toggleAccordion" class="cursor-pointer bg-gray-700 text-white px-5 py-3 @(isAccordionOpen ? "rounded-t" : "rounded") flex justify-between items-center">
+        @if (IconPath != null)
         {
-            <span class="chip inline-flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded-full mr-2 mb-2">
-                @IdsToLabels[id]
-                <button @onclick="() => SelectedItems.Remove(id)" class="ml-1.5 rounded-full text-sm p-0.5 hover:bg-blue-200">X</button>
-            </span>
+            <img src="@IconPath" alt="Movie Icon" class="h-6 w-6 mr-2"/>
         }
+        <span>@FilterTitle</span>
+        <svg class="transition-transform" style="@(isAccordionOpen ? "transform: rotate(0deg);" : "transform: rotate(-90deg);")" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+        </svg>
     </div>
 
     <!-- Accordion content including search bar and list -->
-    @if (isAccordionOpen)
-    {
-        <div class="bg-white px-5 py-3 rounded-b-md shadow">
-            <!-- Search bar -->
-            <input type="text" placeholder="Søg" @oninput="@(e => { _searchTerm = e.Value?.ToString() ?? string.Empty; })" class="w-full p-2 border border-gray-300 rounded-md mb-4"/>
-
-            <!-- List -->
-            <div class="max-h-40 overflow-y-auto">
-                @foreach (var (id, label) in IdsToLabels.Where(item => item.Value.ToLowerInvariant().Contains(_searchTerm.ToLowerInvariant())).Select(item => (item.Key, item.Value)))
-                {
-                    var checkBoxId = $"{_uniqueId.ToString()}-{id}";
-                    <div class="flex items-center whitespace-nowrap overflow-hidden mb-2">
-                        <input type="checkbox" id="@checkBoxId" value="@id" @onchange="@(e => HandleCheckboxChange(e, id))" checked="@(SelectedItems.Contains(id))" class="mr-2 h-5 w-5"/>
-                        <label for="@checkBoxId" class="flex-grow truncate ml-1">@label</label>
-                    </div>
-                }
-            </div>
+    <div class="@(isAccordionOpen ? "block" : "hidden") transition-all overflow-hidden bg-white px-5 py-3 rounded-b shadow">
+        <!-- Search bar -->
+        <input type="text" placeholder="Søg" @oninput="@(e => { _searchTerm = e.Value?.ToString() ?? string.Empty; })" class="w-full p-2 border border-gray-300 rounded-md mb-4"/>
+        <!-- List -->
+        <div class="max-h-40 overflow-y-auto">
+            @foreach (var (id, label) in IdsToLabels.Where(item => item.Value.ToLowerInvariant().Contains(_searchTerm.ToLowerInvariant())).Select(item => (item.Key, item.Value)))
+            {
+                var checkBoxId = $"{_uniqueId.ToString()}-{id}";
+                <div class="flex items-center whitespace-nowrap overflow-hidden mb-2">
+                    <input type="checkbox" id="@checkBoxId" value="@id" @onchange="@(e => HandleCheckboxChange(e, id))" checked="@(SelectedItems.Contains(id))" class="mr-2 h-5 w-5"/>
+                    <label for="@checkBoxId" class="flex-grow truncate ml-1">@label</label>
+                </div>
+            }
         </div>
-    }
+    </div>
+
+    <!-- Selected items as chips -->
+    <div class="mt-0.5 flex flex-wrap">
+        @foreach (var id in SelectedItems)
+        {
+            <span class="chip inline-flex items-center bg-gray-100 text-black text-sm font-medium px-2.5 py-0.5 rounded-full mr-2 mb-2">
+                @IdsToLabels[id]
+                <button @onclick="() => SelectedItems.Remove(id)" class="ml-1.5 text-red-500 rounded-full text-sm p-0.5 hover:bg-red-200 focus:outline-none focus:bg-red-300">X</button>
+            </span>
+        }
+    </div>
 </div>
 
 @code {
@@ -48,6 +51,8 @@
     [Parameter] public HashSet<int> SelectedItems { get; set; } = [];
 
     [Parameter] public string FilterTitle { get; set; }
+
+    [Parameter] public string? IconPath { get; set; }
 
     private string _searchTerm = string.Empty;
     private readonly Guid _uniqueId = Guid.NewGuid(); //this is used to generate unique ids for checkbox items

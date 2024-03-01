@@ -183,57 +183,65 @@
 
 </style>
 
-@if(Showtimes.Count==0)
+@if (Showtimes.Count == 0)
 {
-   return;
+    return;
 }
 
 @foreach (var option in SelectOptions)
 {
-    <span style="background-color: @option.Color">@option.VoteOption</span>
+    <span class="rounded @option.Color">@option.VoteOption</span>
 }
 
 @foreach (var showtimesByMovie in Showtimes.GroupBy(s => s.Movie.Id))
 {
     Movie movie = showtimesByMovie.First().Movie;
-    <div class="Redbox">
-        <div class="PosterImage">
+    <div class="flex items-start mb-5">
+        <!-- Redbox -->
+        <div class="sticky top-16 mr-5 flex flex-col items-start justify-center">
+            <!-- PosterImage -->
             <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
-                <img src="@movie.ImageUrl" alt="Movie Poster" width="200" height="300"/>
+                <img src="@movie.ImageUrl" alt="Movie Poster" class="w-50 h-75"/>
             </a>
             <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
-                <button style="margin-top: 3px">Læs mere</button>
+                <button class="mt-1">Læs mere</button>
             </a>
 
-            <button style="margin-top: 3px" @onclick="async () => { await ShowMovieTrailer(movie); }">Se trailer</button>
+            <button class="mt-1" @onclick="async () => { await ShowMovieTrailer(movie); }">Se trailer</button>
 
         </div>
-        <div class="MovieDetails">
-            <div class="MovieHeader">
-                <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank" style="text-decoration: none; color: black">
-                    <h2>@movie.Title</h2>
+        <div class="flex-grow">
+            <!-- MovieDetails -->
+            <div class="mt-0 mb-2">
+                <!-- MovieHeader -->
+                <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank" class="no-underline text-black">
+                    <h2 class="mt-0 mb-2">@movie.Title</h2>
                 </a>
 
-                <div class="movie-info">
-                    <span class="premiere">Premiere @movie.PremiereDate | </span>
-                    <span class="duration">Varighed @movie.Duration min</span>
+                <div class="bg-gray-300 p-2 rounded inline-flex items-center justify-center gap-4">
+                    <!-- movie-info -->
+                    <span class="text-gray-800 text-sm">Premiere @movie.PremiereDate | </span>
+                    <span class="text-gray-800 text-sm">Varighed @movie.Duration min</span>
                 </div>
-
             </div>
             @foreach (var showtimesByCinema in showtimesByMovie.GroupBy(s => s.Cinema.Id))
             {
                 var cinema = showtimesByCinema.First().Cinema;
-                <div class="CinemaLocation">
+                <div class="mt-4 mb-2">
+                    <!-- CinemaLocation -->
                     <h2 id="@cinema.Id">@cinema.Name</h2>
                 </div>
                 @foreach (var showtimesByVersionTag in showtimesByCinema.GroupBy(s => s.VersionTag.Id))
                 {
                     var versionTag = showtimesByVersionTag.First().VersionTag;
-                    <div class="Version">
+                    <div class="mb-4">
+                        <!-- Version -->
                         <strong>@versionTag.Type</strong>
-                        <div class="Showtimes">
-                            <div class="table-container">
-                                <table>
+
+                        <div>
+                            <!-- Showtimes -->
+                            <div class="overflow-x-auto">
+                                <table class="border-collapse">
                                     <tr>
                                         @{
                                             // Determine the start and end dates of the interval
@@ -242,11 +250,10 @@
 
                                             var latestDateForSpecificCinemaVersion = Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key).Max(s => s.Playtime.StartTime.ToLocalTime().Date);
 
-
                                             // Loop through each date in the interval
                                             for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
                                             {
-                                                <th>@date.ToString("dd. MMM")</th>
+                                                <th class="w-10 text-left p-2 whitespace-nowrap overflow-hidden text-ellipsis border-b border-gray-200 align-top">@date.ToString("dd. MMM")</th>
                                             }
                                         }
                                     </tr>
@@ -257,21 +264,22 @@
                                             //Check if it exists if not, else
                                             @if (Showtimes.Any(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
                                             {
-                                                <td>
+                                                <td class="p-2 align-top">
                                                     @foreach (var showtime in Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
                                                     {
                                                         var index = VotedFor.IndexOf(VotedFor.First(v => v.showtime.Id == showtime.Id));
-                                                        <div class="showtime-label" style="background-color: @SelectOptions[VotedFor[index].vote].Color" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(async () => { var next = (VotedFor[index].vote+1) % SelectOptions.Count; VotedFor[index] = (showtime,next); await VotedForChanged.InvokeAsync(VotedFor);})">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                         <div class="showtime-room">@showtime.Room.Name</div>
-                                                            <div class="showtime-time">@showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm")</div>
+                                                        <div class="block w-24 p-3 overflow-hidden mb-1 flex flex-col items-center justify-center cursor-pointer select-none rounded shadow-inset @SelectOptions[VotedFor[index].vote].Color" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(async () => { var next = (VotedFor[index].vote + 1) % SelectOptions.Count; VotedFor[index] = (showtime, next); await VotedForChanged.InvokeAsync(VotedFor); })">
+                                                            <div class="text-sm mb-1">@showtime.Room.Name</div>
+                                                            <div class="font-bold text-lg">@showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm")</div> <!-- showtime-time -->
                                                         </div>
                                                     }
                                                 </td>
                                             }
                                             else
                                             {
-                                                <td>
-                                                    <div class="empty-showtime">
+                                                <!-- empty-showtime -->
+                                                <td class="align-top">
+                                                    <div class="w-25 h-16 p-3 mb-1 rounded bg-[repeating-linear-gradient(45deg, #ffffff, #ffffff 10px, #d5d5d5 10px, #d5d5d5 20px)]">
                                                     </div>
                                                 </td>
                                             }
@@ -288,38 +296,37 @@
 }
 
 @if (Showtimes.Count > 0)
+{
+    foreach (var movie in MoviesWithOutShowTimes)
     {
-        foreach (var movie in MoviesWithOutShowTimes)
-        {
-            <div class="Redbox">
-                <div class="PosterImage">
-                    <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
-                        <img src="@movie.ImageUrl" alt="Movie Poster" width="200" height="300"/>
-                    </a>
+        <div class="flex items-start mb-5">
+            <!-- Redbox -->
+            <div class="sticky top-16 mr-5 flex flex-col items-start justify-center">
+                <!-- PosterImage -->
+                <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
+                    <img src="@movie.ImageUrl" alt="Movie Poster" class="w-50 h-75"/>
+                </a>
 
-                    <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
-                        <button style="margin-top: 3px">Læs mere</button>
-                    </a>
+                <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
+                    <button class="mt-1">Læs mere</button>
+                </a>
+                <button class="mt-1" @onclick="async () => { await ShowMovieTrailer(movie); }">Se trailer</button>
 
-                    <button style="margin-top: 3px" @onclick="async () => { await ShowMovieTrailer(movie); }">Se trailer</button>
-
-                </div>
-                <div class="MovieDetails">
-                    <div class="MovieHeader">
-                        <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank" style="text-decoration: none; color: black">
-                            <h2>@movie.Title</h2>
-                        </a>
-
-                        <div class="movie-info">
-                            <span>Ingen forestillinger fundet for denne film med de valgte filtre</span>
-                        </div>
-
-                    </div>
-                </div>
             </div>
-        }
-    }
+            <div class="flex-grow">
+                <!-- MovieDetails -->
+                <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank" class="no-underline text-black">
+                    <h2 class="mt-0 mb-2">@movie.Title</h2>
+                </a>
+                <!-- MovieHeader -->
+                <div class="bg-gray-300 p-2 rounded inline-flex items-center justify-center gap-4">
+                    <span>Ingen forestillinger fundet for denne film med de valgte filtre</span>
+                </div>
 
+            </div>
+        </div>
+    }
+}
 
 
 @if (_trailerUrl != null)
@@ -333,22 +340,17 @@
 
 
 @code {
-    
-    [Parameter]
-    public List<Showtime> Showtimes { get; set; } = [];
-    
-    [Parameter]
-    public List<Movie> MoviesWithOutShowTimes { get; set; } = [];
-    
-    [Parameter]
-    public List<(Showtime showtime,int vote)> VotedFor { get; set; } = [];
-    
-    [Parameter]
-    public EventCallback<List<(Showtime,int vote)>> VotedForChanged { get; set; }
-    
-    [Parameter]
-    public List<SelectOption> SelectOptions { get; set; } = new List<SelectOption>(){new SelectOption(){VoteOption="Kan ikke",Color="lightgray"}, new SelectOption(){VoteOption="Kan godt", Color="lightgreen"}};
-    
+
+    [Parameter] public List<Showtime> Showtimes { get; set; } = [];
+
+    [Parameter] public List<Movie> MoviesWithOutShowTimes { get; set; } = [];
+
+    [Parameter] public List<(Showtime showtime, int vote)> VotedFor { get; set; } = [];
+
+    [Parameter] public EventCallback<List<(Showtime, int vote)>> VotedForChanged { get; set; }
+
+    [Parameter] public List<SelectOption> SelectOptions { get; set; } = new List<SelectOption>() { new SelectOption() { VoteOption = "Kan ikke", Color = "bg-gray-200" }, new SelectOption() { VoteOption = "Kan godt", Color = "bg-green-200" } };
+
 
     private string? _trailerUrl;
 
@@ -371,5 +373,6 @@
         if (videoId == null) await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
         else _trailerUrl = $"https://www.youtube.com/embed/{videoId}";
     }
+
 
 }

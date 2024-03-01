@@ -1,0 +1,76 @@
+@inject IJSRuntime JsRuntime 
+<div class="flex flex-col justify-center items-start gap-2 bg-@(Event.ChosenShowtimeId == Showtime.Id ? "success" : "slate-300")  rounded p-5 shadow-md">
+    <div class="gap-1">
+        <div class="flex items-center gap-1 w-full">
+            <p class="font-bold truncate ...">
+                @Showtime.Movie.Title
+            </p>
+        </div>
+        <div class="flex items-center gap-1 w-full">
+            <p class="truncate ... text-xs text-gray-700">@Showtime.VersionTag.Type</p>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-1 w-full">
+        <CinemaIcon Class="fill-black "/>
+        <p class="truncate ...">
+            @Showtime.Cinema.Name - @Showtime.Room.Name
+        </p>
+    </div>
+
+    <div class="flex items-center gap-1 w-full">
+        <DateIcon Class="fill-black"></DateIcon>
+        <p class="truncate ...">
+            @Showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM") - kl. @Showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm") - @Showtime.Playtime.StartTime.ToLocalTime().AddMinutes(Showtime.Movie.Duration).ToString("HH:mm")
+        </p>
+    </div>
+    <div class="flex items-center gap-1 w-full">
+        @if (HasVoted)
+        {
+            <div class="flex items-center gap-1 w-full">
+                @if (ChosenIndex != 0)
+                {
+                    <SingleCheckIcon Class="@("stroke-" + Event.SelectOptions[ChosenIndex].Color)"/>
+                }
+            </div>
+        }
+        <button onclick="@ShowVotes"  class=" border-2 border-gray-300 rounded-full flex items-center gap-1 py-1 px-2 hover:bg-gray-300">
+            <DoubleCheckIcon/>
+            <p>
+                @Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.VoteIndex != 0))
+            </p>
+        </button>
+    </div>
+   
+</div>
+<dialog id="@("votesDialog"+Showtime.Id)" class="bg-slates-300 w-full h-full flex rounded p-3 ">
+
+        <p class="font-bold">Stemmer</p>
+        @{ var participantsAndVotes = Event.Participants?.Where(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id)).Select(p => (p, (p.VotedFor.First(v => v.ShowtimeId == Showtime.Id).VoteIndex))).ToList(); }
+        @foreach (var (participant, vote) in participantsAndVotes)
+        {
+            <div class="flex  gap-1 w-full">
+                <p>@participant.Nickname</p>
+                <SingleCheckIcon Class="@("stroke-" + Event.SelectOptions[vote].Color)"/>
+            </div>
+        }
+</dialog>
+
+@code {
+
+    [Parameter] public required Showtime Showtime { get; set; }
+    [Parameter] public required JoinEvent Event { get; set; }
+
+    [Parameter] public bool HasVoted { get; set; }
+
+    [Parameter] public int ChosenIndex { get; set; }
+    
+    
+
+    private async Task ShowVotes()
+    {
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "votesDialog"+Showtime.Id);
+    }
+    
+    
+}

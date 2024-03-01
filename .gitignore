@@ -6,6 +6,8 @@
 #Custom settings
 appsettings.json
 
+.DS_Store
+
 Presentation/Presentation.Client/wwwroot/appsettings.json
 
 # User-specific files

@@ -1,7 +1,7 @@
 ###############################################################################
 # Set default behavior to automatically normalize line endings.
 ###############################################################################
-* text=auto
+# text=auto
 
 
 ###############################################################################
@@ -36,10 +36,10 @@
 #*.sqlproj   merge=binary
 #*.wwaproj   merge=binary
 
-*.eot binary
-*.ttf binary
-*.woff binary
-*.woff2 binary
+#*.eot binary
+#*.ttf binary
+#*.woff binary
+# *.woff2 binary
 
 ###############################################################################
 # behavior for image files

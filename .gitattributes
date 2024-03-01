@@ -3,6 +3,7 @@
 ###############################################################################
 * text=auto
 
+
 ###############################################################################
 # Set default behavior for command prompt diff.
 #
@@ -34,6 +35,11 @@
 #*.modelproj merge=binary
 #*.sqlproj   merge=binary
 #*.wwaproj   merge=binary
+
+*.eot binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
 
 ###############################################################################
 # behavior for image files

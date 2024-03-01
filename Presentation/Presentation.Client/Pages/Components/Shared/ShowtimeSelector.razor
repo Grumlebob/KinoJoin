@@ -49,35 +49,35 @@
 {
     Movie movie = showtimesByMovie.First().Movie;
     <!-- Redbox -->
-    <div class="mb-5 grid grid-cols-[200px_auto] grid-rows-[100px_100px_auto] lg:grid-rows-[100px_auto] gap-4  border p-1 shadow lg:max-w-screen-lg">
+    <div class="mb-5 grid grid-cols-[200px_auto] grid-rows-[100px_100px_auto] lg:grid-rows-[100px_auto] gap-4  border rounded p-1 shadow lg:max-w-screen-lg">
         <!-- PosterImage -->
-        <div class="row-start-1 row-end-3 lg:sticky lg:top-16 lg:mr-5 lg:min-w-48">
+        <div class="row-start-1 row-end-3 lg:self-start lg:sticky lg:top-16 lg:mr-5 lg:min-w-48">
             <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
-                <img src="@movie.ImageUrl" alt="Movie Poster" class="h-72 w-48 shadow-2xl"/>
+                <img src="@movie.ImageUrl" alt="Movie Poster" class="h-72 w-48 rounded-sm shadow"/>
             </a>
             <!--Læs mere og trailer-->
-            <div class="invisible lg:visible bg-red-500">
+            <div class="hidden lg:flex flex-col items-center">
                 <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
-                    <button class="mt-1">Læs mere</button>
+                    <button class="m-1 bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-full shadow hover:bg-gray-700 hover:text-white transition-colors duration-300">Læs mere</button>
                 </a>
 
-                <button class="mt-1" @onclick="async () => { await ShowMovieTrailer(movie); }">Se trailer</button>
+                <button class="m-1 bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-full shadow hover:bg-gray-700 hover:text-white transition-colors duration-300" @onclick="async () => { await ShowMovieTrailer(movie); }">Se trailer</button>
             </div>
         </div>
         <!-- MovieHeader -->
         <div class="mt-0 mb-2">
-            <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank" class="text-black no-underline">
-                <h2 class="mt-0 mb-2">@movie.Title</h2>
+            <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank" class="text-black no-underline ">
+                <h2 class="mt-0 font-bold text-4xl mb-2.5">@movie.Title</h2>
             </a>
 
-            <div class="  inline-flex items-center justify-center gap-4 rounded bg-gray-300 p-2">
+            <div class="inline-flex items-center justify-center gap-4 rounded bg-gray-300 p-2">
                 <!-- movie-info -->
                 <span class="text-sm text-gray-800">Premiere @movie.PremiereDate | </span>
                 <span class="text-sm text-gray-800">Varighed @movie.Duration min</span>
             </div>
         </div>
         <!--Læs mere og trailer-->
-        <div class="lg:invisible bg-blue-400">
+        <div class="lg:hidden bg-blue-400">
             <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
                 <button class="mt-1">Læs mere</button>
             </a>
@@ -91,14 +91,14 @@
                 var cinema = showtimesByCinema.First().Cinema;
                 <div class="mt-4 mb-2">
                     <!-- CinemaLocation -->
-                    <h2 id="@cinema.Id">@cinema.Name</h2>
+                    <h3 id="@cinema.Id" class="mt-10 font-bold text-2xl mb-2.5">@cinema.Name</h3>
                 </div>
                 @foreach (var showtimesByVersionTag in showtimesByCinema.GroupBy(s => s.VersionTag.Id))
                 {
                     var versionTag = showtimesByVersionTag.First().VersionTag;
                     <div class="mb-4 max-w-screen-md">
                         <!-- Version -->
-                        <strong>@versionTag.Type</strong>
+                        <p class="border shadow-sm rounded bg-gray-300">@versionTag.Type</p>
                         <!-- Showtimes -->
                         <div class="overflow-x-auto">
                             <table class="border-collapse">

@@ -1,7 +1,4 @@
-﻿using Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-
-namespace Infrastructure.Database;
+﻿namespace Infrastructure.Database;
 
 public class KinoContext : DbContext
 {
@@ -18,6 +15,8 @@ public class KinoContext : DbContext
     public DbSet<VersionTag> Versions { get; set; }
     public DbSet<Cinema> Cinemas { get; set; }
     public DbSet<Room> Rooms { get; set; }
+
+    public DbSet<SelectOption> SelectOptions { get; set; }
 
     public KinoContext(DbContextOptions<KinoContext> options)
         : base(options) { }
@@ -36,6 +35,11 @@ public class KinoContext : DbContext
 
         modelBuilder.Entity<JoinEvent>().HasMany(je => je.Participants).WithOne(p => p.JoinEvent);
 
+        modelBuilder
+            .Entity<JoinEvent>()
+            .HasMany(je => je.SelectOptions)
+            .WithMany(so => so.JoinEvents);
+
         // Configure primary keys
         modelBuilder.Entity<Movie>().HasKey(m => m.Id);
         modelBuilder.Entity<Showtime>().HasKey(s => s.Id);
@@ -43,6 +47,7 @@ public class KinoContext : DbContext
         modelBuilder.Entity<VersionTag>().HasKey(v => v.Id);
         modelBuilder.Entity<Cinema>().HasKey(c => c.Id);
         modelBuilder.Entity<Room>().HasKey(s => s.Id);
+        modelBuilder.Entity<SelectOption>().HasKey(s => s.Id);
 
         // Configure relationships for Movie and Showtime
         modelBuilder
@@ -67,10 +72,7 @@ public class KinoContext : DbContext
             .WithMany()
             .HasForeignKey(pv => pv.ShowtimeId);
 
-        modelBuilder
-            .Entity<ParticipantVote>()
-            .Property(pv => pv.Vote)
-            .HasConversion(v => v.ToString(), v => (Vote)Enum.Parse(typeof(Vote), v));
+        modelBuilder.Entity<ParticipantVote>().Property(pv => pv.VoteIndex);
 
         // Call the base method to ensure any configuration from the base class is applied
         base.OnModelCreating(modelBuilder);

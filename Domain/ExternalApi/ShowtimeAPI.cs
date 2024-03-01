@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace Domain.ExternalApi;
+﻿namespace Domain.ExternalApi;
 
 public class Root
 {
@@ -134,7 +132,7 @@ public class MovieContent
     public string FieldPremiere { get; set; }
 
     [JsonProperty("url")]
-    public string? URL { get; set; }
+    public string URL { get; set; }
 }
 
 public class FieldPoster

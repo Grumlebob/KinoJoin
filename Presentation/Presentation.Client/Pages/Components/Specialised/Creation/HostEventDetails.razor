@@ -1,0 +1,31 @@
+<!-- Text Input for Title -->
+<p class="text-lg font-semibold text-blue-600 mb-0.5">Event Titel</p>
+<input class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-4 focus:ring-blue-500 md:w-96"
+       type="text" placeholder="Titel"
+       @bind="_eventDetails.EventTitle" @bind:event="oninput" @onchange="UpdateEventDetails"/>
+
+<!-- Textarea for Description -->
+<p class="text-lg font-semibold text-blue-600 mb-0.5">Event Beskrivelse</p>
+<textarea class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-4 focus:ring-blue-500 md:w-96"
+          placeholder="Beskrivelse (valgfrit)" 
+          @bind="_eventDetails.EventDescription" @bind:event="oninput" @onchange="UpdateEventDetails"></textarea>
+
+<!-- Paragraph for Deadline -->
+<p class="text-lg font-semibold text-blue-600 mb-0.5">Deadline</p>
+<input class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-4 focus:ring-blue-500 md:w-96"
+       type="date" placeholder="Deadline"
+       @bind="_eventDetails.Deadline" @bind:event="oninput" @onchange="UpdateEventDetails"/>
+
+
+@code {
+    private HostJoinEventDetails _eventDetails = new() { EventTitle = null, EventDescription = null, Deadline = DateTime.Now.AddDays(30) };
+
+    [Parameter] public EventCallback<HostJoinEventDetails> EventDetailsChanged { get; set; }
+
+
+    private void UpdateEventDetails()
+    {
+        EventDetailsChanged.InvokeAsync(_eventDetails);
+    }
+
+}

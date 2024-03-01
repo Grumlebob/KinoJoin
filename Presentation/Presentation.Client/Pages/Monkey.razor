@@ -1,12 +1,11 @@
-﻿@page "/counter"
-@using Application.DTO
+﻿@page "/monkey"
 @inject NavigationManager NavigationManager
 
 <PageTitle>Monkey Demo</PageTitle>
 
 <h1>Monkey</h1>
 
-<button class="btn btn-primary" @onclick="CreateMonkey">Create Monkey</button>
+<button class="mt-4 bg-gradient-to-br from-green-600 to-green-500 hover:from-green-500 hover:to-green-600 text-white p-2 rounded border border-green-600" onclick="@CreateMonkey">Create Monkey</button>
 
 <button class="btn btn-primary" @onclick="GetMonkey">Get first monkey</button>
 <p>@found</p>
@@ -22,6 +21,7 @@
         var monkey = await result.Content.ReadFromJsonAsync<MonkeyDto>();
         found = monkey is null ? "None found" : "found: " + monkey.Name;
     }
+    
     
     private async Task CreateMonkey()
     {

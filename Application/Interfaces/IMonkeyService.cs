@@ -1,7 +1,4 @@
-﻿using Application.DTO;
-using Domain.Entities;
-
-namespace Application.Interfaces;
+﻿namespace Application.Interfaces;
 
 public interface IMonkeyService
 {

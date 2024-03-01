@@ -1,8 +1,4 @@
-﻿using Domain.Entities;
-using Infrastructure.Database.Configuration;
-using Microsoft.EntityFrameworkCore;
-
-namespace Infrastructure.Database;
+﻿namespace Infrastructure.Database;
 
 public class DataContext : DbContext
 {

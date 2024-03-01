@@ -19,26 +19,22 @@ public class KinoContext : DbContext
     public DbSet<Cinema> Cinemas { get; set; }
     public DbSet<Room> Rooms { get; set; }
 
-    public KinoContext(DbContextOptions<KinoContext> options) : base(options)
-    {
-    }
+    public KinoContext(DbContextOptions<KinoContext> options)
+        : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Host>()
-            .HasKey(h => h.AuthId);
+        modelBuilder.Entity<Host>().HasKey(h => h.AuthId);
 
-        modelBuilder.Entity<JoinEvent>()
-            .HasKey(je => je.Id);
+        modelBuilder.Entity<JoinEvent>().HasKey(je => je.Id);
 
-        modelBuilder.Entity<ParticipantVote>().HasKey(pv => new { pv.ParticipantId, pv.ShowtimeId });
+        modelBuilder
+            .Entity<ParticipantVote>()
+            .HasKey(pv => new { pv.ParticipantId, pv.ShowtimeId });
 
-        modelBuilder.Entity<JoinEvent>()
-            .HasMany(je => je.Showtimes)
-            .WithMany(s => s.JoinEvents);
+        modelBuilder.Entity<JoinEvent>().HasMany(je => je.Showtimes).WithMany(s => s.JoinEvents);
 
         modelBuilder.Entity<JoinEvent>().HasMany(je => je.Participants).WithOne(p => p.JoinEvent);
-
 
         // Configure primary keys
         modelBuilder.Entity<Movie>().HasKey(m => m.Id);
@@ -49,36 +45,36 @@ public class KinoContext : DbContext
         modelBuilder.Entity<Room>().HasKey(s => s.Id);
 
         // Configure relationships for Movie and Showtime
-        modelBuilder.Entity<Movie>()
+        modelBuilder
+            .Entity<Movie>()
             .HasMany(m => m.Showtimes)
             .WithOne(s => s.Movie)
             .HasForeignKey(s => s.MovieId);
 
         // Make showtime key MovieId, CinemaId, ShowtimeId, VersionId, SalId
-        modelBuilder.Entity<Showtime>()
-            .HasKey(st => st.Id);
-        
+        modelBuilder.Entity<Showtime>().HasKey(st => st.Id);
+
         // Configure relations for ParticipantVote
-        modelBuilder.Entity<ParticipantVote>()
+        modelBuilder
+            .Entity<ParticipantVote>()
             .HasOne(pv => pv.Participant)
             .WithMany(p => p.VotedFor)
             .HasForeignKey(pv => pv.ParticipantId);
 
-        modelBuilder.Entity<ParticipantVote>()
+        modelBuilder
+            .Entity<ParticipantVote>()
             .HasOne(pv => pv.Showtime)
             .WithMany()
             .HasForeignKey(pv => pv.ShowtimeId);
-        
-        modelBuilder.Entity<ParticipantVote>().Property(pv => pv.Vote)
-            .HasConversion(
-                v => v.ToString(),
-                v => (Vote) Enum.Parse(typeof(Vote), v));
+
+        modelBuilder
+            .Entity<ParticipantVote>()
+            .Property(pv => pv.Vote)
+            .HasConversion(v => v.ToString(), v => (Vote)Enum.Parse(typeof(Vote), v));
 
         // Call the base method to ensure any configuration from the base class is applied
         base.OnModelCreating(modelBuilder);
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-    }
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
 }

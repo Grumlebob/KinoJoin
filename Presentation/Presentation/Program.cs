@@ -19,14 +19,17 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // Add CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins",
+    options.AddPolicy(
+        "AllowAllOrigins",
         builder =>
         {
-            builder.AllowAnyOrigin() // This allows requests from any origin
+            builder
+                .AllowAnyOrigin() // This allows requests from any origin
                 .AllowAnyHeader()
                 .AllowAnyMethod();
             // Do not call AllowCredentials() when using AllowAnyOrigin()
-        });
+        }
+    );
 });
 
 builder.Services.AddDbContextFactory<KinoContext>(options =>

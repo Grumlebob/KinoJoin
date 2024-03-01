@@ -5,7 +5,8 @@ namespace Domain.Entities;
 
 public class Host
 {
-    [Key] public string AuthId { get; set; }
+    [Key]
+    public string AuthId { get; set; }
     public string Username { get; set; }
     public string? Email { get; set; }
     public List<JoinEvent>? JoinEvents { get; set; }
@@ -20,9 +21,9 @@ public class Participant
     public int JoinEventId { get; set; }
     public string Nickname { get; set; }
     public string? Email { get; set; }
-    
+
     public string? Note { get; set; }
-    
+
     //navigation property
     [ForeignKey("JoinEventId")]
     public JoinEvent? JoinEvent { get; set; }
@@ -50,12 +51,14 @@ public class JoinEvent
         set => _deadline = value.Kind == DateTimeKind.Utc ? value : value.ToUniversalTime();
     }
 
-    [ForeignKey("HostId")] public Host? Host { get; set; }
+    [ForeignKey("HostId")]
+    public Host? Host { get; set; }
 }
 
 public class Movie
 {
-    [Key] public int Id { get; set; }
+    [Key]
+    public int Id { get; set; }
     public string Title { get; set; }
     public List<Showtime>? Showtimes { get; set; }
     public string ImageUrl { get; set; }
@@ -81,24 +84,31 @@ public class Showtime
     public List<JoinEvent> JoinEvents { get; set; }
 
     //Foreign Keys
-    [ForeignKey("VersionTagId")] public VersionTag VersionTag { get; set; }
-    [ForeignKey("RoomId")] public Room Room { get; set; }
-    [ForeignKey("MovieId")] public Movie Movie { get; set; }
-    [ForeignKey("CinemaId")] public Cinema Cinema { get; set; }
-    [ForeignKey("PlaytimeId")] public Playtime Playtime { get; set; }
+    [ForeignKey("VersionTagId")]
+    public VersionTag VersionTag { get; set; }
+
+    [ForeignKey("RoomId")]
+    public Room Room { get; set; }
+
+    [ForeignKey("MovieId")]
+    public Movie Movie { get; set; }
+
+    [ForeignKey("CinemaId")]
+    public Cinema Cinema { get; set; }
+
+    [ForeignKey("PlaytimeId")]
+    public Playtime Playtime { get; set; }
 }
 
 public class ParticipantVote
 {
     public int ParticipantId { get; set; }
     public int ShowtimeId { get; set; }
-    
+
     public Participant Participant { get; set; } //ForeignKeys set in context
     public Showtime Showtime { get; set; }
     public Vote Vote { get; set; }
-    
 }
-
 
 public class Playtime
 {
@@ -126,7 +136,8 @@ public class VersionTag
 
 public class Cinema
 {
-    [Key] public int Id { get; set; }
+    [Key]
+    public int Id { get; set; }
     public string Name { get; set; }
 }
 
@@ -140,5 +151,7 @@ public class Room
 
 public enum Vote
 {
-    No, Yes, IfNeedBe
+    No,
+    Yes,
+    IfNeedBe
 }

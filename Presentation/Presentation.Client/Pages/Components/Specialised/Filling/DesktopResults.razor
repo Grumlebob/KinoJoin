@@ -186,249 +186,169 @@
 </style>
 
 
+<div class="w-full" style=" overflow-x: scroll">
+    <table style="border-spacing:0.5rem;">
+        <tr>
+            <th></th>
 
- <div style="max-width: 60vw; overflow-x: scroll">
-     <table style="border-spacing:0.5rem;">
-         <tr>
-             <th style="vertical-align: bottom">Navn</th>
-             
-             @{
-                 var orderedShowtimes = _sortedAfter == VotesString
-                     ? _event.Showtimes.OrderByDescending(showtime => 
-                             _event.Participants?
-                                 .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)) ?? 0)
-                         .ThenBy(showtime => 
-                             _event.Participants?
-                                 .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)
-                                     .Sum(v => v.VoteIndex)) ?? 0) 
-                         .ThenBy(s => s.Playtime.StartTime.ToLocalTime()).ToList()
-                     : _event.Showtimes.OrderBy(s => s.Playtime.StartTime.ToLocalTime()).ToList();
-             }
-             @foreach (var showtime in orderedShowtimes)
-             {
-                 <th style="padding-left:0.5rem; padding-right: 0.5rem">
-                     <div class="result-table-header" style="display:flex;flex-direction: column; justify-content: center;align-items: center; gap: 0.33rem; background-color: @(_event.ChosenShowtimeId == showtime.Id ? "green" : "lightgray")">
-                         <p>
-                             @(showtime.Movie.Title.Length > 50 ? $"{showtime.Movie.Title[..47]}..." : showtime.Movie.Title)
-                         </p>
-                         <p>Bio: @showtime.Cinema.Name - @showtime.Room.Name </p>
-                         <p>Version: @showtime.VersionTag.Type</p>
-                         <p>
-                             d. @showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM") - kl. @showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm") - @showtime.Playtime.StartTime.ToLocalTime().AddMinutes(showtime.Movie.Duration).ToString("HH:mm")
-                         </p>
-                         <p style="font-weight: bold">
-                             Stemmer: @_event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == showtime.Id && v.VoteIndex!=0))
-                         </p>
-                     </div>
-                 </th>
-             }
-         </tr>
+            @{
+                var orderedShowtimes = _sortedAfter == VotesString
+                    ? _event.Showtimes.OrderByDescending(showtime =>
+                        _event.Participants?
+                            .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)) ?? 0)
+                        .ThenBy(showtime =>
+                            _event.Participants?
+                                .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)
+                                    .Sum(v => v.VoteIndex)) ?? 0)
+                        .ThenBy(s => s.Playtime.StartTime.ToLocalTime()).ToList()
+                    : _event.Showtimes.OrderBy(s => s.Playtime.StartTime.ToLocalTime()).ToList();
+            }
+            @foreach (var showtime in orderedShowtimes)
+            {
+                <th style="padding-left:0.5rem; padding-right: 0.5rem">
+                    <div class="result-table-header" style="display:flex;flex-direction: column; justify-content: center;align-items: center; gap: 0.33rem; background-color: @(_event.ChosenShowtimeId == showtime.Id ? "green" : "lightgray")">
+                        <p>
+                            @(showtime.Movie.Title.Length > 50 ? $"{showtime.Movie.Title[..47]}..." : showtime.Movie.Title)
+                        </p>
+                        <p>Bio: @showtime.Cinema.Name - @showtime.Room.Name </p>
+                        <p>Version: @showtime.VersionTag.Type</p>
+                        <p>
+                            d. @showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM") - kl. @showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm") - @showtime.Playtime.StartTime.ToLocalTime().AddMinutes(showtime.Movie.Duration).ToString("HH:mm")
+                        </p>
+                        <p style="font-weight: bold">
+                            Stemmer: @_event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0))
+                        </p>
+                    </div>
+                </th>
+            }
+        </tr>
 
-         @foreach (var participant in _event.Participants ?? new())
-         {
-             <tr>
-                 <td>
-                     <div style="display: flex">
-                         @if (_isHost && participant.Id != 0)
-                         {
-                             <div class="delete-participant-button" onclick="@(async () => { _participantToDelete = participant; StateHasChanged();await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirm-delete-dialog"); })">🗑</div>
-                         }
-                         @if (!string.IsNullOrEmpty(participant.Note))
-                         {
-                             <div class="tooltip-container">
-                                 <span style="font-size: 10px;">📝</span>
-                                 <div class="tooltip-content" style="border-style: solid; border-width: 2px;border-color: #1a1e21; padding: 5px">
-                                     <p style="font-weight: bold">@participant.Nickname</p>
-                                     @if (!string.IsNullOrEmpty(participant.Note))
-                                     {
-                                         <p>Note: @participant.Note</p>
-                                     }
-                                 </div>
-                             </div>
-                         }
+        @foreach (var participant in _event.Participants ?? new List<Participant>())
+        {
+            <tr>
+                <td>
+                    <div style="display: flex">
+                        @if (_isHost && participant.Id != 0)
+                        {
+                            <div class="delete-participant-button" onclick="@(async () => { _participantToDelete = participant; StateHasChanged();await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirm-delete-dialog"); })">🗑</div>
+                        }
+                        @if (!string.IsNullOrEmpty(participant.Note))
+                        {
+                            <div class="tooltip-container">
+                                <span style="font-size: 10px;">📝</span>
+                                <div class="tooltip-content" style="border-style: solid; border-width: 2px;border-color: #1a1e21; padding: 5px">
+                                    <p style="font-weight: bold">@participant.Nickname</p>
+                                    @if (!string.IsNullOrEmpty(participant.Note))
+                                    {
+                                        <p>Note: @participant.Note</p>
+                                    }
+                                </div>
+                            </div>
+                        }
 
-                         @participant.Nickname
-                     </div>
+                        @participant.Nickname
+                    </div>
 
-                 </td>
-                 @foreach (var showtime in orderedShowtimes)
-                 {
-                     <td>
-                         <div style="height:2rem; background: @(_event.SelectOptions[participant.VotedFor.First(v => v.Showtime.Id == showtime.Id).VoteIndex].Color)">
-                         </div>
-                     </td>
-                 }
-             </tr>
-         }
-         <tr>
-             <td/>
-             @for (var i = 0; i < orderedShowtimes.Count; i++)
-             {
-                 //var index = orderedShowtimes.IndexOf(showtime);
-                 //var localShowtime = orderedShowtimes[index];
-                 var index = i;
-                 var showtime = orderedShowtimes[index];
-                 <td>
-                     <div>
-                         @if (_isHost)
-                         {
-                             <button @onclick="() => OpenConfirmationDialog(index)">Bekræft event</button>
-                         }
-                         <dialog id="@("confirmEvent" + index)">
-                             <h4>Ønsker du at bekræfte forestillingen for dette event?</h4>
-                             <button @onclick="async () => { await OpenDetailsDialog(showtime, index); }">Ja</button>
-                             <button @onclick="() => CloseDialog(index)">Nej</button>
-                             <dialog id="@("confirmDetails" + index)">
-                                 <h4>Event valgt</h4>
-                                 <button onclick="@(async () => { await JsRuntime.InvokeVoidAsync("open", $"https://kino.dk/ticketflow/showtimes/{showtime.Id}", "_blank"); })">Bestil billetter</button>
-                                 <button onclick="@(async () => { _showtimeToCalendar = showtime; await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "calendar-dialog"); })">Tilføj til egen kalender</button>
-                                 <button onclick="@(async () => await GoToMailToLink(showtime))">Send mail til deltagere</button>
+                </td>
+                @foreach (var showtime in orderedShowtimes)
+                {
+                    <td>
+                        <div class="h-16 bg-@(_event.SelectOptions[participant.VotedFor.First(v => v.Showtime.Id == showtime.Id).VoteIndex].Color)" style=" ">
+                        </div>
+                    </td>
+                }
+            </tr>
+        }
+        <tr>
+            <td/>
+            @for (var i = 0; i < orderedShowtimes.Count; i++)
+            {
+                //var index = orderedShowtimes.IndexOf(showtime);
+                //var localShowtime = orderedShowtimes[index];
+                var index = i;
+                var showtime = orderedShowtimes[index];
+                <td>
+                    <div>
+                        @if (_isHost)
+                        {
+                            <button @onclick="() => OpenConfirmationDialog(index)">Bekræft event</button>
+                        }
+                        <dialog id="@("confirmEvent" + index)">
+                            <h4>Ønsker du at bekræfte forestillingen for dette event?</h4>
+                            <button @onclick="async () => { await OpenDetailsDialog(showtime, index); }">Ja</button>
+                            <button @onclick="() => CloseDialog(index)">Nej</button>
+                            <dialog id="@("confirmDetails" + index)">
+                                <h4>Event valgt</h4>
+                                <button onclick="@(async () => { await JsRuntime.InvokeVoidAsync("open", $"https://kino.dk/ticketflow/showtimes/{showtime.Id}", "_blank"); })">Bestil billetter</button>
+                                <button onclick="@(async () => { _showtimeToCalendar = showtime; await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "calendar-dialog"); })">Tilføj til egen kalender</button>
+                                <button onclick="@(async () => await GoToMailToLink(showtime))">Send mail til deltagere</button>
 
-                                 <button @onclick="ShareEvent">Del</button>
-                                 <button @onclick="() => CloseDialog(index)">Luk</button>
-                             </dialog>
-                         </dialog>
-                     </div>
-                 </td>
-             }
-         </tr>
-     </table>
- </div>
- 
-  <dialog id="confirm-delete-dialog">
-         @if (_participantToDelete != null)
-         {
-             <h4>Er du sikker på at du vil slette @_participantToDelete.Nickname's svar?</h4>
-             <button @onclick="@(async () => { await DeleteParticipant(_participantToDelete.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Ja</button>
-             <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Nej</button>
-         }
+                                <button @onclick="ShareEvent">Del</button>
+                                <button @onclick="() => CloseDialog(index)">Luk</button>
+                            </dialog>
+                        </dialog>
+                    </div>
+                </td>
+            }
+        </tr>
+    </table>
+</div>
+
+<dialog id="confirm-delete-dialog">
+    @if (_participantToDelete != null)
+    {
+        <h4>Er du sikker på at du vil slette @_participantToDelete.Nickname's svar?</h4>
+        <button @onclick="@(async () => { await DeleteParticipant(_participantToDelete.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Ja</button>
+        <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Nej</button>
+    }
 </dialog>
- 
-    <dialog id="calendar-dialog">
-        <div style="display: flex">
-            <button onclick="@(() => { OpenGoogleCalendar(_showtimeToCalendar); })">Tilføj til google kalender</button>
-            <button onclick="@(() => { DownloadCalendarFile(_showtimeToCalendar); })">Download til andre kalendre</button>
-        </div>
-        <button onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog"); })" style="border: 2px solid red">Luk</button>
-    </dialog>
- 
- 
- 
+
+<CalendarDialog Event="_event" Showtime="_showtimeToCalendar"/>
+
+
 @code {
-    
-    
+
+
     [Parameter]
     public JoinEvent _event { get; set; }
-    
+
     [Parameter]
     public bool _isHost { get; set; }
-    
-     private Participant? _participantToDelete;
-     
-     private Showtime? _showtimeToCalendar = null;
-     
-     private const string VotesString = "Stemmer";
-     private const string TimeString = "Tidspunkt";
 
-     private string _sortedAfter = VotesString;
-     
-     private async Task OpenConfirmationDialog(int index)
-     {
-         await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmEvent" + index);
-     }
+    private Participant? _participantToDelete;
 
-     private async Task CloseDialog(int index)
-     {
-         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + index);
-         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmDetails" + index);
-     }
-    
-     
-     //Delete participant
-     private async Task DeleteParticipant(int participantId)
-     {
-         var httpClient = new HttpClient();
-         var response = await httpClient.DeleteAsync($"{NavigationManager.BaseUri}deleteParticipant/{_event.Id}/{participantId}");
-         if (response.IsSuccessStatusCode)
-         {
-             _event.Participants.RemoveAll(p => p.Id == participantId);
-             StateHasChanged();
-         }
-     }
-     
-     
-      private async Task OpenGoogleCalendar(Showtime showtime)
+    private Showtime? _showtimeToCalendar = null;
+
+        private const string VotesString = "Stemmer";
+        private const string TimeString = "Tidspunkt";
+
+    private string _sortedAfter = VotesString;
+
+    private async Task OpenConfirmationDialog(int index)
     {
-        var url = "https://calendar.google.com/calendar/u/0/r/eventedit?"
-                  + $"text={_event.Title}"
-                  + $"&dates={showtime.Playtime.StartTime.ToLocalTime().ToString("yyyyMMddTHHmmss")}/{showtime.Playtime.StartTime.ToLocalTime().AddMinutes(showtime.Movie.Duration).ToString("yyyyMMddTHHmmss")}"
-                  + $"&location={showtime.Cinema.Name}"
-                  + $"&details={_event.Description} %0AFilm: {showtime.Movie.Title}, {showtime.Room.Name}, {showtime.VersionTag.Type}";
-
-        await JsRuntime.InvokeVoidAsync("open", url, "_blank");
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmEvent" + index);
     }
 
-    private async Task DownloadCalendarFile(Showtime showtimeToCalendar)
+    private async Task CloseDialog(int index)
     {
-        var DateStart = showtimeToCalendar.Playtime.StartTime;
-        var DateEnd = showtimeToCalendar.Playtime.StartTime.AddMinutes(showtimeToCalendar.Movie.Duration);
-        var Summary = _event.Title;
-        var Location = showtimeToCalendar.Cinema.Name;
-        var Description = _event.Description + "\n Film: " + showtimeToCalendar.Movie.Title + ", " + showtimeToCalendar.Room.Name + ", " + showtimeToCalendar.VersionTag.Type;
-
-//create a new stringbuilder instance
-        StringBuilder sb = new StringBuilder();
-
-//start the calendar item
-        sb.AppendLine("BEGIN:VCALENDAR");
-        sb.AppendLine("VERSION:2.0");
-        sb.AppendLine("PRODID:stackoverflow.com");
-        sb.AppendLine("CALSCALE:GREGORIAN");
-        sb.AppendLine("METHOD:PUBLISH");
-
-//create a time zone if needed, TZID to be used in the event itself
-        sb.AppendLine("BEGIN:VTIMEZONE");
-        sb.AppendLine("TZID:Europe/Amsterdam");
-        sb.AppendLine("BEGIN:STANDARD");
-        sb.AppendLine("TZOFFSETTO:+0100");
-        sb.AppendLine("TZOFFSETFROM:+0100");
-        sb.AppendLine("END:STANDARD");
-        sb.AppendLine("END:VTIMEZONE");
-
-//add the event
-        sb.AppendLine("BEGIN:VEVENT");
-
-//with time zone specified
-        sb.AppendLine("DTSTART;TZID=Europe/Amsterdam:" + DateStart.ToString("yyyyMMddTHHmm00"));
-        sb.AppendLine("DTEND;TZID=Europe/Amsterdam:" + DateEnd.ToString("yyyyMMddTHHmm00"));
-//or without
-        sb.AppendLine("DTSTART:" + DateStart.ToString("yyyyMMddTHHmm00"));
-        sb.AppendLine("DTEND:" + DateEnd.ToString("yyyyMMddTHHmm00"));
-
-        sb.AppendLine("SUMMARY:" + Summary + "");
-        sb.AppendLine("LOCATION:" + Location + "");
-        sb.AppendLine("DESCRIPTION:" + Description + "");
-        sb.AppendLine("PRIORITY:3");
-        sb.AppendLine("END:VEVENT");
-
-//end calendar item
-        sb.AppendLine("END:VCALENDAR");
-
-//create a string from the stringbuilder
-        string CalendarItem = sb.ToString();
+        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + index);
+        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmDetails" + index);
+    }
 
 
-        var fileName = "event.ics";
+    //Delete participant
+    private async Task DeleteParticipant(int participantId)
+    {
+        var httpClient = new HttpClient();
+        var response = await httpClient.DeleteAsync($"{NavigationManager.BaseUri}deleteParticipant/{_event.Id}/{participantId}");
+        if (response.IsSuccessStatusCode)
+        {
+            _event.Participants.RemoveAll(p => p.Id == participantId);
+            StateHasChanged();
+        }
+    }
 
-        var bytes = Encoding.UTF8.GetBytes(CalendarItem);
-        var stream = new MemoryStream(bytes);
-        using var streamRef = new DotNetStreamReference(stream: stream);
-        await JsRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
-
-
-/*
+    /*
 //send the calendar item to the browser
 Response.ClearHeaders();
 Response.Clear();
@@ -440,38 +360,38 @@ Response.Write(CalendarItem);
 Response.Flush();
 HttpContext.Current.ApplicationInstance.CompleteRequest();
 */
-    }
+
 
     protected override void OnInitialized()
     {
         var sortedShowtimes = _event.Showtimes
-            .OrderByDescending(showtime => 
+            .OrderByDescending(showtime =>
                 _event.Participants?
                     .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)) ?? 0)
-            .ThenBy(showtime => 
+            .ThenBy(showtime =>
                 _event.Participants?
                     .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)
                         .Sum(v => v.VoteIndex)) ?? 0);
 
-       foreach (var showtime in sortedShowtimes)
-       {
-           Console.WriteLine(showtime.Playtime.StartTime);
-       }
+        foreach (var showtime in sortedShowtimes)
+        {
+            Console.WriteLine(showtime.Playtime.StartTime);
+        }
     }
 
     private async Task ShareEvent()
     {
-        Showtime showtime = _event.Showtimes.First(s => s.Id == _event.ChosenShowtimeId);
+        var showtime = _event.Showtimes.First(s => s.Id == _event.ChosenShowtimeId);
 
         var data = new
         {
             title = _event.Title,
-            text = _event.Description + "\n" + "Valgt forestilling: " + showtime.Movie.Title + ", " + showtime.Cinema.Name + ", " + showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM HH:mm"),
+            text = _event.Description + "\n" + "Valgt forestilling: " + showtime.Movie.Title + ", " + showtime.Cinema.Name + ", " + showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM HH:mm")
         };
 
         await JsRuntime.InvokeVoidAsync("navigator.share", data);
     }
-    
+
     private async Task OpenDetailsDialog(Showtime showtime, int index)
     {
         _event.ChosenShowtimeId = showtime.Id;
@@ -482,12 +402,27 @@ HttpContext.Current.ApplicationInstance.CompleteRequest();
         Console.WriteLine("Saved id " + id);
         await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + index);
     }
-    
+
     private async Task GoToMailToLink(Showtime showtime)
     {
         var mails = _event.Participants.Where(p => p.Email is not null).Select(p => p.Email);
         var text = _event.Description + "\n" + "Valgt forestilling: " + showtime.Movie.Title + ", " + showtime.Cinema.Name + ", " + showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM HH:mm");
         await JsRuntime.InvokeVoidAsync("open", $"mailto:{string.Join(",", mails)}?subject={_event.Title}&body={text}", "_blank");
+    }
+
+    private string GetShowtimeColor(int showtimeId, int? participantId)
+    {
+        if (participantId is 0 or null)
+        {
+            return "bg-gray-400";
+        }
+        var voteIndex = _event.Participants.First(p => p.Id == participantId).VotedFor.First(v => v.ShowtimeId == showtimeId).VoteIndex;
+        return _event.SelectOptions?[voteIndex].VoteOption switch
+        {
+            "Kan" => "bg-green-400",
+            "Kan ikke" => "bg-red-400",
+            _ => "bg-gray-400"
+            };
     }
 
 }

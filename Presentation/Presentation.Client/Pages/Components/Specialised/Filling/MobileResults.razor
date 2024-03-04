@@ -4,8 +4,8 @@
 @{
     var orderedShowtimes = _sortedAfter == VotesString
         ? Event.Showtimes.OrderByDescending(showtime =>
-                Event.Participants?
-                    .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)) ?? 0)
+            Event.Participants?
+                .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)) ?? 0)
             .ThenBy(showtime =>
                 Event.Participants?
                     .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)
@@ -16,16 +16,19 @@
 <div class="space-y-3">
     @foreach (var showtime in orderedShowtimes)
     {
-        <ResultCard Event="Event" Showtime="showtime" HasVoted="@(CurrentParticipant!= null)" ChosenIndex="@(CurrentParticipant ==null ? 0: CurrentParticipant.VotedFor.FirstOrDefault(pv =>pv.ShowtimeId==showtime.Id).VoteIndex )" />
+        <ResultCard Event="Event" Showtime="showtime" HasVoted="@(CurrentParticipant != null)" ChosenIndex="@(CurrentParticipant == null ? 0 : CurrentParticipant.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id).VoteIndex)"/>
     }
 </div>
 
+
 @code {
 
-    [Parameter] public JoinEvent Event { get; set; }
+    [Parameter]
+    public required JoinEvent Event { get; set; }
 
-    [Parameter] public bool IsHost { get; set; }
-    
+    [Parameter]
+    public bool IsHost { get; set; }
+
     [Parameter]
     public Participant CurrentParticipant { get; set; }
 
@@ -33,8 +36,8 @@
 
     private Showtime? _showtimeToCalendar = null;
 
-    private const string VotesString = "Stemmer";
-    private const string TimeString = "Tidspunkt";
+        private const string VotesString = "Stemmer";
+        private const string TimeString = "Tidspunkt";
 
     private string _sortedAfter = VotesString;
 
@@ -83,17 +86,17 @@
         var Location = showtimeToCalendar.Cinema.Name;
         var Description = Event.Description + "\n Film: " + showtimeToCalendar.Movie.Title + ", " + showtimeToCalendar.Room.Name + ", " + showtimeToCalendar.VersionTag.Type;
 
-//create a new stringbuilder instance
-        StringBuilder sb = new StringBuilder();
+    //create a new stringbuilder instance
+        var sb = new StringBuilder();
 
-//start the calendar item
+    //start the calendar item
         sb.AppendLine("BEGIN:VCALENDAR");
         sb.AppendLine("VERSION:2.0");
         sb.AppendLine("PRODID:stackoverflow.com");
         sb.AppendLine("CALSCALE:GREGORIAN");
         sb.AppendLine("METHOD:PUBLISH");
 
-//create a time zone if needed, TZID to be used in the event itself
+    //create a time zone if needed, TZID to be used in the event itself
         sb.AppendLine("BEGIN:VTIMEZONE");
         sb.AppendLine("TZID:Europe/Amsterdam");
         sb.AppendLine("BEGIN:STANDARD");
@@ -102,13 +105,13 @@
         sb.AppendLine("END:STANDARD");
         sb.AppendLine("END:VTIMEZONE");
 
-//add the event
+    //add the event
         sb.AppendLine("BEGIN:VEVENT");
 
-//with time zone specified
+    //with time zone specified
         sb.AppendLine("DTSTART;TZID=Europe/Amsterdam:" + DateStart.ToString("yyyyMMddTHHmm00"));
         sb.AppendLine("DTEND;TZID=Europe/Amsterdam:" + DateEnd.ToString("yyyyMMddTHHmm00"));
-//or without
+    //or without
         sb.AppendLine("DTSTART:" + DateStart.ToString("yyyyMMddTHHmm00"));
         sb.AppendLine("DTEND:" + DateEnd.ToString("yyyyMMddTHHmm00"));
 
@@ -118,23 +121,23 @@
         sb.AppendLine("PRIORITY:3");
         sb.AppendLine("END:VEVENT");
 
-//end calendar item
+    //end calendar item
         sb.AppendLine("END:VCALENDAR");
 
-//create a string from the stringbuilder
-        string CalendarItem = sb.ToString();
+    //create a string from the stringbuilder
+        var CalendarItem = sb.ToString();
 
 
         var fileName = "event.ics";
 
         var bytes = Encoding.UTF8.GetBytes(CalendarItem);
         var stream = new MemoryStream(bytes);
-        using var streamRef = new DotNetStreamReference(stream: stream);
+        using var streamRef = new DotNetStreamReference(stream);
         await JsRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
 
 
-/*
+    /*
 //send the calendar item to the browser
 Response.ClearHeaders();
 Response.Clear();
@@ -167,12 +170,12 @@ HttpContext.Current.ApplicationInstance.CompleteRequest();
 
     private async Task ShareEvent()
     {
-        Showtime showtime = Event.Showtimes.First(s => s.Id == Event.ChosenShowtimeId);
+        var showtime = Event.Showtimes.First(s => s.Id == Event.ChosenShowtimeId);
 
         var data = new
         {
             title = Event.Title,
-            text = Event.Description + "\n" + "Valgt forestilling: " + showtime.Movie.Title + ", " + showtime.Cinema.Name + ", " + showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM HH:mm"),
+            text = Event.Description + "\n" + "Valgt forestilling: " + showtime.Movie.Title + ", " + showtime.Cinema.Name + ", " + showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM HH:mm")
         };
 
         await JsRuntime.InvokeVoidAsync("navigator.share", data);

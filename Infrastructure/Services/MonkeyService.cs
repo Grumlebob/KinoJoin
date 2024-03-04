@@ -2,9 +2,9 @@
 
 public class MonkeyService : IMonkeyService
 {
-    private readonly DataContext _context;
+    private readonly MonkeyContext _context;
 
-    public MonkeyService(DataContext context)
+    public MonkeyService(MonkeyContext context)
     {
         _context = context;
     }
@@ -15,10 +15,11 @@ public class MonkeyService : IMonkeyService
         return result is null ? null : new MonkeyDto(result.Id, result.Name, result.Age);
     }
 
-    public async Task CreateAsync(CreateMonkeyDto monkey)
+    public async Task<MonkeyDto> CreateAsync(CreateMonkeyDto monkey)
     {
         await _context.Monkeys.AddAsync(new Monkey { Name = monkey.Name, Age = monkey.Age });
         await _context.SaveChangesAsync();
-        Console.WriteLine("Created Done");
+        var id = await _context.Monkeys.MaxAsync(m => m.Id);
+        return new MonkeyDto(id, monkey.Name, monkey.Age);
     }
 }

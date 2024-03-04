@@ -3,5 +3,5 @@
 public interface IMonkeyService
 {
     public Task<MonkeyDto?> GetAsync(int id);
-    public Task CreateAsync(CreateMonkeyDto monkey);
+    public Task<MonkeyDto> CreateAsync(CreateMonkeyDto monkey);
 }

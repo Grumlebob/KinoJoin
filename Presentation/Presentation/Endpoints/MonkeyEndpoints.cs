@@ -24,7 +24,8 @@ public static class MonkeyEndpoints
             "/monkeys",
             async ([FromServices] IMonkeyService service, [FromBody] CreateMonkeyDto monkey) =>
             {
-                await service.CreateAsync(monkey);
+                var newMonkey = await service.CreateAsync(monkey);
+                return Results.Created($"/monkeys/{newMonkey.Id}", newMonkey);
             }
         );
     }

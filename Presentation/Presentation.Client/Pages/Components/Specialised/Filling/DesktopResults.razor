@@ -186,7 +186,7 @@
 </style>
 
 
-<div class="w-full" style=" overflow-x: scroll">
+<div class="w-full rounded-md shadow-md p-3" style=" overflow-x: scroll">
     <table style="border-spacing:0.5rem;">
         <tr>
             <th></th>
@@ -205,17 +205,19 @@
             }
             @foreach (var showtime in orderedShowtimes)
             {
-                <th style="padding-left:0.5rem; padding-right: 0.5rem">
-                    <div class="result-table-header" style="display:flex;flex-direction: column; justify-content: center;align-items: center; gap: 0.33rem; background-color: @(_event.ChosenShowtimeId == showtime.Id ? "green" : "lightgray")">
-                        <p>
+                <th class="w-32" style="padding-left:0.5rem; padding-right: 0.5rem">
+                    <div class="flex justify-center bg-@(_event.ChosenShowtimeId == showtime.Id ? "succcess" : "slate-300") ">
+                        <p class="truncate ...">
                             @(showtime.Movie.Title.Length > 50 ? $"{showtime.Movie.Title[..47]}..." : showtime.Movie.Title)
                         </p>
-                        <p>Bio: @showtime.Cinema.Name - @showtime.Room.Name </p>
-                        <p>Version: @showtime.VersionTag.Type</p>
-                        <p>
+                    </div>
+                    <div class="flex flex-col items-start space-y-3">
+                        <p class="truncate ...">Bio: @showtime.Cinema.Name - @showtime.Room.Name </p>
+                        <p class="truncate ...">Version: @showtime.VersionTag.Type</p>
+                        <p class="truncate ...">
                             d. @showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM") - kl. @showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm") - @showtime.Playtime.StartTime.ToLocalTime().AddMinutes(showtime.Movie.Duration).ToString("HH:mm")
                         </p>
-                        <p style="font-weight: bold">
+                        <p class="truncate ... text-bold">
                             Stemmer: @_event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0))
                         </p>
                     </div>
@@ -253,7 +255,8 @@
                 @foreach (var showtime in orderedShowtimes)
                 {
                     <td>
-                        <div class="h-16 bg-@(_event.SelectOptions[participant.VotedFor.First(v => v.Showtime.Id == showtime.Id).VoteIndex].Color)" style=" ">
+                        <div class="h-16 flex items-center justify-center bg-@(_event.SelectOptions[participant.VotedFor.First(v => v.Showtime.Id == showtime.Id).VoteIndex].Color)" style=" ">
+                            @* TODO: Add icon based on availability *@
                         </div>
                     </td>
                 }

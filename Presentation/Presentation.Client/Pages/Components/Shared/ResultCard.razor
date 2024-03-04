@@ -34,43 +34,51 @@
                 }
             </div>
         }
-        <button onclick="@ShowVotes"  class=" border-2 border-gray-300 rounded-full flex items-center gap-1 py-1 px-2 hover:bg-gray-300">
+        <button onclick="@ShowVotes" class=" border-2 border-gray-300 rounded-full flex items-center gap-1 py-1 px-2 hover:bg-gray-300">
             <DoubleCheckIcon/>
             <p>
                 @Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.VoteIndex != 0))
             </p>
         </button>
     </div>
-   
-</div>
-<dialog id="@("votesDialog"+Showtime.Id)" class="bg-slates-300 w-full h-full flex rounded p-3 ">
 
-        <p class="font-bold">Stemmer</p>
-        @{ var participantsAndVotes = Event.Participants?.Where(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id)).Select(p => (p, (p.VotedFor.First(v => v.ShowtimeId == Showtime.Id).VoteIndex))).ToList(); }
-        @foreach (var (participant, vote) in participantsAndVotes)
-        {
-            <div class="flex  gap-1 w-full">
-                <p>@participant.Nickname</p>
-                <SingleCheckIcon Class="@("stroke-" + Event.SelectOptions[vote].Color)"/>
-            </div>
-        }
+</div>
+
+<dialog id="@($"votesDialog{Showtime.Id}")" class="bg-slates-300  rounded max-w-md w-full fixed p-4 xs:h-dvh">
+
+    <div class="flex justify-between">
+        <h4 class="font-bold text-lg">Stemmer</h4>
+        <button class="" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", $"votesDialog{Showtime.Id}"))">x</button>
+    </div>
+    @{ var participantsAndVotes = Event.Participants?.Where(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id)).Select(p => (p, (p.VotedFor.First(v => v.ShowtimeId == Showtime.Id).VoteIndex))).ToList(); }
+    @foreach (var (participant, vote) in participantsAndVotes)
+    {
+        <div class="flex justify-between  gap-2 w-full">
+            <p>@participant.Nickname</p>
+            <SingleCheckIcon Class="@("stroke-" + Event.SelectOptions[vote].Color)"/>
+        </div>
+    }
 </dialog>
 
 @code {
 
-    [Parameter] public required Showtime Showtime { get; set; }
-    [Parameter] public required JoinEvent Event { get; set; }
+    [Parameter]
+    public required Showtime Showtime { get; set; }
 
-    [Parameter] public bool HasVoted { get; set; }
+    [Parameter]
+    public required JoinEvent Event { get; set; }
 
-    [Parameter] public int ChosenIndex { get; set; }
-    
-    
+    [Parameter]
+    public bool HasVoted { get; set; }
+
+    [Parameter]
+    public int ChosenIndex { get; set; }
+
 
     private async Task ShowVotes()
     {
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "votesDialog"+Showtime.Id);
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "votesDialog" + Showtime.Id);
     }
-    
-    
+
+
 }

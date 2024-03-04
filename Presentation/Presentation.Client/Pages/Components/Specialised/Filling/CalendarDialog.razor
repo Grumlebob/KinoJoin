@@ -1,0 +1,94 @@
+@inject IJSRuntime JsRuntime 
+@inject NavigationManager NavigationManager
+
+<dialog id="calendar-dialog">
+    <div style="display: flex">
+        <button onclick="@(async () => await OpenGoogleCalendar())">Tilføj til google kalender</button>
+        <button onclick="@(async () => await DownloadCalendarFile())">Download til andre kalendre</button>
+    </div>
+    <button onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog"); })" style="border: 2px solid red">Luk</button>
+</dialog>
+
+@code {
+
+    [Parameter]
+    public required Showtime Showtime { get; set; }
+
+    [Parameter]
+    public required JoinEvent Event { get; set; }
+
+
+    private async Task OpenGoogleCalendar()
+    {
+        var url = "https://calendar.google.com/calendar/u/0/r/eventedit?"
+                  + $"text={Event.Title}"
+                  + $"&dates={Showtime.Playtime.StartTime.ToLocalTime().ToString("yyyyMMddTHHmmss")}/{Showtime.Playtime.StartTime.ToLocalTime().AddMinutes(Showtime.Movie.Duration).ToString("yyyyMMddTHHmmss")}"
+                  + $"&location={Showtime.Cinema.Name}"
+                  + $"&details={Event.Description} %0AFilm: {Showtime.Movie.Title}, {Showtime.Room.Name}, {Showtime.VersionTag.Type}";
+
+        await JsRuntime.InvokeVoidAsync("open", url, "_blank");
+        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
+    }
+
+    private async Task DownloadCalendarFile()
+    {
+        var dateStart = Showtime.Playtime.StartTime;
+        var dateEnd = Showtime.Playtime.StartTime.AddMinutes(Showtime.Movie.Duration);
+        var summary = Event.Title;
+        var location = Showtime.Cinema.Name;
+        var description = Event.Description + "\n Film: " + Showtime.Movie.Title + ", " + Showtime.Room.Name + ", " + Showtime.VersionTag.Type;
+
+    //create a new stringbuilder instance
+        var sb = new StringBuilder();
+
+    //start the calendar item
+        sb.AppendLine("BEGIN:VCALENDAR");
+        sb.AppendLine("VERSION:2.0");
+        sb.AppendLine("PRODID:stackoverflow.com");
+        sb.AppendLine("CALSCALE:GREGORIAN");
+        sb.AppendLine("METHOD:PUBLISH");
+
+    //create a time zone if needed, TZID to be used in the event itself
+        sb.AppendLine("BEGIN:VTIMEZONE");
+        sb.AppendLine("TZID:Europe/Amsterdam");
+        sb.AppendLine("BEGIN:STANDARD");
+        sb.AppendLine("TZOFFSETTO:+0100");
+        sb.AppendLine("TZOFFSETFROM:+0100");
+        sb.AppendLine("END:STANDARD");
+        sb.AppendLine("END:VTIMEZONE");
+
+    //add the event
+        sb.AppendLine("BEGIN:VEVENT");
+
+    //with time zone specified
+        sb.AppendLine("DTSTART;TZID=Europe/Amsterdam:" + dateStart.ToString("yyyyMMddTHHmm00"));
+        sb.AppendLine("DTEND;TZID=Europe/Amsterdam:" + dateEnd.ToString("yyyyMMddTHHmm00"));
+    //or without
+        sb.AppendLine("DTSTART:" + dateStart.ToString("yyyyMMddTHHmm00"));
+        sb.AppendLine("DTEND:" + dateEnd.ToString("yyyyMMddTHHmm00"));
+
+        sb.AppendLine("SUMMARY:" + summary + "");
+        sb.AppendLine("LOCATION:" + location + "");
+        sb.AppendLine("DESCRIPTION:" + description + "");
+        sb.AppendLine("PRIORITY:3");
+        sb.AppendLine("END:VEVENT");
+
+    //end calendar item
+        sb.AppendLine("END:VCALENDAR");
+
+    //create a string from the stringbuilder
+        var calendarItem = sb.ToString();
+
+
+        const string fileName = "event.ics";
+
+        var bytes = Encoding.UTF8.GetBytes(calendarItem);
+        var stream = new MemoryStream(bytes);
+        using var streamRef = new DotNetStreamReference(stream);
+        await JsRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
+    }
+
+
+
+}

@@ -12,7 +12,7 @@ using Testcontainers.PostgreSql;
 
 namespace Test.KinoJoin;
 
-//WebApplicationFactory is a class that allows us to create a test server for our application in memory, but setup with real dependencies
+//WebApplicationFactory is a class that allows us to create a test server for our application in memory, but setup with real dependencies.
 public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder()

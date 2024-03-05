@@ -32,9 +32,9 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
         //Setup dependency injection for this test application
         builder.ConfigureTestServices(services =>
         {
-            //Remove the existing MonkeyContext from the services
+            //Remove the existing KinoContext from the services
             var descriptor = services.SingleOrDefault(d =>
-                d.ServiceType == typeof(DbContextOptions<MonkeyContext>)
+                d.ServiceType == typeof(DbContextOptions<KinoContext>)
             );
 
             if (descriptor != null)
@@ -44,8 +44,8 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
 
             var configuration = services.BuildServiceProvider().GetService<IConfiguration>();
 
-            //Setup our new MonkeyContext connection to our docker postgres container
-            services.AddDbContext<MonkeyContext>(
+            //Setup our new KinoContext connection to our docker postgres container
+            services.AddDbContext<KinoContext>(
                 options =>
                 {
                     options.UseNpgsql(configuration!["TestDatabaseConnection"]);
@@ -70,7 +70,7 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
         //THIS IS WHERE YOU CAN ADD SEED DATA
         using var scope = Services.CreateScope();
         var services = scope.ServiceProvider;
-        var context = services.GetRequiredService<MonkeyContext>();
+        var context = services.GetRequiredService<KinoContext>();
         await context.Database.EnsureCreatedAsync();
     }
 

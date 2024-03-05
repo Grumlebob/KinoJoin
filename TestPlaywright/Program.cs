@@ -35,21 +35,35 @@ finally
 async Task<bool> KinoDemo()
 {
     using var playwright = await Playwright.CreateAsync();
-    await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
-    {
-        Headless = isHeadless,
-        SlowMo = slowDown
-    });
+    await using var browser = await playwright.Chromium.LaunchAsync(
+        new BrowserTypeLaunchOptions { Headless = isHeadless, SlowMo = slowDown }
+    );
     var context = await browser.NewContextAsync();
 
-    var KinoJoin = await context.NewPageAsync();
+    var page = await context.NewPageAsync();
 
-    await KinoJoin.GotoAsync("https://localhost:5001/");
-    await KinoJoin.GetByRole(AriaRole.Button, new() { Name = "Go to Monkey" }).ClickAsync();
-    await KinoJoin.GetByRole(AriaRole.Button, new() { Name = "Create Monkey" }).ClickAsync();
-    await KinoJoin.GetByRole(AriaRole.Button, new() { Name = "Create Monkey" }).ClickAsync();
-    await KinoJoin.GetByRole(AriaRole.Button, new() { Name = "Create Monkey" }).ClickAsync();
-    await KinoJoin.GetByRole(AriaRole.Button, new() { Name = "Get first monkey" }).ClickAsync();
+    //Endpoints
+    await page.GotoAsync("https://localhost:5001/joinCreate/cinemas=53&sort=most_purchased");
+    //Var førsteShowtimeId
+    await page.Locator("[id=\"\\33 61923\"]").ClickAsync();
+    await page.GetByRole(AriaRole.Button, new() { Name = "Opret Event" }).ClickAsync();
+    await page.GetByPlaceholder("Titel").FillAsync("Min seje bingoaften");
+    await page.GetByPlaceholder("Beskrivelse (valgfrit)").ClickAsync();
+    await page.GetByPlaceholder("Beskrivelse (valgfrit)").ClickAsync();
+    await page.GetByPlaceholder("Beskrivelse (valgfrit)")
+        .FillAsync("Bingopladerne er rækkerne, brikkerne er sekundet folk nyser");
+    await page.GetByRole(AriaRole.Button, new() { Name = "Opret", Exact = true }).ClickAsync();
+    await page.Locator("#eventDialog")
+        .GetByRole(AriaRole.Button, new() { Name = "Opret" })
+        .ClickAsync();
+    await page.GetByRole(AriaRole.Link, new() { Name = "https://localhost:5001/" }).ClickAsync();
+    await page.GetByRole(AriaRole.Button, new() { Name = "Uden login" }).ClickAsync();
+    await page.GetByPlaceholder("Indtast dit navn").ClickAsync();
+    await page.GetByPlaceholder("Indtast dit navn").FillAsync("Ny deltager");
+    await page.GetByPlaceholder("Note (valgfrit)").ClickAsync();
+    await page.GetByPlaceholder("Note (valgfrit)").FillAsync("elsker bingoaften i biografen");
+    await page.GetByRole(AriaRole.Button, new() { Name = "Send svar" }).ClickAsync();
+    await page.GetByRole(AriaRole.Button, new() { Name = "Ja" }).ClickAsync();
 
     return true;
 }

@@ -9,12 +9,14 @@ public static class AllEndpoints
 {
     public static void MapKinoJoinEndpoints(this WebApplication app)
     {
-        
-        app.MapGet("/health", async (HttpContext context) =>
-        {
-            await context.Response.WriteAsync("Healthy");
-        });
-        
+        app.MapGet(
+            "/health",
+            async (HttpContext context) =>
+            {
+                await context.Response.WriteAsync("Healthy");
+            }
+        );
+
         app.MapGet(
             "events/{hostId}",
             async (string hostId) =>

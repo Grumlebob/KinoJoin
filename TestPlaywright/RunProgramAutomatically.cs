@@ -14,7 +14,8 @@ public class RunProgramAutomatically
             StartInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = "run --project \"../../../../Presentation/Presentation/Presentation.csproj\" --urls https://localhost:5001",
+                Arguments =
+                    "run --project \"../../../../Presentation/Presentation/Presentation.csproj\" --urls https://localhost:5001",
                 UseShellExecute = true,
                 CreateNoWindow = false,
             }
@@ -27,7 +28,7 @@ public class RunProgramAutomatically
         {
             Console.WriteLine("Error starting server: " + ex.Message);
         }
-        
+
         //Waits till server is finished building
         var client = new HttpClient();
         var isServerReady = false;
@@ -51,8 +52,6 @@ public class RunProgramAutomatically
                 await Task.Delay(1000);
             }
         }
-        
-
     }
 
     public void StopServer()

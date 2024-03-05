@@ -10,6 +10,15 @@ public static class MonkeyEndpoints
     public static void MapMonkeyEndpoints(this WebApplication app)
     {
         app.MapGet(
+            "/monkeys",
+            async ([FromServices] IMonkeyService service) =>
+            {
+                var result = await service.GetAllAsync();
+                return Results.Ok(result);
+            }
+        );
+        
+        app.MapGet(
             "/monkeys/{id}",
             async ([FromServices] IMonkeyService service, int id) =>
             {
@@ -24,7 +33,17 @@ public static class MonkeyEndpoints
             "/monkeys",
             async ([FromServices] IMonkeyService service, [FromBody] CreateMonkeyDto monkey) =>
             {
-                await service.CreateAsync(monkey);
+                var newMonkey = await service.CreateAsync(monkey);
+                return Results.Created($"/monkeys/{newMonkey.Id}", newMonkey);
+            }
+        );
+        
+        app.MapDelete(
+            "/monkeys/{id}",
+            async ([FromServices] IMonkeyService service, int id) =>
+            {
+                await service.DeleteAsync(id);
+                return Results.NoContent();
             }
         );
     }

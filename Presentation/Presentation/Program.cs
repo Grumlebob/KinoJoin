@@ -1,9 +1,12 @@
 using Application;
 using Application.Interfaces;
+using Domain.Entities;
+using Domain.ExternalApi;
 using Infrastructure;
 using Infrastructure.Database;
 using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Presentation.Components;
 using Presentation.Endpoints;
 
@@ -65,7 +68,41 @@ app.MapRazorComponents<App>()
 app.MapMonkeyEndpoints();
 app.MapKinoJoinEndpoints();
 
+using (var scope = app.Services.CreateScope())
+{
+ 
+    var context = scope.ServiceProvider.GetRequiredService<KinoContext>();
+    
+    var apiString = $"https://api.kino.dk/ticketflow/showtimes?sort=most_purchased&cinemas=53?region=content&format=json";
+
+    var client = new HttpClient();
+    var json = await client.GetStringAsync(apiString);
+
+    var apiResultObject = JsonConvert.DeserializeObject<Root>(json);
+    
+    foreach (var cinemaOption in apiResultObject.Content.Content.Facets.Cinemas.Options)
+    {
+        var cinema = new Cinema
+        {
+            Id = cinemaOption.Key,
+            Name = cinemaOption.Value
+        };
+    }
+
+    foreach (var movieOption in apiResultObject.Content.Content.Facets.Movies.Options)
+    {
+        var movie = new Movie
+        {
+            Id = movieOption.Key,
+            Title = movieOption.Value
+        };
+
+    }
+}
+
 app.Run();
+
+
 
 //A hacky solution to use Testcontainers with WebApplication.CreateBuilder for integration tests
 public partial class Program { }

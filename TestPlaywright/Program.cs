@@ -2,8 +2,12 @@
 
 //Global settings
 
+using Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Playwright;
 using TestPlaywright;
+using Microsoft.Extensions.Configuration;
 
 bool isHeadless = false;
 int slowDown = 1000;
@@ -41,6 +45,22 @@ async Task<bool> KinoDemo()
     var context = await browser.NewContextAsync();
 
     var page = await context.NewPageAsync();
+    
+    //Get Connection to KinoContext
+    var builder = new ConfigurationBuilder();
+    builder.AddUserSecrets<Program>();
+    IConfiguration configuration = builder.Build();
+    var optionsBuilder = new DbContextOptionsBuilder<KinoContext>();
+    optionsBuilder.UseNpgsql(configuration["PostgresConnection"]);
+    using var kinoContext = new KinoContext(optionsBuilder.Options);
+    
+    //Get all cinemas and print name
+    var cinemas = await kinoContext.Cinemas.ToListAsync();
+    Console.WriteLine("PRINTER CINEMAS");
+    foreach (var cinema in cinemas)
+    {
+        Console.WriteLine(cinema.Name);
+    }
 
     //Endpoints
     await page.GotoAsync("https://localhost:5001/joinCreate/cinemas=53&sort=most_purchased");

@@ -59,6 +59,8 @@ public class KinoContext : DbContext
         // Make showtime key MovieId, CinemaId, ShowtimeId, VersionId, SalId
         modelBuilder.Entity<Showtime>().HasKey(st => st.Id);
 
+        //modelBuilder.Entity<Playtime>().HasIndex(p => p.StartTime).IsUnique();
+
         // Configure relations for ParticipantVote
         modelBuilder
             .Entity<ParticipantVote>()

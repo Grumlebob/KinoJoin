@@ -4,6 +4,7 @@ public class Host
 {
     [Key]
     public string AuthId { get; set; }
+
     public string Username { get; set; }
     public string? Email { get; set; }
     public List<JoinEvent>? JoinEvents { get; set; }
@@ -14,6 +15,7 @@ public class Participant
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
+
     public string? AuthId { get; set; }
     public int JoinEventId { get; set; }
     public string Nickname { get; set; }
@@ -30,9 +32,12 @@ public class Participant
 
 public class JoinEvent
 {
+    private DateTime _deadline;
+
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
+
     public string? HostId { get; set; }
     public string Title { get; set; }
     public string Description { get; set; }
@@ -42,8 +47,6 @@ public class JoinEvent
     public List<Participant>? Participants { get; set; }
 
     public List<SelectOption>? SelectOptions { get; set; }
-
-    private DateTime _deadline;
 
     public DateTime Deadline
     {
@@ -59,6 +62,7 @@ public class Movie
 {
     [Key]
     public int Id { get; set; }
+
     public string Title { get; set; }
     public List<Showtime>? Showtimes { get; set; }
     public string ImageUrl { get; set; }
@@ -74,6 +78,7 @@ public class Showtime
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
+
     public int MovieId { get; set; }
     public int CinemaId { get; set; }
     public int PlaytimeId { get; set; }
@@ -115,6 +120,7 @@ public class SelectOption
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
+
     public string VoteOption { get; set; }
     public string Color { get; set; }
 
@@ -124,11 +130,11 @@ public class SelectOption
 
 public class Playtime
 {
+    private DateTime _startTime;
+
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-
-    private DateTime _startTime;
 
     public DateTime StartTime
     {
@@ -149,8 +155,10 @@ public class VersionTag
 public class Cinema
 {
     [Key]
-    public int Id { get; set; }
-    public string Name { get; set; }
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public required int Id { get; set; }
+
+    public required string Name { get; set; }
 }
 
 public class Room
@@ -159,4 +167,13 @@ public class Room
     public int Id { get; set; }
 
     public string Name { get; set; }
+}
+
+public class Genre
+{
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public required int Id { get; init; }
+
+    public required string Name { get; init; }
 }

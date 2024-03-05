@@ -66,3 +66,6 @@ app.MapMonkeyEndpoints();
 app.MapKinoJoinEndpoints();
 
 app.Run();
+
+//A hacky solution to use Testcontainers with WebApplication.CreateBuilder for integration tests
+public partial class Program { }

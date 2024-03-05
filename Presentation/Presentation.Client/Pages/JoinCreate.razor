@@ -229,7 +229,7 @@
 
 else if (_cinemaIdsToNames.Count > 0 || _movieIdsToNames.Count > 0)
 {
-    <h1 class="mb-6 text-2xl font-bold leading-tight text-gray-800 md:text-2xl lg:text-3xl">
+    <h1 class="mb-6 text-2xl font-bold leading-tight text-gray-800 md:text-2xl lg:text-3xl text-center">
         Velkommen til KinoJoin - Planlæg dit biograf event her
     </h1>
 
@@ -292,11 +292,13 @@ else if (_cinemaIdsToNames.Count > 0 || _movieIdsToNames.Count > 0)
         </div>
     }
 
-    <button @onclick="ToggleFilters" class="mb-4 rounded-lg bg-gray-700 px-6 py-2 font-semibold text-white shadow-md transition duration-200 ease-in hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-opacity-50">
+    <div class="flex items-center justify-center">
+    <button @onclick="ToggleFilters" class="mb-4 rounded-lg lg:hidden bg-gray-700 px-6 py-2 font-semibold text-white shadow-md transition duration-200 ease-in hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-opacity-50">
         @(showAllFilters ? "Skjul filtrer" : "Vis alle filtrer")
     </button>
+    </div>
 
-    <div id="ShowAllFilters" class="@(showAllFilters ? "block" : "hidden")">
+    <div id="ShowAllFilters" class="@(showAllFilters ? "" : "hidden lg:block")">
         <div class="flex flex-col lg:space-x-4 lg:flex-row">
             <div class="mt-4 lg:mt-0 lg:w-1/3">
                 <SearchableCheckboxList IconPath="/Icons/CinemaFilterIcon.svg" FilterTitle="Vælg biograffer" SelectedItems="SelectedCinemas" IdsToLabels="@_cinemaIdsToNames"/>
@@ -423,7 +425,7 @@ else
     private DateTime _startDate = DateTime.Today;
     private DateTime _endDate = DateTime.Today.AddDays(30);
 
-    private bool showAllFilters = false;
+    private bool showAllFilters;
 
     private void ToggleFilters()
     {

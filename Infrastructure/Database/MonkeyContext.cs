@@ -1,10 +1,10 @@
 ﻿namespace Infrastructure.Database;
 
-public class DataContext : DbContext
+public class MonkeyContext : DbContext
 {
     public DbSet<Monkey> Monkeys { get; set; }
 
-    public DataContext(DbContextOptions<DataContext> options)
+    public MonkeyContext(DbContextOptions<MonkeyContext> options)
         : base(options) { }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }

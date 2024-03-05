@@ -51,7 +51,7 @@ async Task<bool> KinoDemo()
     builder.AddUserSecrets<Program>();
     IConfiguration configuration = builder.Build();
     var optionsBuilder = new DbContextOptionsBuilder<KinoContext>();
-    optionsBuilder.UseNpgsql(configuration["PostgresConnection"]);
+    optionsBuilder.UseNpgsql(configuration["TestDatabaseConnection"]);
     using var kinoContext = new KinoContext(optionsBuilder.Options);
     
     //Get all cinemas and print name

@@ -44,7 +44,7 @@ public class DataGenerator
         _movieGenerator = new Faker<Movie>()
             .RuleFor(m => m.Id, (f, m) => f.IndexFaker + 1)
             .RuleFor(m => m.Title, f => f.Lorem.Sentence())
-            .RuleFor(m => m.Showtimes, f => _showtimeGenerator.Generate(f.Random.Int(1, 3)));
+            .RuleFor(m => m.Showtimes, f => _showtimeGenerator.Generate(f.Random.Int(1, 5)));
 
         _participantGenerator = new Faker<Participant>()
             .RuleFor(p => p.Id, (f, p) => f.IndexFaker + 1)
@@ -69,8 +69,8 @@ public class DataGenerator
                 Title = f.Lorem.Sentence(),
                 Description = f.Lorem.Paragraph(),
                 Showtimes = movies.SelectMany(m => m.Showtimes!).ToList(),
-                Participants = _participantGenerator.Generate(f.Random.Int(1, 10)),
-                SelectOptions = _selectOptionGenerator.Generate(f.Random.Int(1, 3)),
+                Participants = _participantGenerator.Generate(f.Random.Int(0, 10)),
+                SelectOptions = _selectOptionGenerator.Generate(f.Random.Int(1, 5)),
                 Deadline = f.Date.Future(),
                 Host = null
             };
@@ -84,7 +84,7 @@ public class DataGenerator
             foreach (var participant in joinEvent.Participants)
             {
                 participant.VotedFor = new List<ParticipantVote>();
-                var numberOfVotes = f.Random.Int(1, joinEvent.Showtimes.Count);
+                var numberOfVotes = f.Random.Int(0, joinEvent.Showtimes.Count);
                 for (int i = 0; i < numberOfVotes; i++)
                 {
                     participant.VotedFor.Add(

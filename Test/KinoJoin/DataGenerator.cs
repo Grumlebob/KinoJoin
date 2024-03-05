@@ -13,7 +13,7 @@ public class DataGenerator
     private readonly Faker<Playtime> _playtimeGenerator;
     private readonly Faker<VersionTag> _versionTagGenerator;
     private readonly Faker<Room> _roomGenerator;
-    
+
     public readonly Faker<JoinEvent> JoinEventGenerator;
 
     public DataGenerator()
@@ -52,58 +52,59 @@ public class DataGenerator
             .RuleFor(p => p.Nickname, f => f.Internet.UserName())
             .RuleFor(p => p.Email, f => f.Internet.Email())
             .RuleFor(p => p.Note, f => f.Lorem.Sentence());
-        
+
         _selectOptionGenerator = new Faker<SelectOption>()
             .RuleFor(o => o.Id, (f, o) => f.IndexFaker + 1)
             .RuleFor(o => o.VoteOption, f => f.Lorem.Word())
             .RuleFor(o => o.Color, f => f.Commerce.Color());
 
-        JoinEventGenerator = new Faker<JoinEvent>()
-            .CustomInstantiator(f =>
+        JoinEventGenerator = new Faker<JoinEvent>().CustomInstantiator(f =>
+        {
+            var movies = _movieGenerator.Generate(f.Random.Int(1, 5));
+
+            var joinEvent = new JoinEvent
             {
-                var movies = _movieGenerator.Generate(f.Random.Int(1, 5));
+                Id = f.Random.Int(1),
+                HostId = f.Random.Uuid().ToString(),
+                Title = f.Lorem.Sentence(),
+                Description = f.Lorem.Paragraph(),
+                Showtimes = movies.SelectMany(m => m.Showtimes!).ToList(),
+                Participants = _participantGenerator.Generate(f.Random.Int(1, 10)),
+                SelectOptions = _selectOptionGenerator.Generate(f.Random.Int(1, 3)),
+                Deadline = f.Date.Future(),
+                Host = null
+            };
 
-                var joinEvent = new JoinEvent
-                {
-                    Id = f.Random.Int(1),
-                    HostId = f.Random.Uuid().ToString(),
-                    Title = f.Lorem.Sentence(),
-                    Description = f.Lorem.Paragraph(),
-                    Showtimes = movies.SelectMany(m => m.Showtimes!).ToList(),
-                    Participants = _participantGenerator.Generate(f.Random.Int(1, 10)),
-                    SelectOptions = _selectOptionGenerator.Generate(f.Random.Int(1, 3)),
-                    Deadline = f.Date.Future(),
-                    Host = null
-                };
+            if (joinEvent.Showtimes.Any())
+            {
+                joinEvent.ChosenShowtimeId = f.PickRandom(joinEvent.Showtimes).Id;
+            }
 
-                if (joinEvent.Showtimes.Any())
+            // After creating JoinEvent, generate ParticipantVotes
+            foreach (var participant in joinEvent.Participants)
+            {
+                participant.VotedFor = new List<ParticipantVote>();
+                var numberOfVotes = f.Random.Int(1, joinEvent.Showtimes.Count);
+                for (int i = 0; i < numberOfVotes; i++)
                 {
-                    joinEvent.ChosenShowtimeId = f.PickRandom(joinEvent.Showtimes).Id;
-                }
-                
-                // After creating JoinEvent, generate ParticipantVotes
-                foreach (var participant in joinEvent.Participants)
-                {
-                    participant.VotedFor = new List<ParticipantVote>();
-                    var numberOfVotes = f.Random.Int(1, joinEvent.Showtimes.Count);
-                    for (int i = 0; i < numberOfVotes; i++)
-                    {
-                        participant.VotedFor.Add(new ParticipantVote
+                    participant.VotedFor.Add(
+                        new ParticipantVote
                         {
                             ParticipantId = participant.Id,
                             ShowtimeId = f.PickRandom(joinEvent.Showtimes).Id,
-                            VoteIndex = f.Random.Int(0, joinEvent.Showtimes.Count-1)
-                        });
-                    }
+                            VoteIndex = f.Random.Int(0, joinEvent.Showtimes.Count - 1)
+                        }
+                    );
                 }
+            }
 
-                // Set ChosenShowtimeId if Showtimes are available
-                if (joinEvent.Showtimes.Any())
-                {
-                    joinEvent.ChosenShowtimeId = f.PickRandom(joinEvent.Showtimes).Id;
-                }
+            // Set ChosenShowtimeId if Showtimes are available
+            if (joinEvent.Showtimes.Any())
+            {
+                joinEvent.ChosenShowtimeId = f.PickRandom(joinEvent.Showtimes).Id;
+            }
 
-                return joinEvent;
-            });
+            return joinEvent;
+        });
     }
 }

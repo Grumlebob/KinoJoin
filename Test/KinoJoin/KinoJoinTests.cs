@@ -12,18 +12,16 @@ namespace Test.KinoJoin;
 public class KinoJoinTests : IAsyncLifetime
 {
     private HttpClient _client;
-    
+
     //Delegate used to call the ResetDatabaseAsync method from the factory, without having to expose the factory
     private readonly Func<Task> _resetDatabase;
 
-    private readonly DataGenerator _dataGenerator = new DataGenerator();
+    private readonly DataGenerator _dataGenerator = new();
 
-    
     public KinoJoinTests(MonkeyServiceWebAppFactory factory)
     {
         _client = factory.HttpClient;
         _resetDatabase = factory.ResetDatabaseAsync;
-        
     }
 
     [Fact]
@@ -33,13 +31,12 @@ public class KinoJoinTests : IAsyncLifetime
 
         var createResponse = await _client.PostAsJsonAsync("/putJoinEvent", JoinEvent);
         var id = await createResponse.Content.ReadFromJsonAsync<int>();
-        
-        createResponse.EnsureSuccessStatusCode();
 
+        createResponse.EnsureSuccessStatusCode();
     }
 
     //We don't care about the InitializeAsync method, but needed to implement the IAsyncLifetime interface
     public Task InitializeAsync() => Task.CompletedTask;
-    
+
     public Task DisposeAsync() => _resetDatabase();
 }

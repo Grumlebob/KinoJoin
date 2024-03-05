@@ -3,6 +3,4 @@
 namespace Test.KinoJoin;
 
 [CollectionDefinition("KinoJoinCollection")]
-public class KinoTestCollection : ICollectionFixture<MonkeyServiceWebAppFactory>
-{
-}
+public class KinoTestCollection : ICollectionFixture<MonkeyServiceWebAppFactory> { }

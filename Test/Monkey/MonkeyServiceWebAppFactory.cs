@@ -15,42 +15,43 @@ namespace Test.Monkey;
 //WebApplicationFactory is a class that allows us to create a test server for our application in memory, but setup with real dependencies
 public class MonkeyServiceWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder()
         .WithImage("postgres:latest")
         .Build();
-    
+
     //Default! cause we are not initializing it here, but in the InitializeAsync method
     private DbConnection _dbConnection = default!;
     private Respawner _respawner = default!;
     public HttpClient HttpClient { get; private set; } = default!;
-    
+
     //Config used for secrets
     private IConfiguration Configuration => Services.GetRequiredService<IConfiguration>();
-    
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         //Setup dependency injection for this test application
         builder.ConfigureTestServices(services =>
         {
             //Remove the existing MonkeyContext from the services
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType ==
-                     typeof(DbContextOptions<MonkeyContext>));
-            
+            var descriptor = services.SingleOrDefault(d =>
+                d.ServiceType == typeof(DbContextOptions<MonkeyContext>)
+            );
+
             if (descriptor != null)
             {
                 services.Remove(descriptor);
             }
-            
+
             var configuration = services.BuildServiceProvider().GetService<IConfiguration>();
-            
+
             //Setup our new MonkeyContext connection to our docker postgres container
-            services.AddDbContext<MonkeyContext>(options =>
-            {
-                options.UseNpgsql(configuration!["MonkeyConnection"]);
-            }, ServiceLifetime.Singleton); // Lifetime must be Singleton to work with TestContainers
-            
+            services.AddDbContext<MonkeyContext>(
+                options =>
+                {
+                    options.UseNpgsql(configuration!["MonkeyConnection"]);
+                },
+                ServiceLifetime.Singleton
+            ); // Lifetime must be Singleton to work with TestContainers
         });
     }
 
@@ -58,14 +59,14 @@ public class MonkeyServiceWebAppFactory : WebApplicationFactory<Program>, IAsync
     {
         await _respawner.ResetAsync(_dbConnection);
     }
-    
+
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
         _dbConnection = new NpgsqlConnection(Configuration["MonkeyConnection"]);
         HttpClient = CreateClient();
         await InitializeRespawner();
-        
+
         //THIS IS WHERE YOU CAN ADD SEED DATA
         using var scope = Services.CreateScope();
         var services = scope.ServiceProvider;
@@ -76,11 +77,14 @@ public class MonkeyServiceWebAppFactory : WebApplicationFactory<Program>, IAsync
     private async Task InitializeRespawner()
     {
         await _dbConnection.OpenAsync();
-        _respawner = await Respawner.CreateAsync(_dbConnection, new RespawnerOptions()
-        {
-            DbAdapter = DbAdapter.Postgres,
-            SchemasToInclude = new []{"public", "Monkey"}
-        });
+        _respawner = await Respawner.CreateAsync(
+            _dbConnection,
+            new RespawnerOptions()
+            {
+                DbAdapter = DbAdapter.Postgres,
+                SchemasToInclude = new[] { "public", "Monkey" }
+            }
+        );
     }
 
     //"New": to tell compiler that this is a new DisposeAsync method

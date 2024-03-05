@@ -17,7 +17,7 @@ public static class MonkeyEndpoints
                 return Results.Ok(result);
             }
         );
-        
+
         app.MapGet(
             "/monkeys/{id}",
             async ([FromServices] IMonkeyService service, int id) =>
@@ -37,7 +37,7 @@ public static class MonkeyEndpoints
                 return Results.Created($"/monkeys/{newMonkey.Id}", newMonkey);
             }
         );
-        
+
         app.MapDelete(
             "/monkeys/{id}",
             async ([FromServices] IMonkeyService service, int id) =>

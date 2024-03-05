@@ -6,8 +6,6 @@ using FluentAssertions;
 
 namespace Test.Monkey;
 
-//https://youtu.be/zaRM0iIhJvs?t=1955
-
 [Collection("MonkeyCollection")]
 public class MonkeyTests : IAsyncLifetime
 {

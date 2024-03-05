@@ -8,6 +8,12 @@ public class MonkeyService : IMonkeyService
     {
         _context = context;
     }
+    
+    public async Task<IEnumerable<MonkeyDto>> GetAllAsync()
+    {
+        var result = await _context.Monkeys.ToListAsync();
+        return result.Select(m => new MonkeyDto(m.Id, m.Name, m.Age));
+    }
 
     public async Task<MonkeyDto?> GetAsync(int id)
     {
@@ -22,4 +28,13 @@ public class MonkeyService : IMonkeyService
         var id = await _context.Monkeys.MaxAsync(m => m.Id);
         return new MonkeyDto(id, monkey.Name, monkey.Age);
     }
+    
+    public async Task DeleteAsync(int id)
+    {
+        var monkey = await _context.Monkeys.FirstOrDefaultAsync(m => m.Id == id);
+        if (monkey is null) return;
+        _context.Monkeys.Remove(monkey);
+        await _context.SaveChangesAsync();
+    }
 }
+

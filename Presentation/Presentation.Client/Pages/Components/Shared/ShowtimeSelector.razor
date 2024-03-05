@@ -1,153 +1,8 @@
 @inject IJSRuntime JsRuntime
 
 <style>
-/* Base container for each movie */
-.Redbox {
-    display: flex;
-    align-items: flex-start; /* Align the start of the items */
-    margin-bottom: 20px;
-}
-
-/* Styling for the poster image */
-.PosterImage {
-    position: sticky;
-    top: 65px;
-    margin-right: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-}
-
-/* Container for movie details */
-.MovieDetails {
-    flex-grow: 1; /* Allow the movie details to fill the remaining space */
-}
-
-/* Header for each movie */
-.MovieHeader h2 {
-    margin-top: 0; /* Remove top margin for the movie title */
-    margin-bottom: 0.5em; /* Add a little space below the title */
-}
-
-.MovieHeader p {
-    margin-top: 0; /* Remove top margin for other details */
-    margin-bottom: 0.5em; /* Consistent space below each detail */
-}
-
-/* Styling for cinema location */
-.CinemaLocation {
-    margin-top: 1em; /* Add space above the cinema location */
-    margin-bottom: 0.5em; /* Add space below the cinema location */
-}
-
-/* Styling for versions and showtimes */
-.Version {
-    margin-bottom: 1em; /* Add space below each version */
-}
-
-/* Base styles for the showtime labels */
-.Showtimes .showtime-label {
-
-    display: block; /* or inline-block, depending on how you want to handle the layout */
-    padding: 4px; /* Adjust padding as necessary */
-    margin-bottom: 4px;
-    
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    user-select: none;
-    background-color: #eee;
-    border-radius: 4px;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
-    white-space: nowrap; /* Keep text in a single line */
-    width: 100px;
-}
-
-/* Style for the room name */
-.Showtimes .showtime-room {
-    font-size: 14px; /* Smaller font size for sal name */
-    margin-bottom: 2px; /* Space between sal name and playtime */
-    overflow: hidden; /* Ensures the content does not expand the container */
-    text-overflow: ellipsis; /* Adds an ellipsis when the text overflows */
-    white-space: nowrap; /* Prevents the text from wrapping to the next line */
-   
-}
-
-/* Style for the playtime */
-.Showtimes .showtime-time {
-    font-weight: bold;
-    font-size: 24px; /* Larger font size for playtime */
-}
-
-.Showtimes .table-container {
-    overflow-x: auto; /* Adds horizontal scrollbar if the table exceeds the container width */
-
-}
-
-.Showtimes table {
-    border-collapse: collapse; /* Collapse borders for a clean look */
-}
-
-/* Style for the table headers and cells to have a fixed width */
-.Showtimes th,
-.Showtimes td {
-    width: 10px; /* Fixed width */
-    text-align: left; /* Align text to the left */
-    padding: 8px; /* Add some padding */
-    white-space: nowrap; /* Keep the content in a single line */
-    overflow: hidden; /* Hide overflow */
-    text-overflow: ellipsis; /* Add an ellipsis to clipped text */
-    border-bottom: 1px solid #ddd; /* Add a bottom border for separation */
-    vertical-align: top; /* Align the content to the top of the cell */
-}
-
-.Showtimes td {
-    padding: 8px; /* Add some padding */
-}
-
-
-.movie-info {
-    background-color: #E0E0E0; /* Light gray background */
-    padding: 5px;
-    border-radius: 5px; /* Optional: rounds the corners of the background */
-    display: inline-flex; /* Places children next to each other */
-    align-items: center; /* Aligns children vertically in the center */
-    justify-content: center; /* Centers children horizontally */
-    gap: 10px; /* Creates space between the children */
-}
-
-.movie-info .premiere,
-.movie-info .duration {
-    color: #333; /* Dark gray text color for better contrast */
-    font-size: 14px; /* Adjust font size as needed */
-}
-
-.tooltip-container:hover {
-    background-color: grey;
-}
-
-.tooltip-container:hover .tooltip-content {
-    visibility: visible;
-}
-
-.tooltip-content {
-    visibility: hidden;
-    position: absolute;
-    z-index: 1;
-    transform: translateY(-8rem); /* hard coded for now */
-    background-color: lightgray;
-}
 
 .empty-showtime {
-    width: 100px;
-    height: 67px;
-    padding: 12px;
-    margin-top: 0px;
-    margin-bottom: 4px;
-    
-    border-radius: 4px;
     background-image: repeating-linear-gradient(
         +45deg,
         #ffffff, /* Lighter shade of gray for the streak */
@@ -170,115 +25,127 @@
     justify-content: center;
 }
 
-.delete-participant-button {
-        color: red;
-        font-size: 20px;
-}
-    
-.delete-participant-button:hover {
-        background-color: lightcoral;
-        cursor: pointer;
-}
-
-
 </style>
 
-@if(Showtimes.Count==0)
+@if (Showtimes.Count == 0)
 {
-   return;
+    return;
 }
 
-@foreach (var option in SelectOptions)
-{
-    <span style="background-color: @option.Color">@option.VoteOption</span>
-}
+<div class="mb-3 w-fit rounded border p-2 shadow">
+    <p class="font-semibold">Klik på spilletider for at vælge:</p>
+    @{ var counter = 0; }
+    <div class="mb-2 w-fit">
+        @foreach (var option in SelectOptions)
+        {
+            <div class="rounded @option.Color p-1">
+                <p>@(counter++): @option.VoteOption</p>
+            </div>
+        }
+    </div>
+</div>
 
 @foreach (var showtimesByMovie in Showtimes.GroupBy(s => s.Movie.Id))
 {
     Movie movie = showtimesByMovie.First().Movie;
-    <div class="Redbox">
-        <div class="PosterImage">
+    <!-- Redbox -->
+    <div class="mb-5 grid grid-cols-[200px_auto] grid-rows-[100px_100px_auto] lg:grid-rows-[100px_auto] gap-4  border rounded p-1 shadow lg:max-w-screen-lg">
+        <!-- PosterImage -->
+        <div class="row-start-1 row-end-3 lg:self-start lg:sticky lg:top-16 lg:mr-5 lg:min-w-48">
             <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
-                <img src="@movie.ImageUrl" alt="Movie Poster" width="200" height="300"/>
+                <img src="@movie.ImageUrl" alt="Movie Poster" class="h-72 w-48 rounded-sm shadow"/>
             </a>
-            <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
-                <button style="margin-top: 3px">Læs mere</button>
-            </a>
-
-            <button style="margin-top: 3px" @onclick="async () => { await ShowMovieTrailer(movie); }">Se trailer</button>
-
-        </div>
-        <div class="MovieDetails">
-            <div class="MovieHeader">
-                <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank" style="text-decoration: none; color: black">
-                    <h2>@movie.Title</h2>
+            <!--Læs mere og trailer-->
+            <div class="hidden lg:flex flex-col items-center">
+                <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
+                    <button class="m-1 bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-full shadow hover:bg-gray-700 hover:text-white transition-colors duration-300">Læs mere</button>
                 </a>
 
-                <div class="movie-info">
-                    <span class="premiere">Premiere @movie.PremiereDate | </span>
-                    <span class="duration">Varighed @movie.Duration min</span>
-                </div>
-
+                <button class="m-1 bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-full shadow hover:bg-gray-700 hover:text-white transition-colors duration-300" @onclick="async () => { await ShowMovieTrailer(movie); }">Se trailer</button>
             </div>
+        </div>
+        <!-- MovieHeader -->
+        <div class="mt-0 mb-2">
+            <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank" class="text-black no-underline ">
+                <h2 class="mt-0 font-bold text-4xl mb-2.5">@movie.Title</h2>
+            </a>
+
+            <div class="inline-flex items-center justify-center gap-4 rounded bg-gray-300 p-2">
+                <!-- movie-info -->
+                <span class="text-sm text-gray-800">Premiere @movie.PremiereDate | </span>
+                <span class="text-sm text-gray-800">Varighed @movie.Duration min</span>
+            </div>
+        </div>
+        <!--Læs mere og trailer-->
+        <div class="lg:hidden bg-blue-400">
+            <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
+                <button class="mt-1">Læs mere</button>
+            </a>
+
+            <button class="mt-1" @onclick="async () => { await ShowMovieTrailer(movie); }">Se trailer</button>
+        </div>
+        <!-- Showtimes -->
+        <div class="col-start-1 col-end-3 lg:col-start-2 lg:row-start-2 lg:row-end-3">
             @foreach (var showtimesByCinema in showtimesByMovie.GroupBy(s => s.Cinema.Id))
             {
                 var cinema = showtimesByCinema.First().Cinema;
-                <div class="CinemaLocation">
-                    <h2 id="@cinema.Id">@cinema.Name</h2>
+                <div class="mt-4 mb-2">
+                    <!-- CinemaLocation -->
+                    <h3 id="@cinema.Id" class="mt-10 font-bold text-2xl mb-2.5">@cinema.Name</h3>
                 </div>
                 @foreach (var showtimesByVersionTag in showtimesByCinema.GroupBy(s => s.VersionTag.Id))
                 {
                     var versionTag = showtimesByVersionTag.First().VersionTag;
-                    <div class="Version">
-                        <strong>@versionTag.Type</strong>
-                        <div class="Showtimes">
-                            <div class="table-container">
-                                <table>
-                                    <tr>
-                                        @{
-                                            // Determine the start and end dates of the interval
-                                            var startDate = Showtimes.Min(s => s.Playtime.StartTime.ToLocalTime());
-                                            var endDate = Showtimes.Max(s => s.Playtime.StartTime.ToLocalTime());
+                    <div class="mb-4 max-w-screen-md">
+                        <!-- Version -->
+                        <p class="border shadow-sm rounded bg-gray-300">@versionTag.Type</p>
+                        <!-- Showtimes -->
+                        <div class="overflow-x-auto">
+                            <table class="border-collapse">
+                                <tr>
+                                    @{
+                                        // Determine the start and end dates of the interval
+                                        var startDate = Showtimes.Min(s => s.Playtime.StartTime.ToLocalTime());
+                                        var endDate = Showtimes.Max(s => s.Playtime.StartTime.ToLocalTime());
 
-                                            var latestDateForSpecificCinemaVersion = Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key).Max(s => s.Playtime.StartTime.ToLocalTime().Date);
+                                        var latestDateForSpecificCinemaVersion = Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key).Max(s => s.Playtime.StartTime.ToLocalTime().Date);
 
-
-                                            // Loop through each date in the interval
-                                            for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
-                                            {
-                                                <th>@date.ToString("dd. MMM")</th>
-                                            }
-                                        }
-                                    </tr>
-                                    <tr>
-                                        <!-- Create table data for each showtime within the grouped date -->
-                                        @for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
+                                        // Loop through each date in the interval
+                                        for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
                                         {
-                                            //Check if it exists if not, else
-                                            @if (Showtimes.Any(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
-                                            {
-                                                <td>
-                                                    @foreach (var showtime in Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
-                                                    {
-                                                        var index = VotedFor.IndexOf(VotedFor.First(v => v.showtime.Id == showtime.Id));
-                                                        <div class="showtime-label" style="background-color: @SelectOptions[VotedFor[index].vote].Color" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(async () => { var next = (VotedFor[index].vote+1) % SelectOptions.Count; VotedFor[index] = (showtime,next); await VotedForChanged.InvokeAsync(VotedFor);})">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                         <div class="showtime-room">@showtime.Room.Name</div>
-                                                            <div class="showtime-time">@showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm")</div>
-                                                        </div>
-                                                    }
-                                                </td>
-                                            }
-                                            else
-                                            {
-                                                <td>
-                                                    <div class="empty-showtime">
-                                                    </div>
-                                                </td>
-                                            }
+                                            <th class="w-10 overflow-hidden text-ellipsis whitespace-nowrap border-b border-gray-200 p-2 text-left align-top">@date.ToString("dd. MMM")</th>
                                         }
-                                    </tr>
-                                </table >
-                            </div >
+                                    }
+                                </tr>
+                                <tr>
+                                    <!-- Create table data for each showtime within the grouped date -->
+                                    @for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
+                                    {
+                                        //Check if it exists if not, else
+                                        @if (Showtimes.Any(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
+                                        {
+                                            <td class="p-2 align-top">
+                                                @foreach (var showtime in Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
+                                                {
+                                                    var index = VotedFor.IndexOf(VotedFor.First(v => v.showtime.Id == showtime.Id));
+                                                    <div class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center cursor-pointer select-none rounded shadow-inset @SelectOptions[VotedFor[index].vote].Color" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(async () => { var next = (VotedFor[index].vote + 1) % SelectOptions.Count; VotedFor[index] = (showtime, next); await VotedForChanged.InvokeAsync(VotedFor); })">
+                                                        <div class="mb-1 text-center text-sm line-clamp-1">@showtime.Room.Name</div>
+                                                        <div class="text-lg font-bold">@showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm")</div> <!-- showtime-time -->
+                                                    </div>
+                                                }
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <!-- empty-showtime -->
+                                            <td class="p-2 align-top">
+                                                <div class="mb-1 h-16 max-h-16 w-24 rounded p-1 shadow-inset empty-showtime">
+                                                </div>
+                                            </td>
+                                        }
+                                    }
+                                </tr>
+                            </table >
                         </div >
                     </div>
                 }
@@ -288,38 +155,37 @@
 }
 
 @if (Showtimes.Count > 0)
+{
+    foreach (var movie in MoviesWithOutShowTimes)
     {
-        foreach (var movie in MoviesWithOutShowTimes)
-        {
-            <div class="Redbox">
-                <div class="PosterImage">
-                    <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
-                        <img src="@movie.ImageUrl" alt="Movie Poster" width="200" height="300"/>
-                    </a>
+        <div class="mb-5 flex items-start">
+            <!-- Redbox -->
+            <div class="sticky top-16 mr-5 flex flex-col items-start justify-center">
+                <!-- PosterImage -->
+                <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
+                    <img src="@movie.ImageUrl" alt="Movie Poster" class="h-72 w-48 shadow"/>
+                </a>
 
-                    <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
-                        <button style="margin-top: 3px">Læs mere</button>
-                    </a>
+                <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
+                    <button class="mt-1">Læs mere</button>
+                </a>
+                <button class="mt-1" @onclick="async () => { await ShowMovieTrailer(movie); }">Se trailer</button>
 
-                    <button style="margin-top: 3px" @onclick="async () => { await ShowMovieTrailer(movie); }">Se trailer</button>
-
-                </div>
-                <div class="MovieDetails">
-                    <div class="MovieHeader">
-                        <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank" style="text-decoration: none; color: black">
-                            <h2>@movie.Title</h2>
-                        </a>
-
-                        <div class="movie-info">
-                            <span>Ingen forestillinger fundet for denne film med de valgte filtre</span>
-                        </div>
-
-                    </div>
-                </div>
             </div>
-        }
-    }
+            <div class="flex-grow">
+                <!-- MovieDetails -->
+                <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank" class="text-black no-underline">
+                    <h2 class="mt-0 mb-2">@movie.Title</h2>
+                </a>
+                <!-- MovieHeader -->
+                <div class="inline-flex items-center justify-center gap-4 rounded bg-gray-300 p-2">
+                    <span>Ingen forestillinger fundet for denne film med de valgte filtre</span>
+                </div>
 
+            </div>
+        </div>
+    }
+}
 
 
 @if (_trailerUrl != null)
@@ -333,22 +199,17 @@
 
 
 @code {
-    
-    [Parameter]
-    public List<Showtime> Showtimes { get; set; } = [];
-    
-    [Parameter]
-    public List<Movie> MoviesWithOutShowTimes { get; set; } = [];
-    
-    [Parameter]
-    public List<(Showtime showtime,int vote)> VotedFor { get; set; } = [];
-    
-    [Parameter]
-    public EventCallback<List<(Showtime,int vote)>> VotedForChanged { get; set; }
-    
-    [Parameter]
-    public List<SelectOption> SelectOptions { get; set; } = new List<SelectOption>(){new SelectOption(){VoteOption="Kan ikke",Color="lightgray"}, new SelectOption(){VoteOption="Kan godt", Color="lightgreen"}};
-    
+
+    [Parameter] public List<Showtime> Showtimes { get; set; } = [];
+
+    [Parameter] public List<Movie> MoviesWithOutShowTimes { get; set; } = [];
+
+    [Parameter] public List<(Showtime showtime, int vote)> VotedFor { get; set; } = [];
+
+    [Parameter] public EventCallback<List<(Showtime, int vote)>> VotedForChanged { get; set; }
+
+    [Parameter] public List<SelectOption> SelectOptions { get; set; } = new List<SelectOption>() { new SelectOption() { VoteOption = "Kan ikke", Color = "bg-gray-200" }, new SelectOption() { VoteOption = "Kan godt", Color = "bg-green-200" } };
+
 
     private string? _trailerUrl;
 
@@ -371,5 +232,6 @@
         if (videoId == null) await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
         else _trailerUrl = $"https://www.youtube.com/embed/{videoId}";
     }
+
 
 }

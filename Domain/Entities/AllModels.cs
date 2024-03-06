@@ -6,6 +6,7 @@ public class Host
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public string AuthId { get; set; }
+
     public string Username { get; set; }
     public string? Email { get; set; }
     public List<JoinEvent>? JoinEvents { get; set; }
@@ -15,6 +16,7 @@ public class Participant
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
+
     public string? AuthId { get; set; }
     public int JoinEventId { get; set; }
     public string Nickname { get; set; }
@@ -61,18 +63,18 @@ public class Movie
     public int Id { get; set; }
     public string Title { get; set; }
     public List<Showtime>? Showtimes { get; set; }
-    public string ImageUrl { get; set; }
-    public string KinoURL { get; set; }
-    public int Duration { get; set; }
-    public string PremiereDate { get; set; }
-
-    public string AgeRating { get; set; }
+    public string? ImageUrl { get; set; }
+    public string? KinoURL { get; set; }
+    public int? Duration { get; set; }
+    public string? PremiereDate { get; set; }
+    public string? AgeRating { get; set; }
 }
 
 public class Showtime
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int Id { get; set; }
+
     public int MovieId { get; set; }
     public int CinemaId { get; set; }
     public int PlaytimeId { get; set; }
@@ -113,8 +115,8 @@ public class SelectOption
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-    public required string VoteOption { get; set; }
-    public required string Color { get; set; }
+    public string VoteOption { get; set; }
+    public string Color { get; set; }
 
     //navigation property
     public List<JoinEvent> JoinEvents { get; set; }
@@ -155,6 +157,15 @@ public class Room
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int Id { get; set; }
+
+    public string Name { get; set; }
+}
+
+public class Genre
+{
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public required int Id { get; set; }
 
     public string Name { get; set; }
 }

@@ -15,6 +15,7 @@ public class KinoContext : DbContext
     public DbSet<VersionTag> Versions { get; set; }
     public DbSet<Cinema> Cinemas { get; set; }
     public DbSet<Room> Rooms { get; set; }
+    public DbSet<Genre> Genres { get; set; }
 
     public DbSet<SelectOption> SelectOptions { get; set; }
 

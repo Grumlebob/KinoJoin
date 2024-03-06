@@ -29,10 +29,13 @@ public class KinoJoinTests : IAsyncLifetime
     {
         var JoinEvent = _dataGenerator.JoinEventGenerator.Generate(1)[0];
 
-        var createResponse = await _client.PostAsJsonAsync("/putJoinEvent", JoinEvent);
-        var id = await createResponse.Content.ReadFromJsonAsync<int>();
-
+        var createResponse = await _client.PutAsJsonAsync("/putJoinEvent", JoinEvent);
         createResponse.EnsureSuccessStatusCode();
+        var id = await createResponse.Content.ReadFromJsonAsync<int>();
+        var responseContent = await createResponse.Content.ReadAsStringAsync();
+        Console.WriteLine(responseContent); // Log the response content to inspect it
+
+
     }
 
     //We don't care about the InitializeAsync method, but needed to implement the IAsyncLifetime interface

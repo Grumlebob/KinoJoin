@@ -104,7 +104,6 @@ public class ParticipantVote
 {
     public int ParticipantId { get; set; }
     public int ShowtimeId { get; set; }
-
     public Participant Participant { get; set; } //ForeignKeys set in context
     public Showtime Showtime { get; set; }
     public int VoteIndex { get; set; }

@@ -28,12 +28,13 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public async Task SimpleJoinEventTest()
     {
-        var joinEvents = _dataGenerator.JoinEventGenerator.Generate(10);
+        var joinEvents = _dataGenerator.JoinEventGenerator.Generate(1000);
         foreach (var joinEvent in joinEvents)
         {
             var UpsertDto = UpsertJoinEventDto.FromModelToUpsertDto(joinEvent);
             var createResponse = await _client.PutAsJsonAsync("/putJoinEvent", UpsertDto);
-            createResponse.EnsureSuccessStatusCode();
+            try { createResponse.EnsureSuccessStatusCode(); }
+            catch (Exception e) { throw new Exception(createResponse.Content.ReadAsStringAsync().Result, e); }
             var id = await createResponse.Content.ReadFromJsonAsync<int>();
             var responseContent = await createResponse.Content.ReadAsStringAsync();
         }

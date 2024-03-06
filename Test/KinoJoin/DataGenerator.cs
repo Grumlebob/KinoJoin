@@ -21,7 +21,7 @@ public class DataGenerator
     {
         _playtimeGenerator = new Faker<Playtime>()
             .RuleFor(p => p.Id, (f, p) => f.IndexFaker + 1)
-            .RuleFor(p => p.StartTime, f => f.Date.Future());
+            .RuleFor(p => p.StartTime, f => f.Date.Future().ToUniversalTime());
 
         _versionTagGenerator = new Faker<VersionTag>()
             .RuleFor(v => v.Id, (f, v) => f.IndexFaker + 1)

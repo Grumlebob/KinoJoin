@@ -1,8 +1,7 @@
-﻿using Application.Interfaces;
+﻿using Application.DTO;
+using Application.Interfaces;
 using Domain.Entities;
 using Infrastructure.Database;
-using Infrastructure.Services;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -361,7 +360,7 @@ public static class AllEndpoints
 
         app.MapPut(
             "/putJoinEvent/",
-            async ([FromBody] JoinEvent joinEvent, [FromServices] IJoinEventService service) =>
+            async ([FromBody] UpsertJoinEventDto joinEventDto, [FromServices] IJoinEventService service) =>
             {
                 /*
                 await using var context = app
@@ -611,8 +610,8 @@ public static class AllEndpoints
                 Console.WriteLine(
                     "movie of first showtime: " + recentlyAddedJoinEvent.Showtimes.FirstOrDefault().Movie.Title);
                     */
-                var result = await service.PutAsync(joinEvent);
-                if (result == null) return Results.Problem();
+                
+                var result = await service.PutAsync(joinEventDto);
                 return Results.Ok(result);
             }
         );

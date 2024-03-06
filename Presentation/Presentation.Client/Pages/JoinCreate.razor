@@ -796,19 +796,37 @@ else
         }
 
 
-        var joinEvent = new JoinEvent
+        var upsertJoinEventDto = new UpsertJoinEventDto
         {
-            Showtimes = pickedShowtimes,
-            Host = host,
-            Title = _eventDetails.EventTitle,
+            Showtimes = pickedShowtimes.Select(s => new UpsertShowtimeDto
+            {
+                Id = s.Id,
+                Playtime = new UpsertPlaytimeDto
+                {
+                    StartTime = s.Playtime.StartTime
+                },
+                CinemaId = s.Cinema.Id,
+                VersionTagId = s.VersionTag.Id,
+                MovieId = s.Movie.Id,
+                RoomId = s.Room.Id
+                
+            }).ToList(),
+            Host = new UpsertHostDto
+            {
+                AuthId = host.AuthId,
+                Email = host.Email,
+                Username = host.Username
+            },
+            Title = _eventDetails.EventTitle!,
             Description = _eventDetails.EventDescription ?? "",
             Deadline = _eventDetails.Deadline,
-            SelectOptions = new List<SelectOption>() { new SelectOption() { VoteOption = "Kan ikke", Color = "lightgray" }, new SelectOption() { VoteOption = "Kan godt", Color = "lightgreen" }, new SelectOption() { VoteOption = "Hvis Nødvendigt (Klik to gange)", Color = "orange" } }
-            //SelectOptions = new List<SelectOption>(){new SelectOption(){VoteOption="ingen priotet",Color="lightgray"}, new SelectOption(){VoteOption="første", Color="lightgreen"}, new SelectOption(){VoteOption="anden", Color="orange"}, new SelectOption(){VoteOption="tredje", Color="red"} } 
+            SelectOptions = new List<UpsertSelectOptionDto> { new () { VoteOption = "Kan ikke", Color = "lightgray" }, new () { VoteOption = "Kan godt", Color = "lightgreen" }, new () { VoteOption = "Hvis Nødvendigt (Klik to gange)", Color = "orange" } },
+            ChosenShowtimeId = null,
+            Participants = []
         };
 
 
-        var response = await client.PutAsJsonAsync(url, joinEvent);
+        var response = await client.PutAsJsonAsync(url, upsertJoinEventDto);
         var id = await response.Content.ReadAsStringAsync();
 
 

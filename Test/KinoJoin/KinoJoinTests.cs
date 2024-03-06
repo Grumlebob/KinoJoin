@@ -4,6 +4,7 @@ using Application.DTO;
 using Bogus;
 using Domain.Entities;
 using FluentAssertions;
+using Presentation;
 using Test.Monkey;
 
 namespace Test.KinoJoin;
@@ -27,20 +28,15 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public async Task SimpleJoinEventTest()
     {
-        var JoinEvents = _dataGenerator.JoinEventGenerator.Generate(10);
-        foreach (var JoinEvent in JoinEvents)
+        var joinEvents = _dataGenerator.JoinEventGenerator.Generate(10);
+        foreach (var joinEvent in joinEvents)
         {
-            var UpsertDto = UpsertJoinEventDto.FromModelToUpsertDto(JoinEvent);
+            var UpsertDto = UpsertJoinEventDto.FromModelToUpsertDto(joinEvent);
             var createResponse = await _client.PutAsJsonAsync("/putJoinEvent", UpsertDto);
             createResponse.EnsureSuccessStatusCode();
             var id = await createResponse.Content.ReadFromJsonAsync<int>();
             var responseContent = await createResponse.Content.ReadAsStringAsync();
         }
-        Console.WriteLine("e");
-        var a = 1;
-        var v = "efdef";
-
-
     }
 
     //We don't care about the InitializeAsync method, but needed to implement the IAsyncLifetime interface

@@ -48,7 +48,7 @@ public class DataGenerator
             .RuleFor(h => h.AuthId, f => f.Random.Uuid().ToString())
             .RuleFor(h => h.Email, f => f.Internet.Email())
             .RuleFor(h => h.Username, f => f.Internet.UserName());
-        
+
         _showtimeGenerator = new Faker<Showtime>()
             .RuleFor(s => s.Id, (f, s) => f.IndexFaker + 1)
             .RuleFor(s => s.Movie, f => f.PickRandom(_movieGenerator.Generate()))
@@ -56,7 +56,7 @@ public class DataGenerator
             .RuleFor(s => s.Playtime, f => f.PickRandom(_playtimeGenerator.Generate()))
             .RuleFor(s => s.VersionTag, f => f.PickRandom(_versionTagGenerator.Generate()))
             .RuleFor(s => s.Room, f => f.PickRandom(_roomGenerator.Generate()));
-        
+
         _participantGenerator = new Faker<Participant>()
             .RuleFor(p => p.Id, (f, p) => f.IndexFaker + 1)
             .RuleFor(p => p.AuthId, f => f.Random.Uuid().ToString())
@@ -74,7 +74,7 @@ public class DataGenerator
             var JoinEventId = f.IndexFaker + 1;
 
             var participants = _participantGenerator.Generate(f.Random.Int(0, 5));
-            
+
             var joinEvent = new JoinEvent
             {
                 Id = JoinEventId,

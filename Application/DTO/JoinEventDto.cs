@@ -18,69 +18,67 @@ public class UpsertJoinEventDto
         {
             Id = joinEvent.Id, //1
             Title = joinEvent.Title, //+
-            Description = joinEvent.Description,//+
+            Description = joinEvent.Description, //+
             Host = new UpsertHostDto //+
             {
-                AuthId = joinEvent.Host.AuthId, 
+                AuthId = joinEvent.Host.AuthId,
                 Email = joinEvent.Host.AuthId,
                 Username = joinEvent.Host.Username
             },
             ChosenShowtimeId = joinEvent.ChosenShowtimeId, //1
             Deadline = joinEvent.Deadline, //+
-            Showtimes = joinEvent.Showtimes.Select(st => new UpsertShowtimeDto //+
-            {
-                Id = st.Id, //1
-                Movie = new UpsertMovieDto
+            Showtimes = joinEvent
+                .Showtimes.Select(st => new UpsertShowtimeDto //+
                 {
-                    Id = st.Movie.Id, //1
-                    Title = st.Movie.Title,
-                    AgeRating = st.Movie.AgeRating,
-                    PremiereDate = st.Movie.PremiereDate,
-                    KinoURL = st.Movie.KinoURL,
-                    ImageUrl = st.Movie.ImageUrl,
-                    Duration = st.Movie.Duration
-                },
-                Cinema = new UpsertCinemaDto
+                    Id = st.Id, //1
+                    Movie = new UpsertMovieDto
+                    {
+                        Id = st.Movie.Id, //1
+                        Title = st.Movie.Title,
+                        AgeRating = st.Movie.AgeRating,
+                        PremiereDate = st.Movie.PremiereDate,
+                        KinoURL = st.Movie.KinoURL,
+                        ImageUrl = st.Movie.ImageUrl,
+                        Duration = st.Movie.Duration
+                    },
+                    Cinema = new UpsertCinemaDto { Id = st.Cinema.Id, Name = st.Cinema.Name },
+                    Playtime = new UpsertPlaytimeDto { StartTime = st.Playtime.StartTime },
+                    VersionTag = new UpsertVersionTagDto { Type = st.VersionTag.Type },
+                    Room = new UpsertRoomDto
+                    {
+                        Id = st.Room.Id, //1
+                        Name = st.Room.Name
+                    }
+                })
+                .ToList(),
+            Participants = joinEvent
+                .Participants.Select(p => new UpsertParticipantDto //+
                 {
-                    Id   = st.Cinema.Id,
-                    Name = st.Cinema.Name
-                },
-                Playtime = new UpsertPlaytimeDto
+                    Id = p.Id, //1
+                    AuthId = p.AuthId,
+                    Email = p.Email,
+                    Nickname = p.Nickname,
+                    Note = p.Note,
+                    JoinEventId = joinEvent.Id, //1
+                    VotedFor = p
+                        .VotedFor.Select(v => new UpsertParticipantVoteDto
+                        {
+                            ShowtimeId = v.ShowtimeId, //1
+                            VoteIndex = v.VoteIndex //0
+                        })
+                        .ToList()
+                })
+                .ToList(),
+            SelectOptions = joinEvent
+                .SelectOptions.Select(s => new UpsertSelectOptionDto
                 {
-                    StartTime = st.Playtime.StartTime
-                },
-                VersionTag = new UpsertVersionTagDto
-                {
-                    Type = st.VersionTag.Type
-                },
-                Room = new UpsertRoomDto
-                {
-                    Id = st.Room.Id, //1
-                    Name = st.Room.Name
-                }
-            }).ToList(),
-            Participants = joinEvent.Participants.Select(p => new UpsertParticipantDto //+
-            {
-                Id = p.Id, //1
-                AuthId = p.AuthId,
-                Email = p.Email,
-                Nickname = p.Nickname,
-                Note = p.Note,
-                JoinEventId = joinEvent.Id, //1
-                VotedFor = p.VotedFor.Select(v => new UpsertParticipantVoteDto
-                {
-                    ShowtimeId = v.ShowtimeId, //1
-                    VoteIndex = v.VoteIndex //0
-                }).ToList()
-            }).ToList(),
-            SelectOptions = joinEvent.SelectOptions.Select(s => new UpsertSelectOptionDto
-            {
-                Id = s.Id,
-                VoteOption = s.VoteOption,
-                Color = s.Color
-            }).ToList()
+                    Id = s.Id,
+                    VoteOption = s.VoteOption,
+                    Color = s.Color
+                })
+                .ToList()
         };
-        
+
         return upsertJoinEventDto;
     }
 
@@ -98,56 +96,53 @@ public class UpsertJoinEventDto
                 Username = joinEventDto.Host.Username
             },
             HostId = joinEventDto.Host.AuthId,
-            Participants = joinEventDto.Participants.Select(p => new Participant
-            {
-                AuthId = p.AuthId,
-                Email = p.Email,
-                Note = p.Note,
-                Nickname = p.Nickname,
-                JoinEventId = p.JoinEventId,
-                VotedFor = p.VotedFor.Select(v => new ParticipantVote
+            Participants = joinEventDto
+                .Participants.Select(p => new Participant
                 {
-                    ShowtimeId = v.ShowtimeId,
-                    VoteIndex = v.VoteIndex
-                }).ToList()
-            }).ToList(),
-            SelectOptions = joinEventDto.SelectOptions.Select(s => new SelectOption
-            {
-                VoteOption = s.VoteOption,
-                Color = s.Color
-            }).ToList(),
-            Showtimes = joinEventDto.Showtimes.Select(s => new Showtime
-            {
-                Id = s.Id,
-                Playtime = new Playtime { StartTime = s.Playtime.StartTime },
-                VersionTag = new VersionTag
+                    AuthId = p.AuthId,
+                    Email = p.Email,
+                    Note = p.Note,
+                    Nickname = p.Nickname,
+                    JoinEventId = p.JoinEventId,
+                    VotedFor = p
+                        .VotedFor.Select(v => new ParticipantVote
+                        {
+                            ShowtimeId = v.ShowtimeId,
+                            VoteIndex = v.VoteIndex
+                        })
+                        .ToList()
+                })
+                .ToList(),
+            SelectOptions = joinEventDto
+                .SelectOptions.Select(s => new SelectOption
                 {
-                    Type = s.VersionTag.Type
-                },
-                RoomId = s.Room.Id,
-                Room = new Room
+                    VoteOption = s.VoteOption,
+                    Color = s.Color
+                })
+                .ToList(),
+            Showtimes = joinEventDto
+                .Showtimes.Select(s => new Showtime
                 {
-                    Id = s.Room.Id,
-                    Name = s.Room.Name
-                },
-                CinemaId = s.Cinema.Id,
-                Cinema = new Cinema
-                {
-                    Id = s.Cinema.Id,
-                    Name = s.Cinema.Name
-                },
-                MovieId = s.Movie.Id,
-                Movie = new Movie
-                {
-                    Id = s.Movie.Id,
-                    Title = s.Movie.Title,
-                    AgeRating = s.Movie.AgeRating,
-                    PremiereDate = s.Movie.PremiereDate,
-                    KinoURL = s.Movie.KinoURL,
-                    ImageUrl = s.Movie.ImageUrl,
-                    Duration = s.Movie.Duration
-                }
-            }).ToList(),
+                    Id = s.Id,
+                    Playtime = new Playtime { StartTime = s.Playtime.StartTime },
+                    VersionTag = new VersionTag { Type = s.VersionTag.Type },
+                    RoomId = s.Room.Id,
+                    Room = new Room { Id = s.Room.Id, Name = s.Room.Name },
+                    CinemaId = s.Cinema.Id,
+                    Cinema = new Cinema { Id = s.Cinema.Id, Name = s.Cinema.Name },
+                    MovieId = s.Movie.Id,
+                    Movie = new Movie
+                    {
+                        Id = s.Movie.Id,
+                        Title = s.Movie.Title,
+                        AgeRating = s.Movie.AgeRating,
+                        PremiereDate = s.Movie.PremiereDate,
+                        KinoURL = s.Movie.KinoURL,
+                        ImageUrl = s.Movie.ImageUrl,
+                        Duration = s.Movie.Duration
+                    }
+                })
+                .ToList(),
             ChosenShowtimeId = joinEventDto.ChosenShowtimeId,
         };
     }

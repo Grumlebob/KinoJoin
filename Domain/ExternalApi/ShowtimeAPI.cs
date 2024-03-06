@@ -143,7 +143,13 @@ public class FieldMediaImageConverter : JsonConverter
     {
         return (objectType == typeof(FieldMediaImage));
     }
-    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+
+    public override object ReadJson(
+        JsonReader reader,
+        Type objectType,
+        object existingValue,
+        JsonSerializer serializer
+    )
     {
         JToken token = JToken.Load(reader);
         if (token.Type == JTokenType.Array)
@@ -198,7 +204,7 @@ public class SourceItem
     public string? Type { get; set; }
 
     [JsonProperty("width")]
-    public int? Width { get; set; } 
+    public int? Width { get; set; }
 
     [JsonProperty("height")]
     public int? Height { get; set; }

@@ -77,7 +77,6 @@ app.MapCarter();
 
 if (GlobalSettings.ShouldPreSeedDatabase)
 {
-    
     using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<KinoContext>();
@@ -105,11 +104,9 @@ if (GlobalSettings.ShouldPreSeedDatabase)
                     var cinema = await context.Cinemas.FindAsync(cinemaOption.Key);
                     if (cinema == null)
                     {
-                        context.Cinemas.Add(new Cinema
-                        {
-                            Id = cinemaOption.Key,
-                            Name = cinemaOption.Value
-                        });
+                        context.Cinemas.Add(
+                            new Cinema { Id = cinemaOption.Key, Name = cinemaOption.Value }
+                        );
                     }
                     else
                     {
@@ -120,14 +117,14 @@ if (GlobalSettings.ShouldPreSeedDatabase)
                 //VersionTags
                 foreach (var versionOption in facets.Versions.Options)
                 {
-                    var version = await context.Versions.Where(v => v.Type == versionOption.Value)
+                    var version = await context
+                        .Versions.Where(v => v.Type == versionOption.Value)
                         .FirstOrDefaultAsync();
                     if (version == null)
                     {
-                        await context.Versions.AddAsync(new VersionTag
-                        {
-                            Type = versionOption.Value
-                        });
+                        await context.Versions.AddAsync(
+                            new VersionTag { Type = versionOption.Value }
+                        );
                     }
 
                     await context.SaveChangesAsync();
@@ -139,11 +136,9 @@ if (GlobalSettings.ShouldPreSeedDatabase)
                     var genre = await context.Genres.FindAsync(genreOption.Key);
                     if (genre == null)
                     {
-                        context.Genres.Add(new Genre
-                        {
-                            Id = genreOption.Key,
-                            Name = genreOption.Value
-                        });
+                        context.Genres.Add(
+                            new Genre { Id = genreOption.Key, Name = genreOption.Value }
+                        );
                     }
                     else
                     {
@@ -162,21 +157,27 @@ if (GlobalSettings.ShouldPreSeedDatabase)
 
                 foreach (var jsonCinema in apiResultObject.Content.Content.Content.Content)
                 {
-                    foreach (var jsonMovie in
-                             jsonCinema.Movies.Where(jsonMovie =>
-                                 _movieIdsToNames
-                                     .ContainsKey(jsonMovie
-                                         .Id))) //if not contains key it is not a movie (there are events with different ids)
+                    foreach (
+                        var jsonMovie in jsonCinema.Movies.Where(jsonMovie =>
+                            _movieIdsToNames.ContainsKey(jsonMovie.Id)
+                        )
+                    ) //if not contains key it is not a movie (there are events with different ids)
                     {
                         int.TryParse(jsonMovie.Content.FieldPlayingTime, out var duration);
-                        if (!existingMovies.TryGetValue(jsonMovie.Id,
-                                out var movieObject)) //use existing movie object or create new
+                        if (!existingMovies.TryGetValue(jsonMovie.Id, out var movieObject)) //use existing movie object or create new
                         {
                             string imageUrl = null;
-                            if (jsonMovie?.Content?.FieldPoster?.FieldMediaImage?.Sources != null &&
-                                jsonMovie.Content.FieldPoster.FieldMediaImage.Sources.Any())
+                            if (
+                                jsonMovie?.Content?.FieldPoster?.FieldMediaImage?.Sources != null
+                                && jsonMovie.Content.FieldPoster.FieldMediaImage.Sources.Any()
+                            )
                             {
-                                imageUrl = jsonMovie.Content.FieldPoster.FieldMediaImage.Sources[0]?.Srcset;
+                                imageUrl = jsonMovie
+                                    .Content
+                                    .FieldPoster
+                                    .FieldMediaImage
+                                    .Sources[0]
+                                    ?.Srcset;
                             }
 
                             movieObject = new Movie
@@ -227,6 +228,4 @@ if (GlobalSettings.ShouldPreSeedDatabase)
 app.Run();
 
 //A hacky solution to use Testcontainers with WebApplication.CreateBuilder for integration tests
-public partial class Program
-{
-}
+public partial class Program { }

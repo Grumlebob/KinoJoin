@@ -95,9 +95,31 @@ public class UpsertJoinEventDto
     
     public static UpsertJoinEventDto FromModelToUpsertDto(JoinEvent joinEvent)
     {
+        if (joinEvent == null)
+        {
+            return null;
+        }
 
+        var upsertDto = new UpsertJoinEventDto
+        {
+            Id = joinEvent.Id,
+            Title = joinEvent.Title,
+            Description = joinEvent.Description,
+            Host = joinEvent.Host, // Assuming Host class is the same in both models
+            ChosenShowtimeId = joinEvent.ChosenShowtimeId,
+            Deadline = joinEvent.Deadline,
+            Showtimes = joinEvent.Showtimes.Select(st => new UpsertShowtimeDto
+            {
+                Id = st.Id,
+                MovieId = st.MovieId,
+                CinemaId = st.CinemaId,
+                PlaytimeId = st.PlaytimeId,
+                VersionTagId = st.VersionTagId,
+                RoomId = st.RoomId
+            }).ToList()
+        };
 
-        return null;
+        return upsertDto;
     }
     
 }

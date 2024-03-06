@@ -1,5 +1,6 @@
 using Application;
 using Application.Interfaces;
+using Carter;
 using Domain.Entities;
 using Domain.ExternalApi;
 using Infrastructure;
@@ -45,6 +46,8 @@ builder.Services.AddDbContextFactory<KinoContext>(options =>
     options.EnableDetailedErrors();
 });
 
+builder.Services.AddCarter();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -70,12 +73,11 @@ app.MapRazorComponents<App>()
 
 app.MapMonkeyEndpoints();
 app.MapKinoJoinEndpoints();
+app.MapCarter();
 
 if (GlobalSettings.ShouldPreSeedDatabase)
 {
-
-
-
+    
     using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<KinoContext>();

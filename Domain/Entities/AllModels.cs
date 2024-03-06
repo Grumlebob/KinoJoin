@@ -16,12 +16,10 @@ public class Participant
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-
     public string? AuthId { get; set; }
     public int JoinEventId { get; set; }
     public string Nickname { get; set; }
     public string? Email { get; set; }
-
     public string? Note { get; set; }
 
     //navigation property

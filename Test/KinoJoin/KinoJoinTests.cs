@@ -27,15 +27,15 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public async Task SimpleJoinEventTest()
     {
-        var JoinEvent = _dataGenerator.JoinEventGenerator.Generate(1)[0];
-        var UpsertDto = UpsertJoinEventDto.FromModelToUpsertDto(JoinEvent);
-
-        var createResponse = await _client.PutAsJsonAsync("/putJoinEvent", UpsertDto);
-        createResponse.EnsureSuccessStatusCode();
-        var id = await createResponse.Content.ReadFromJsonAsync<int>();
-        var responseContent = await createResponse.Content.ReadAsStringAsync();
-        Console.WriteLine(responseContent); // Log the response content to inspect it
-
+        var JoinEvents = _dataGenerator.JoinEventGenerator.Generate(2);
+        foreach (var JoinEvent in JoinEvents)
+        {
+            var UpsertDto = UpsertJoinEventDto.FromModelToUpsertDto(JoinEvent);
+            var createResponse = await _client.PutAsJsonAsync("/putJoinEvent", UpsertDto);
+            createResponse.EnsureSuccessStatusCode();
+            var id = await createResponse.Content.ReadFromJsonAsync<int>();
+            var responseContent = await createResponse.Content.ReadAsStringAsync();
+        }
 
     }
 

@@ -62,15 +62,13 @@ public class Movie
 {
     [Key]
     public int Id { get; set; }
-
     public string Title { get; set; }
     public List<Showtime>? Showtimes { get; set; }
-    public string ImageUrl { get; set; }
-    public string KinoURL { get; set; }
-    public int Duration { get; set; }
-    public string PremiereDate { get; set; }
-
-    public string AgeRating { get; set; }
+    public string? ImageUrl { get; set; }
+    public string? KinoURL { get; set; }
+    public int? Duration { get; set; }
+    public string? PremiereDate { get; set; }
+    public string? AgeRating { get; set; }
 }
 
 public class Showtime
@@ -173,7 +171,7 @@ public class Genre
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public required int Id { get; init; }
+    public required int Id { get; set; }
 
-    public required string Name { get; init; }
+    public string Name { get; set; }
 }

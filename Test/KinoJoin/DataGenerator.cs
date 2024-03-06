@@ -34,18 +34,18 @@ public class DataGenerator
             .RuleFor(c => c.Id, (f, c) => f.IndexFaker + 1)
             .RuleFor(c => c.Name, f => f.Company.CompanyName());
 
-        _showtimeGenerator = new Faker<Showtime>()
-            .RuleFor(s => s.Id, (f, s) => f.IndexFaker + 1)
-            .RuleFor(s => s.CinemaId, f => f.PickRandom(_cinemaGenerator.Generate()).Id)
-            .RuleFor(s => s.PlaytimeId, f => f.PickRandom(_playtimeGenerator.Generate()).Id)
-            .RuleFor(s => s.VersionTagId, f => f.PickRandom(_versionTagGenerator.Generate()).Id)
-            .RuleFor(s => s.RoomId, f => f.PickRandom(_roomGenerator.Generate()).Id);
-
         _movieGenerator = new Faker<Movie>()
             .RuleFor(m => m.Id, (f, m) => f.IndexFaker + 1)
-            .RuleFor(m => m.Title, f => f.Lorem.Sentence())
-            .RuleFor(m => m.Showtimes, f => _showtimeGenerator.Generate(f.Random.Int(1, 5)));
+            .RuleFor(m => m.Title, f => f.Lorem.Sentence());
 
+        _showtimeGenerator = new Faker<Showtime>()
+            .RuleFor(s => s.Id, (f, s) => f.IndexFaker + 1)
+            .RuleFor(s => s.Cinema, f => f.PickRandom(_cinemaGenerator.Generate()))
+            .RuleFor(s => s.Playtime, f => f.PickRandom(_playtimeGenerator.Generate()))
+            .RuleFor(s => s.VersionTag, f => f.PickRandom(_versionTagGenerator.Generate()))
+            .RuleFor(s => s.Room, f => f.PickRandom(_roomGenerator.Generate()))
+            .RuleFor(s => s.Movie, f => f.PickRandom(_movieGenerator.Generate()));
+        
         _participantGenerator = new Faker<Participant>()
             .RuleFor(p => p.Id, (f, p) => f.IndexFaker + 1)
             .RuleFor(p => p.AuthId, f => f.Random.Uuid().ToString())
@@ -60,17 +60,15 @@ public class DataGenerator
 
         JoinEventGenerator = new Faker<JoinEvent>().CustomInstantiator(f =>
         {
-            var movies = _movieGenerator.Generate(f.Random.Int(1, 5));
-
             var joinEvent = new JoinEvent
             {
                 Id = f.Random.Int(1),
                 HostId = f.Random.Uuid().ToString(),
                 Title = f.Lorem.Sentence(),
                 Description = f.Lorem.Paragraph(),
-                Showtimes = movies.SelectMany(m => m.Showtimes!).ToList(),
-                Participants = _participantGenerator.Generate(f.Random.Int(0, 10)),
-                SelectOptions = _selectOptionGenerator.Generate(f.Random.Int(1, 5)),
+                Showtimes = _showtimeGenerator.Generate(f.Random.Int(1, 2)),
+                Participants = _participantGenerator.Generate(f.Random.Int(1, 2)),
+                SelectOptions = _selectOptionGenerator.Generate(f.Random.Int(1, 2)),
                 Deadline = f.Date.Future(),
                 Host = null
             };

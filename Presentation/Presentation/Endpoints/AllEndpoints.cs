@@ -361,7 +361,7 @@ public static class AllEndpoints
 
         app.MapPut(
             "/putJoinEvent/",
-            async ([FromBody] UpsertJoinEventDto joinEventDto, [FromServices] IJoinEventService service) =>
+            async ([FromBody] UpsertJoinEventDto UpsertJoinEventDto, [FromServices] IJoinEventService service) =>
             {
                 /*
                 await using var context = app
@@ -612,7 +612,7 @@ public static class AllEndpoints
                     "movie of first showtime: " + recentlyAddedJoinEvent.Showtimes.FirstOrDefault().Movie.Title);
                     */
                 
-                var result = await service.PutAsync(joinEventDto);
+                var result = await service.PutAsync(UpsertJoinEventDto);
                 return Results.Ok(result);
             }
         );

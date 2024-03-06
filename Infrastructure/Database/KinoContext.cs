@@ -49,13 +49,7 @@ public class KinoContext : DbContext
         modelBuilder.Entity<Cinema>().HasKey(c => c.Id);
         modelBuilder.Entity<Room>().HasKey(s => s.Id);
         modelBuilder.Entity<SelectOption>().HasKey(s => s.Id);
-
-        // Configure relationships for Movie and Showtime
-        modelBuilder
-            .Entity<Movie>()
-            .HasMany(m => m.Showtimes)
-            .WithOne(s => s.Movie)
-            .HasForeignKey(s => s.MovieId);
+        
 
         // Make showtime key MovieId, CinemaId, ShowtimeId, VersionId, SalId
         modelBuilder.Entity<Showtime>().HasKey(st => st.Id);

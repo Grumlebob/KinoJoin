@@ -62,7 +62,6 @@ public class Movie
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int Id { get; set; }
     public string Title { get; set; }
-    public List<Showtime>? Showtimes { get; set; }
     public string? ImageUrl { get; set; }
     public string? KinoURL { get; set; }
     public int? Duration { get; set; }

@@ -165,7 +165,6 @@ using (var scope = app.Services.CreateScope())
                     AgeRating = jsonMovie.Content.FieldCensorshipIcon,
                     ImageUrl = jsonMovie.Content.FieldPoster.FieldMediaImage.Sources[0].Srcset,
                     Duration = duration,
-                    Showtimes = new List<Showtime>()
                 };
                 existingMovies.Add(movieObject.Id, movieObject);
             }

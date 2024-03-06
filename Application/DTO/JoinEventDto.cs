@@ -14,68 +14,79 @@ public class UpsertJoinEventDto
 
     public static UpsertJoinEventDto FromModelToUpsertDto(JoinEvent joinEvent)
     {
-        return new UpsertJoinEventDto
+        try
         {
-            Id = joinEvent.Id,
-            Title = joinEvent.Title,
-            Description = joinEvent.Description,
-            Host = new UpsertHostDto
+            return new UpsertJoinEventDto
             {
-                AuthId = joinEvent.Host.AuthId,
-                Email = joinEvent.Host.AuthId,
-                Username = joinEvent.Host.Username
-            },
-            ChosenShowtimeId = joinEvent.ChosenShowtimeId,
-            Deadline = joinEvent.Deadline,
-            Showtimes = joinEvent.Showtimes.Select(st => new UpsertShowtimeDto
-            {
-                Id = st.Id,
-                Movie = new UpsertMovieDto
+                Id = joinEvent.Id,
+                Title = joinEvent.Title,
+                Description = joinEvent.Description,
+                Host = new UpsertHostDto
                 {
-                    Id = st.Movie.Id, 
-                    Title = st.Movie.Title,
-                    AgeRating = st.Movie.AgeRating,
-                    PremiereDate = st.Movie.PremiereDate,
-                    KinoURL = st.Movie.KinoURL,
-                    ImageUrl = st.Movie.ImageUrl,
-                    Duration = st.Movie.Duration
+                    AuthId = joinEvent.Host.AuthId,
+                    Email = joinEvent.Host.AuthId,
+                    Username = joinEvent.Host.Username
                 },
-                CinemaId = st.Cinema.Id,
-                Playtime = new UpsertPlaytimeDto
+                ChosenShowtimeId = joinEvent.ChosenShowtimeId,
+                Deadline = joinEvent.Deadline,
+                Showtimes = joinEvent.Showtimes.Select(st => new UpsertShowtimeDto
                 {
-                    StartTime = st.Playtime.StartTime
-                },
-                VersionTag = new UpsertVersionTagDto
+                    Id = st.Id,
+                    Movie = new UpsertMovieDto
+                    {
+                        Id = st.Movie.Id,
+                        Title = st.Movie.Title,
+                        AgeRating = st.Movie.AgeRating,
+                        PremiereDate = st.Movie.PremiereDate,
+                        KinoURL = st.Movie.KinoURL,
+                        ImageUrl = st.Movie.ImageUrl,
+                        Duration = st.Movie.Duration
+                    },
+                    CinemaId = st.Cinema.Id,
+                    Playtime = new UpsertPlaytimeDto
+                    {
+                        StartTime = st.Playtime.StartTime
+                    },
+                    VersionTag = new UpsertVersionTagDto
+                    {
+                        Type = st.VersionTag.Type
+                    },
+                    Room = new UpsertRoomDto
+                    {
+                        Id = st.Room.Id,
+                        Name = st.Room.Name
+                    }
+                }).ToList(),
+                Participants = joinEvent.Participants.Select(p => new UpsertParticipantDto
                 {
-                    Type = st.VersionTag.Type
-                },
-                Room = new UpsertRoomDto
+                    Id = p.Id,
+                    AuthId = p.AuthId,
+                    Email = p.Email,
+                    Nickname = p.Nickname,
+                    Note = p.Note,
+                    JoinEventId = joinEvent.Id,
+                    VotedFor = p.VotedFor.Select(v => new UpsertParticipantVoteDto
+                    {
+                        ShowtimeId = v.ShowtimeId,
+                        VoteIndex = v.VoteIndex
+                    }).ToList()
+                }).ToList(),
+                SelectOptions = joinEvent.SelectOptions.Select(s => new UpsertSelectOptionDto
                 {
-                    Id   = st.Room.Id,
-                    Name = st.Room.Name
-                }
-            }).ToList(),
-            Participants = joinEvent.Participants.Select(p => new UpsertParticipantDto
-            {
-                Id = p.Id,
-                AuthId = p.AuthId,
-                Email = p.Email,
-                Nickname = p.Nickname,
-                Note = p.Note,
-                JoinEventId = joinEvent.Id,
-                VotedFor = p.VotedFor.Select(v => new UpsertParticipantVoteDto
-                {
-                    ShowtimeId = v.ShowtimeId,
-                    VoteIndex = v.VoteIndex
+                    Id = s.Id,
+                    VoteOption = s.VoteOption,
+                    Color = s.Color
                 }).ToList()
-            }).ToList(),
-            SelectOptions = joinEvent.SelectOptions.Select(s => new UpsertSelectOptionDto
+            };
+        }
+        catch (Exception e)
+        {
+            return new UpsertJoinEventDto()
             {
-                Id = s.Id,
-                VoteOption = s.VoteOption,
-                Color = s.Color
-            }).ToList()
-        };
+                Title = "det gik helt klart galt herinde",
+                Host = null
+            };
+        }
     }
 
     public static JoinEvent FromUpsertDtoToModel(UpsertJoinEventDto joinEventDto)

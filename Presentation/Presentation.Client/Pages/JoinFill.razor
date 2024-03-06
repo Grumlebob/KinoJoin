@@ -157,6 +157,7 @@ else
         await JsRuntime.InvokeVoidAsync("customFunctions.scrollToBottom");
     }
 
+    //TODO HVORNÅR BLIVER DEN HER KALDT, TIL FORSKEL FOR DET KALD VI LAVER INDE I "REGISTERPARTICIPANTVOTE"?
     private async Task UpdateJoinEvent()
     {
         _event!.Deadline = _deadline;

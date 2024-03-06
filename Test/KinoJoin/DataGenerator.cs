@@ -99,16 +99,19 @@ public class DataGenerator
                 participant.JoinEventId = JoinEventId;
                 participant.VotedFor = new List<ParticipantVote>();
                 var numberOfVotes = f.Random.Int(0, joinEvent.Showtimes.Count);
+                var remainingShowtimes = joinEvent.Showtimes.Select(s => s.Id).ToList();
                 for (int i = 0; i < numberOfVotes; i++)
                 {
+                    var chosenShowtime = f.PickRandom(remainingShowtimes);
                     participant.VotedFor.Add(
                         new ParticipantVote
                         {
                             ParticipantId = participant.Id,
-                            ShowtimeId = f.PickRandom(joinEvent.Showtimes).Id,
+                            ShowtimeId = chosenShowtime,
                             VoteIndex = f.Random.Int(0, joinEvent.Showtimes.Count - 1)
                         }
                     );
+                    remainingShowtimes.Remove(chosenShowtime);
                 }
             }
 

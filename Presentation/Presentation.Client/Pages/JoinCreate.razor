@@ -804,7 +804,11 @@ else
                 {
                     StartTime = s.Playtime.StartTime
                 },
-                CinemaId = s.Cinema.Id,
+                Cinema = new UpsertCinemaDto
+                {
+                    Id = s.Cinema.Id,
+                    Name = s.Cinema.Name
+                },
                 VersionTag = new UpsertVersionTagDto
                 {
                     Type = s.VersionTag.Type

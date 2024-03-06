@@ -27,7 +27,7 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public async Task SimpleJoinEventTest()
     {
-        var JoinEvents = _dataGenerator.JoinEventGenerator.Generate(2);
+        var JoinEvents = _dataGenerator.JoinEventGenerator.Generate(10);
         foreach (var JoinEvent in JoinEvents)
         {
             var UpsertDto = UpsertJoinEventDto.FromModelToUpsertDto(JoinEvent);
@@ -36,6 +36,10 @@ public class KinoJoinTests : IAsyncLifetime
             var id = await createResponse.Content.ReadFromJsonAsync<int>();
             var responseContent = await createResponse.Content.ReadAsStringAsync();
         }
+        Console.WriteLine("e");
+        var a = 1;
+        var v = "efdef";
+
 
     }
 

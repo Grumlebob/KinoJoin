@@ -40,7 +40,11 @@ public class UpsertJoinEventDto
                     ImageUrl = st.Movie.ImageUrl,
                     Duration = st.Movie.Duration
                 },
-                CinemaId = st.Cinema.Id, //1
+                Cinema = new UpsertCinemaDto
+                {
+                    Id   = st.Cinema.Id,
+                    Name = st.Cinema.Name
+                },
                 Playtime = new UpsertPlaytimeDto
                 {
                     StartTime = st.Playtime.StartTime
@@ -126,7 +130,12 @@ public class UpsertJoinEventDto
                     Id = s.Room.Id,
                     Name = s.Room.Name
                 },
-                CinemaId = s.CinemaId,
+                CinemaId = s.Cinema.Id,
+                Cinema = new Cinema
+                {
+                    Id = s.Cinema.Id,
+                    Name = s.Cinema.Name
+                },
                 MovieId = s.Movie.Id,
                 Movie = new Movie
                 {
@@ -149,7 +158,7 @@ public class UpsertShowtimeDto
     public int Id { get; set; }
     public UpsertMovieDto Movie { get; set; }
     public UpsertRoomDto Room { get; set; }
-    public int CinemaId { get; set; }
+    public UpsertCinemaDto Cinema { get; set; }
     public UpsertPlaytimeDto Playtime { get; set; }
     public UpsertVersionTagDto VersionTag { get; set; }
 }
@@ -163,6 +172,12 @@ public class UpsertMovieDto
     public int? Duration { get; set; }
     public string? PremiereDate { get; set; }
     public string? AgeRating { get; set; }
+}
+
+public class UpsertCinemaDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
 }
 
 public class UpsertRoomDto

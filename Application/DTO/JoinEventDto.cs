@@ -30,14 +30,30 @@ public class UpsertJoinEventDto
             Showtimes = joinEvent.Showtimes.Select(st => new UpsertShowtimeDto
             {
                 Id = st.Id,
-                MovieId = st.MovieId,
-                CinemaId = st.CinemaId,
+                Movie = new UpsertMovieDto
+                {
+                    Id = st.Movie.Id, 
+                    Title = st.Movie.Title,
+                    AgeRating = st.Movie.AgeRating,
+                    PremiereDate = st.Movie.PremiereDate,
+                    KinoURL = st.Movie.KinoURL,
+                    ImageUrl = st.Movie.ImageUrl,
+                    Duration = st.Movie.Duration
+                },
+                CinemaId = st.Cinema.Id,
                 Playtime = new UpsertPlaytimeDto
                 {
                     StartTime = st.Playtime.StartTime
                 },
-                VersionTagId = st.VersionTagId,
-                RoomId = st.RoomId
+                VersionTag = new UpsertVersionTagDto
+                {
+                    Type = st.VersionTag.Type
+                },
+                Room = new UpsertRoomDto
+                {
+                    Id   = st.Room.Id,
+                    Name = st.Room.Name
+                }
             }).ToList(),
             Participants = joinEvent.Participants.Select(p => new UpsertParticipantDto
             {
@@ -81,6 +97,13 @@ public class UpsertJoinEventDto
                 AuthId = p.AuthId,
                 Email = p.Email,
                 Note = p.Note,
+                Nickname = p.Nickname,
+                JoinEventId = p.JoinEventId,
+                VotedFor = p.VotedFor.Select(v => new ParticipantVote
+                {
+                    ShowtimeId = v.ShowtimeId,
+                    VoteIndex = v.VoteIndex
+                }).ToList()
             }).ToList(),
             SelectOptions = joinEventDto.SelectOptions.Select(s => new SelectOption
             {
@@ -91,10 +114,28 @@ public class UpsertJoinEventDto
             {
                 Id = s.Id,
                 Playtime = new Playtime { StartTime = s.Playtime.StartTime },
-                VersionTagId = s.VersionTagId,
-                RoomId = s.RoomId,
+                VersionTag = new VersionTag
+                {
+                    Type = s.VersionTag.Type
+                },
+                RoomId = s.Room.Id,
+                Room = new Room
+                {
+                    Id = s.Room.Id,
+                    Name = s.Room.Name
+                },
                 CinemaId = s.CinemaId,
-                MovieId = s.MovieId
+                MovieId = s.Movie.Id,
+                Movie = new Movie
+                {
+                    Id = s.Movie.Id,
+                    Title = s.Movie.Title,
+                    AgeRating = s.Movie.AgeRating,
+                    PremiereDate = s.Movie.PremiereDate,
+                    KinoURL = s.Movie.KinoURL,
+                    ImageUrl = s.Movie.ImageUrl,
+                    Duration = s.Movie.Duration
+                }
             }).ToList(),
             ChosenShowtimeId = joinEventDto.ChosenShowtimeId,
         };
@@ -104,11 +145,28 @@ public class UpsertJoinEventDto
 public class UpsertShowtimeDto
 {
     public int Id { get; set; }
-    public int MovieId { get; set; }
+    public UpsertMovieDto Movie { get; set; }
+    public UpsertRoomDto Room { get; set; }
     public int CinemaId { get; set; }
     public UpsertPlaytimeDto Playtime { get; set; }
-    public int VersionTagId { get; set; }
-    public int RoomId { get; set; }
+    public UpsertVersionTagDto VersionTag { get; set; }
+}
+
+public class UpsertMovieDto
+{
+    public int Id { get; set; }
+    public string Title { get; set; }
+    public string? ImageUrl { get; set; }
+    public string? KinoURL { get; set; }
+    public int? Duration { get; set; }
+    public string? PremiereDate { get; set; }
+    public string? AgeRating { get; set; }
+}
+
+public class UpsertRoomDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
 }
 
 public class UpsertParticipantDto
@@ -140,6 +198,11 @@ public class UpsertHostDto
     public required string AuthId { get; set; }
     public string Username { get; set; }
     public string? Email { get; set; }
+}
+
+public class UpsertVersionTagDto
+{
+    public string Type { get; set; }
 }
 
 public class UpsertPlaytimeDto

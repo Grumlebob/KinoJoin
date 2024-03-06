@@ -108,11 +108,13 @@ using (var scope = app.Services.CreateScope())
         var version = await context.Versions.Where(v => v.Type == versionOption.Value).FirstOrDefaultAsync();
         if (version == null)
         {
-            context.Versions.Add(new VersionTag
+            await context.Versions.AddAsync(new VersionTag
             {
                 Type = versionOption.Value
             });
         }
+
+        await context.SaveChangesAsync();
     }
 
     //Genres

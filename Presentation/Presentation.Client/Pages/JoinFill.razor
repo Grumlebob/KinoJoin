@@ -160,8 +160,9 @@ else
     private async Task UpdateJoinEvent()
     {
         _event!.Deadline = _deadline;
+        var upsertJoinEventDto = UpsertJoinEventDto.FromModelToUpsertDto(_event!);
         var httpClient = new HttpClient();
-        var response = await httpClient.PutAsJsonAsync($"{_baseUrl}putJoinEvent", _event);
+        var response = await httpClient.PutAsJsonAsync($"{_baseUrl}putJoinEvent", upsertJoinEventDto);
         Console.WriteLine(response.IsSuccessStatusCode ? "Updated" : "Failed to update");
     }
 

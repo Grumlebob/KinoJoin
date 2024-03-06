@@ -109,8 +109,10 @@ else if (!_answerSaved)
         }
 
         var p = new Participant { AuthId = LoggedInUserId, Nickname = Nickname, Email = Email, Note = Note, VotedFor = VotedFor.ToList(), JoinEventId = Event.Id };
+        Event.Participants.Add(p);
+        var upsertJoinEventDto = UpsertJoinEventDto.FromModelToUpsertDto(Event);
         var httpClient = new HttpClient();
-        var response = await httpClient.PutAsJsonAsync($"{NavigationManager.BaseUri}participate/{Event.Id}", p);
+        var response = await httpClient.PutAsJsonAsync($"{NavigationManager.BaseUri}putJoinEvent", upsertJoinEventDto);
         if (response.IsSuccessStatusCode)
         {
             _infoMessage = "Svar gemt";

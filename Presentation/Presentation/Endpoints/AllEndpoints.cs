@@ -140,6 +140,7 @@ public static class AllEndpoints
                 return Results.Ok(result);
             }
         );
+        /*
         app.MapPut(
             "/participate/{eventId}",
             async (int eventId, [FromBody] Participant p) =>
@@ -332,7 +333,7 @@ public static class AllEndpoints
                 return Results.Ok(participant.Id);
             }
         );
-
+    */
         app.MapDelete(
             "/deleteParticipant/{eventId}/{participantId}",
             async (int eventId, int participantId) =>

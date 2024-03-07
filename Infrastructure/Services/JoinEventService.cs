@@ -98,34 +98,25 @@ public class JoinEventService(KinoContext context) : IJoinEventService
     
     private async Task AttachOnlyOnePlaytimeAndVersionToEfCoreBatched(IEnumerable<Showtime> showtimes)
     {
-        
-        var distinctPlaytimesPrint = showtimes.Select(st => st.Playtime.StartTime).Distinct();
-
-        //build string  using string builder to print
-        var distinctPlaytimesPrintStringBuilder = new StringBuilder();
-        foreach (var time in distinctPlaytimesPrint)
-        {
-            distinctPlaytimesPrintStringBuilder.Append(time);
-            distinctPlaytimesPrintStringBuilder.Append(", ");
-        }
-        Console.WriteLine($"Distinct playtimes: {distinctPlaytimesPrintStringBuilder}");
-        
         try
         {
             // Retrieve all distinct StartTimes and Types from the showtimes.
-            var distinctPlaytimes = showtimes.Select(st => st.Playtime.StartTime).Distinct();
+            var distinctPlaytimes = showtimes.Select(st => st.Playtime.StartTime.Second).Distinct();
             var distinctVersionTypes = showtimes.Select(st => st.VersionTag.Type).Distinct();
 
             // Retrieve all matching Playtimes and VersionTags from the database.
             var playtimes = await context.Playtimes
-                .Where(p => distinctPlaytimes.Contains(p.StartTime))
+                .Where(p => distinctPlaytimes.Contains(p.StartTime.Second))
                 .ToListAsync();
             var versions = await context.Versions
                 .Where(v => distinctVersionTypes.Contains(v.Type))
                 .ToListAsync();
 
             // Create dictionaries for quick lookup.
-            var playtimeDict = playtimes.ToDictionary(p => p.StartTime, p => p.Id);
+            var playtimeDict = playtimes
+                .GroupBy(p => p.StartTime.Hour)
+                .ToDictionary(g => g.Key, g => g.First().Id);
+            
             var versionDict = versions.ToDictionary(v => v.Type, v => v.Id);
 
             foreach (var showtime in showtimes)
@@ -135,9 +126,9 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                 {
                     throw new InvalidOperationException($"Version not found for Type: {showtime.VersionTag.Type}");
                 }
-                if (!playtimeDict.TryGetValue(showtime.Playtime.StartTime, out var playtimeId))
+                if (!playtimeDict.TryGetValue(showtime.Playtime.StartTime.Hour, out var playtimeId))
                 {
-                    throw new InvalidOperationException($"Playtime not found for StartTime: {showtime.Playtime.StartTime} in {String.Join(", ", distinctPlaytimesPrintStringBuilder)}");
+                    throw new InvalidOperationException($"Playtime not found for StartTime: {showtime.Playtime.StartTime} in {String.Join(", ", playtimeDict.Keys.Select(k => k.ToString()))}");
                 }
 
                 showtime.PlaytimeId = playtimeId;

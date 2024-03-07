@@ -16,7 +16,7 @@
 <div class="space-y-3">
     @foreach (var showtime in orderedShowtimes)
     {
-        <ResultCard Event="Event" Showtime="showtime" HasVoted="@(CurrentParticipant != null)" ChosenIndex="@(CurrentParticipant == null ? 0 : CurrentParticipant.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id).VoteIndex)"/>
+        <ResultCard IsHost="IsHost" Event="Event" Showtime="showtime" HasVoted="@(CurrentParticipant != null)" ChosenIndex="@(CurrentParticipant == null ? 0 : CurrentParticipant.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id).VoteIndex)"/>
     }
 </div>
 
@@ -70,7 +70,7 @@
     {
         var url = "https://calendar.google.com/calendar/u/0/r/eventedit?"
                   + $"text={Event.Title}"
-                  + $"&dates={showtime.Playtime.StartTime.ToLocalTime().ToString("yyyyMMddTHHmmss")}/{showtime.Playtime.StartTime.ToLocalTime().AddMinutes(showtime.Movie.Duration).ToString("yyyyMMddTHHmmss")}"
+                  + $"&dates={showtime.Playtime.StartTime.ToLocalTime().ToString("yyyyMMddTHHmmss")}/{showtime.Playtime.StartTime.ToLocalTime().AddMinutes((double)showtime.Movie.Duration).ToString("yyyyMMddTHHmmss")}"
                   + $"&location={showtime.Cinema.Name}"
                   + $"&details={Event.Description} %0AFilm: {showtime.Movie.Title}, {showtime.Room.Name}, {showtime.VersionTag.Type}";
 
@@ -81,7 +81,7 @@
     private async Task DownloadCalendarFile(Showtime showtimeToCalendar)
     {
         var DateStart = showtimeToCalendar.Playtime.StartTime;
-        var DateEnd = showtimeToCalendar.Playtime.StartTime.AddMinutes(showtimeToCalendar.Movie.Duration);
+        var DateEnd = showtimeToCalendar.Playtime.StartTime.AddMinutes((double)showtimeToCalendar.Movie.Duration);
         var Summary = Event.Title;
         var Location = showtimeToCalendar.Cinema.Name;
         var Description = Event.Description + "\n Film: " + showtimeToCalendar.Movie.Title + ", " + showtimeToCalendar.Room.Name + ", " + showtimeToCalendar.VersionTag.Type;

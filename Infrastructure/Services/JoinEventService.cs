@@ -101,34 +101,32 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         try
         {
             // Retrieve all distinct StartTimes and Types from the showtimes.
-            var distinctPlaytimes = showtimes.Select(st => st.Playtime.StartTime.Second).Distinct();
+            var distinctPlaytimes = showtimes.Select(st => st.Playtime.StartTime).Distinct();
             var distinctVersionTypes = showtimes.Select(st => st.VersionTag.Type).Distinct();
 
             // Retrieve all matching Playtimes and VersionTags from the database.
             var playtimes = await context.Playtimes
-                .Where(p => distinctPlaytimes.Contains(p.StartTime.Second))
+                .Where(p => distinctPlaytimes.Contains(p.StartTime))
                 .ToListAsync();
             var versions = await context.Versions
                 .Where(v => distinctVersionTypes.Contains(v.Type))
                 .ToListAsync();
-
-            // Create dictionaries for quick lookup.
-            var playtimeDict = playtimes
-                .GroupBy(p => p.StartTime.Hour)
-                .ToDictionary(g => g.Key, g => g.First().Id);
             
             var versionDict = versions.ToDictionary(v => v.Type, v => v.Id);
-
+            var playtimeDict = playtimes.ToDictionary(p => p.StartTime.ToOADate(), p => p.Id);
+            
             foreach (var showtime in showtimes)
             {
+                var LookupKey = showtime.Playtime.StartTime.ToOADate();
+                
                 // Assign PlaytimeId and VersionTagId using the dictionaries.
                 if (!versionDict.TryGetValue(showtime.VersionTag.Type, out var versionTagId))
                 {
                     throw new InvalidOperationException($"Version not found for Type: {showtime.VersionTag.Type}");
                 }
-                if (!playtimeDict.TryGetValue(showtime.Playtime.StartTime.Hour, out var playtimeId))
+                if (!playtimeDict.TryGetValue(LookupKey, out var playtimeId))
                 {
-                    throw new InvalidOperationException($"Playtime not found for StartTime: {showtime.Playtime.StartTime} in {String.Join(", ", playtimeDict.Keys.Select(k => k.ToString()))}");
+                    throw new InvalidOperationException($"Playtime not found for: {LookupKey} in {String.Join(", ", playtimeDict.Keys.Select(k => k.ToString()))}");
                 }
 
                 showtime.PlaytimeId = playtimeId;

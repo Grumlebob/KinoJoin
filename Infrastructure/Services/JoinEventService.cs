@@ -9,23 +9,53 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         var joinEventWithNavProps = UpsertJoinEventDto.FromUpsertDtoToModel(joinEventDto);
 
         //make sure Host,selectOptions,Playtimes and rooms entities exist in database
-        await context.Hosts.Upsert(joinEventWithNavProps.Host).RunAsync();
+        
+        // 1. Host Upsert
+        var existingHost = await context.Hosts.FindAsync(joinEventWithNavProps.Host.AuthId);
+        if (existingHost == null)
+        {
+            await context.Hosts.AddAsync(joinEventWithNavProps.Host);
+        }
 
+        // 2. SelectOptions Upsert
         await context
             .SelectOptions.UpsertRange(joinEventWithNavProps.SelectOptions)
             .On(s => new { s.VoteOption, s.Color })
             .RunAsync();
+        
+        // 3. Playtimes Upsert
+        var playtimeStartTimes = joinEventWithNavProps.Showtimes.Select(st => st.Playtime.StartTime).Distinct();
+        var existingPlaytimes = await context.Playtimes
+            .Where(p => playtimeStartTimes.Contains(p.StartTime))
+            .ToListAsync();
 
-        var playtimes = joinEventWithNavProps
-            .Showtimes.Select(st => st.Playtime)
-            .DistinctBy(p => p.StartTime);
-        await context.Playtimes.UpsertRange(playtimes).On(p => p.StartTime).RunAsync();
-
-        var rooms = joinEventWithNavProps
-            .Showtimes.Select(st => st.Room)
-            .DistinctBy(r => r.Id)
+        var newPlaytimes = joinEventWithNavProps.Showtimes
+            .Select(st => st.Playtime)
+            .DistinctBy(p => p.StartTime)
+            .Except(existingPlaytimes)
             .ToList();
-        await context.Rooms.UpsertRange(rooms).RunAsync();
+
+        if (newPlaytimes.Any())
+        {
+            await context.Playtimes.UpsertRange(newPlaytimes).On(p => p.StartTime).RunAsync();
+        }
+        
+        // 4. Rooms Upsert
+        var roomIds = joinEventWithNavProps.Showtimes.Select(st => st.Room.Id).Distinct();
+        var existingRooms = await context.Rooms
+            .Where(r => roomIds.Contains(r.Id))
+            .ToListAsync();
+
+        var newRooms = joinEventWithNavProps.Showtimes
+            .Select(st => st.Room)
+            .DistinctBy(r => r.Id)
+            .Except(existingRooms)
+            .ToList();
+
+        if (newRooms.Any())
+        {
+            await context.Rooms.UpsertRange(newRooms).RunAsync();
+        }
 
         await context.SaveChangesAsync();
 
@@ -38,21 +68,55 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         }
         catch (Exception _) //If not all data was found in the preseeded database, add it and try again
         {
-            var movies = joinEventWithNavProps
-                .Showtimes.Select(st => st.Movie)
-                .DistinctBy(m => m.Id);
-            await context.Movies.UpsertRange(movies).RunAsync();
+            // 1. Movies Upsert
+            var movieIds = joinEventWithNavProps.Showtimes.Select(st => st.Movie.Id).Distinct();
+            var existingMovies = await context.Movies
+                .Where(m => movieIds.Contains(m.Id))
+                .ToListAsync();
 
-            var cinemas = joinEventWithNavProps
-                .Showtimes.Select(st => st.Cinema)
-                .DistinctBy(c => c.Id);
-            await context.Cinemas.UpsertRange(cinemas).RunAsync();
+            var newMovies = joinEventWithNavProps.Showtimes
+                .Select(st => st.Movie)
+                .DistinctBy(m => m.Id)
+                .Except(existingMovies)
+                .ToList();
 
-            var versions = joinEventWithNavProps
-                .Showtimes.Select(st => st.VersionTag)
-                .DistinctBy(v => v.Type);
-            await context.Versions.UpsertRange(versions).On(v => v.Type).RunAsync();
+            if (newMovies.Any())
+            {
+                await context.Movies.UpsertRange(newMovies).RunAsync();
+            }
 
+            // 2. Cinemas Upsert
+            var cinemaIds = joinEventWithNavProps.Showtimes.Select(st => st.Cinema.Id).Distinct();
+            var existingCinemas = await context.Cinemas
+                .Where(c => cinemaIds.Contains(c.Id))
+                .ToListAsync();
+
+            var newCinemas = joinEventWithNavProps.Showtimes
+                .Select(st => st.Cinema)
+                .DistinctBy(c => c.Id)
+                .Except(existingCinemas)
+                .ToList();
+
+            if (newCinemas.Any())
+            {
+                await context.Cinemas.UpsertRange(newCinemas).RunAsync();
+            }
+
+            //3. Versions Upsert
+            var versionTypes = joinEventWithNavProps.Showtimes.Select(st => st.VersionTag.Type).Distinct();
+            var existingVersions = await context.Versions
+                .Where(v => versionTypes.Contains(v.Type))
+                .ToListAsync();
+            var newVersions = joinEventWithNavProps.Showtimes
+                .Select(st => st.VersionTag)
+                .DistinctBy(v => v.Type)
+                .Except(existingVersions)
+                .ToList();
+            if (newVersions.Any())
+            {
+                await context.Versions.UpsertRange(newVersions).On(v => v.Type).RunAsync();
+            }
+            
             await AttachOnlyOnePlaytimeAndVersionToEfCoreBatched(joinEventWithNavProps.Showtimes);
             await context.Showtimes.UpsertRange(joinEventWithNavProps.Showtimes).RunAsync();
             await context.SaveChangesAsync();

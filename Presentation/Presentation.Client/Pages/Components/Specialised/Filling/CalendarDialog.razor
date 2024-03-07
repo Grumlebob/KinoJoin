@@ -1,12 +1,18 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
 
-<dialog id="calendar-dialog">
-    <div style="display: flex">
-        <button onclick="@(async () => await OpenGoogleCalendar())">Tilføj til google kalender</button>
-        <button onclick="@(async () => await DownloadCalendarFile())">Download til andre kalendre</button>
+<dialog class="p-5 rounded" id=@("calendar-dialog"+Desktop) >
+    <div class="flex flex-col gap-4 items-center">
+    <h2 class="text-2xl text-bold">Tilføj til kalender</h2>
+   
+    <div class="flex items-center gap-1">
+
+        <button class="bg-primary rounded-full p-3 py-0.5  text-white hover:bg-primary-dark" onclick="@(async () => await OpenGoogleCalendar())">Tilføj til google kalender</button>
+        <button class="bg-primary rounded-full p-3 py-0.5  text-white hover:bg-primary-dark" onclick="@(async () => await DownloadCalendarFile())">Download til andre kalendre</button>
+        <button class="bg-error rounded-full p-3 py-0.5  text-white hover:bg-error-dark" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog"+Desktop); })" >Luk</button>
     </div>
-    <button onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog"); })" style="border: 2px solid red">Luk</button>
+    </div>
+
 </dialog>
 
 @code {
@@ -16,7 +22,9 @@
 
     [Parameter]
     public required JoinEvent Event { get; set; }
-
+    
+    [Parameter]
+    public bool Desktop { get; set; }
 
     private async Task OpenGoogleCalendar()
     {

@@ -214,7 +214,7 @@
         {
             <tr>
                 <td>
-                    <div class="flex rounded w-50 shadow-md gap-2 flex-col p-5">
+                    <div class="flex rounded w-50 shadow-md gap-2  p-5">
                         @if (_isHost && participant.Id != 0)
                         {
                             <div class="delete-participant-button" onclick="@(async () => { _participantToDelete = participant; StateHasChanged(); await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirm-delete-dialog"); })">🗑</div>
@@ -266,7 +266,7 @@
     }
 </dialog>
 
-<CalendarDialog Event="_event" Showtime="_showtimeToCalendar"/>
+
 
 
 @code {

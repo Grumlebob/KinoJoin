@@ -5,9 +5,9 @@
 using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Playwright;
 using TestPlaywright;
-using Microsoft.Extensions.Configuration;
 
 bool isHeadless = false;
 int slowDown = 1000;
@@ -45,7 +45,7 @@ async Task<bool> KinoDemo()
     var context = await browser.NewContextAsync();
 
     var page = await context.NewPageAsync();
-    
+
     //Get Connection to KinoContext
     var builder = new ConfigurationBuilder();
     builder.AddUserSecrets<Program>();
@@ -53,7 +53,7 @@ async Task<bool> KinoDemo()
     var optionsBuilder = new DbContextOptionsBuilder<KinoContext>();
     optionsBuilder.UseNpgsql(configuration["TestDatabaseConnection"]);
     using var kinoContext = new KinoContext(optionsBuilder.Options);
-    
+
     //Get all cinemas and print name
     var cinemas = await kinoContext.Cinemas.ToListAsync();
     Console.WriteLine("PRINTER CINEMAS");

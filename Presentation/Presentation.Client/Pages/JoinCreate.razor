@@ -642,7 +642,6 @@ else
                         AgeRating = jsonMovie.Content.FieldCensorshipIcon,
                         ImageUrl = jsonMovie.Content.FieldPoster.FieldMediaImage.Sources[0].Srcset,
                         Duration = duration,
-                        Showtimes = new List<Showtime>()
                     };
                     existingMovies.Add(movieObject.Id, movieObject);
                 }
@@ -796,18 +795,58 @@ else
         }
 
 
-        var joinEvent = new JoinEvent
+        var upsertJoinEventDto = new UpsertJoinEventDto
         {
-            Showtimes = pickedShowtimes,
-            Host = host,
-            Title = _eventDetails.EventTitle,
+            Showtimes = pickedShowtimes.Select(s => new UpsertShowtimeDto
+            {
+                Id = s.Id,
+                Playtime = new UpsertPlaytimeDto
+                {
+                    StartTime = s.Playtime.StartTime
+                },
+                Cinema = new UpsertCinemaDto
+                {
+                    Id = s.Cinema.Id,
+                    Name = s.Cinema.Name
+                },
+                VersionTag = new UpsertVersionTagDto
+                {
+                    Type = s.VersionTag.Type
+                },
+                Movie = new UpsertMovieDto
+                {
+                    Id  = s.Movie.Id,
+                    Title = s.Movie.Title,
+                    AgeRating = s.Movie.AgeRating,
+                    PremiereDate = s.Movie.PremiereDate,
+                    KinoURL = s.Movie.KinoURL,
+                    ImageUrl = s.Movie.ImageUrl,
+                    Duration = s.Movie.Duration
+                },
+                Room = new UpsertRoomDto
+                {
+                    Id   = s.Room.Id,
+                    Name = s.Room.Name
+                }
+                
+            }).ToList(),
+            Host = new UpsertHostDto
+            {
+                AuthId = host.AuthId,
+                Email = host.Email,
+                Username = host.Username
+            },
+            Title = _eventDetails.EventTitle!,
             Description = _eventDetails.EventDescription ?? "",
             Deadline = _eventDetails.Deadline,
             SelectOptions = new List<SelectOption>() { new SelectOption() { VoteOption = "Kan ikke", Color = "gray-100" }, new SelectOption() { VoteOption = "Kan godt", Color = "success" }, new SelectOption() { VoteOption = "Hvis Nødvendigt (Klik to gange)", Color = "warning" } }
+            SelectOptions = new List<UpsertSelectOptionDto> { new () { VoteOption = "Kan ikke", Color = "lightgray" }, new () { VoteOption = "Kan godt", Color = "lightgreen" }, new () { VoteOption = "Hvis Nødvendigt (Klik to gange)", Color = "orange" } },
+            ChosenShowtimeId = null,
+            Participants = []
         };
 
 
-        var response = await client.PutAsJsonAsync(url, joinEvent);
+        var response = await client.PutAsJsonAsync(url, upsertJoinEventDto);
         var id = await response.Content.ReadAsStringAsync();
 
 

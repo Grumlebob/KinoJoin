@@ -1,4 +1,6 @@
-﻿namespace Domain.ExternalApi;
+﻿using Newtonsoft.Json.Linq;
+
+namespace Domain.ExternalApi;
 
 public class Root
 {
@@ -135,46 +137,74 @@ public class MovieContent
     public string URL { get; set; }
 }
 
+public class FieldMediaImageConverter : JsonConverter
+{
+    public override bool CanConvert(Type objectType)
+    {
+        return (objectType == typeof(FieldMediaImage));
+    }
+
+    public override object ReadJson(
+        JsonReader reader,
+        Type objectType,
+        object existingValue,
+        JsonSerializer serializer
+    )
+    {
+        JToken token = JToken.Load(reader);
+        if (token.Type == JTokenType.Array)
+        {
+            return null;
+        }
+        return token.ToObject<FieldMediaImage>();
+    }
+
+    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    {
+        return; //only needed to implement the custom converter
+    }
+}
+
 public class FieldPoster
 {
     [JsonProperty("type")]
     public string Type { get; set; }
 
-    [JsonProperty("field_media_image")]
-    public FieldMediaImage FieldMediaImage { get; set; }
+    [JsonProperty("field_media_image"), JsonConverter(typeof(FieldMediaImageConverter))]
+    public FieldMediaImage? FieldMediaImage { get; set; }
 }
 
 public class FieldMediaImage
 {
     [JsonProperty("type")]
-    public string Type { get; set; }
+    public string? Type { get; set; }
 
     [JsonProperty("responsive_image_style_id")]
-    public string ResponsiveImageStyleId { get; set; }
+    public string? ResponsiveImageStyleId { get; set; }
 
     [JsonProperty("width")]
-    public int Width { get; set; }
+    public int? Width { get; set; }
 
     [JsonProperty("height")]
-    public int Height { get; set; }
+    public int? Height { get; set; }
 
     [JsonProperty("sources")]
-    public List<SourceItem> Sources { get; set; } // Added this line
+    public List<SourceItem>? Sources { get; set; } // Added this line
 }
 
 public class SourceItem
 {
     [JsonProperty("srcset")]
-    public string Srcset { get; set; }
+    public string? Srcset { get; set; }
 
     [JsonProperty("media")]
-    public string Media { get; set; }
+    public string? Media { get; set; }
 
     [JsonProperty("type")]
-    public string Type { get; set; }
+    public string? Type { get; set; }
 
     [JsonProperty("width")]
-    public int? Width { get; set; } // Nullable because it might not always be present
+    public int? Width { get; set; }
 
     [JsonProperty("height")]
     public int? Height { get; set; }

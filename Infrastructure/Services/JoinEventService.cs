@@ -1,12 +1,13 @@
 ﻿using System.Text;
 
 namespace Infrastructure.Services;
+
 public class JoinEventService(KinoContext context) : IJoinEventService
 {
     public async Task<int> PutAsync(UpsertJoinEventDto joinEventDto)
     {
         var joinEventWithNavProps = UpsertJoinEventDto.FromUpsertDtoToModel(joinEventDto);
-        
+
         //make sure Host,selectOptions,Playtimes and rooms entities exist in database
         await context.Hosts.Upsert(joinEventWithNavProps.Host).RunAsync();
 
@@ -51,7 +52,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                 .Showtimes.Select(st => st.VersionTag)
                 .DistinctBy(v => v.Type);
             await context.Versions.UpsertRange(versions).On(v => v.Type).RunAsync();
-            
+
             await AttachOnlyOnePlaytimeAndVersionToEfCoreBatched(joinEventWithNavProps.Showtimes);
             await context.Showtimes.UpsertRange(joinEventWithNavProps.Showtimes).RunAsync();
             await context.SaveChangesAsync();
@@ -67,7 +68,8 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         //As multiple selectOptions can reference the same voteOption and color, we must only attach it once in ef core
         joinEventWithNavProps.SelectOptions = context
             .SelectOptions.Where(s =>
-                joinEventDto.SelectOptions.Select(s => s.VoteOption).Contains(s.VoteOption) && joinEventDto.SelectOptions.Select(s => s.Color).Contains(s.Color)
+                joinEventDto.SelectOptions.Select(s => s.VoteOption).Contains(s.VoteOption)
+                && joinEventDto.SelectOptions.Select(s => s.Color).Contains(s.Color)
             )
             .ToList();
 
@@ -79,64 +81,56 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         await context.SaveChangesAsync();
         return newlyAddedJoinEvent.Entity.Id;
     }
-    
-    //TODO Refactor, lige nu laver den to database kald for hver showtime i hver iteration, det er ikke optimalt får det batched
-    private async Task AttachOnlyOnePlaytimeAndVersionToEfCore(IEnumerable<Showtime> showtimes)
-    {
-        foreach (var showtime in showtimes)
-        {
-            showtime.PlaytimeId = (
-                await context.Playtimes.FirstAsync(p =>
-                    p.StartTime == showtime.Playtime.StartTime
-                )
-            ).Id;
-            showtime.VersionTagId = (
-                await context.Versions.FirstAsync(v => v.Type == showtime.VersionTag.Type)
-            ).Id;
-        }
-    }
-    
-    private async Task AttachOnlyOnePlaytimeAndVersionToEfCoreBatched(IEnumerable<Showtime> showtimes)
+
+    private async Task AttachOnlyOnePlaytimeAndVersionToEfCoreBatched(
+        IEnumerable<Showtime> showtimes
+    )
     {
         try
         {
             // Retrieve all distinct StartTimes and Types from the showtimes.
-            var distinctPlaytimes = showtimes.Select(st => st.Playtime.StartTime).Distinct();
-            var distinctVersionTypes = showtimes.Select(st => st.VersionTag.Type).Distinct();
+            var showtimesList = showtimes.ToList();
+            var distinctPlaytimes = showtimesList.Select(st => st.Playtime.StartTime).Distinct();
+            var distinctVersionTypes = showtimesList.Select(st => st.VersionTag.Type).Distinct();
 
             // Retrieve all matching Playtimes and VersionTags from the database.
-            var playtimes = await context.Playtimes
-                .Where(p => distinctPlaytimes.Contains(p.StartTime))
+            var playtimes = await context
+                .Playtimes.Where(p => distinctPlaytimes.Contains(p.StartTime))
                 .ToListAsync();
-            var versions = await context.Versions
-                .Where(v => distinctVersionTypes.Contains(v.Type))
+            var versions = await context
+                .Versions.Where(v => distinctVersionTypes.Contains(v.Type))
                 .ToListAsync();
-            
+
+            //Convert to Dict for O(1) lookup
             var versionDict = versions.ToDictionary(v => v.Type, v => v.Id);
-            var playtimeDict = playtimes.Distinct().ToDictionary(p => p.StartTime.ToOADate(), p => p.Id);
-            
-            foreach (var showtime in showtimes)
+            var playtimeDict = playtimes
+                .Distinct()
+                .ToDictionary(p => p.StartTime.ToOADate(), p => p.Id);
+
+            foreach (var showtime in showtimesList)
             {
-                var LookupKey = showtime.Playtime.StartTime.ToOADate();
-                
-                // Assign PlaytimeId and VersionTagId using the dictionaries.
+                var lookupKey = showtime.Playtime.StartTime.ToOADate();
                 if (!versionDict.TryGetValue(showtime.VersionTag.Type, out var versionTagId))
                 {
-                    throw new InvalidOperationException($"Version not found for Type: {showtime.VersionTag.Type}");
+                    throw new InvalidOperationException(
+                        $"Version not found for Type: {showtime.VersionTag.Type}"
+                    );
                 }
-                if (!playtimeDict.TryGetValue(LookupKey, out var playtimeId))
+                if (!playtimeDict.TryGetValue(lookupKey, out var playtimeId))
                 {
-                    throw new InvalidOperationException($"Playtime not found for: {LookupKey} in {String.Join(", ", playtimeDict.Keys.Select(k => k.ToString()))}");
+                    throw new InvalidOperationException(
+                        $"Playtime not found for: {lookupKey} in {String.Join(", ", playtimeDict.Keys.Select(k => k.ToString()))}"
+                    );
                 }
-
                 showtime.PlaytimeId = playtimeId;
                 showtime.VersionTagId = versionTagId;
             }
         }
         catch (Exception ex)
         {
-            // Log the exception with detailed information
-            Console.WriteLine($"Error in AttachOnlyOnePlaytimeAndVersionToEfCoreBatched: {ex.Message}");
+            Console.WriteLine(
+                $"Error in AttachOnlyOnePlaytimeAndVersionToEfCoreBatched: {ex.Message}"
+            );
             throw;
         }
     }

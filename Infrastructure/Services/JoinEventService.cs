@@ -113,7 +113,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                 .ToListAsync();
             
             var versionDict = versions.ToDictionary(v => v.Type, v => v.Id);
-            var playtimeDict = playtimes.ToDictionary(p => p.StartTime.ToOADate(), p => p.Id);
+            var playtimeDict = playtimes.Distinct().ToDictionary(p => p.StartTime.ToOADate(), p => p.Id);
             
             foreach (var showtime in showtimes)
             {

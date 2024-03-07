@@ -225,7 +225,7 @@ public class Facets
     public MovieLookup Movies { get; set; } // Replace object with specific type if necessary
 
     [JsonProperty("versions")]
-    public object Versions { get; set; } // Replace object with specific type if necessary
+    public VersionLookup Versions { get; set; } // Replace object with specific type if necessary
 
     [JsonProperty("genres")]
     public GenresLookup Genres { get; set; } // Replace object with specific type if necessary
@@ -237,7 +237,7 @@ public class Facets
 public class GenresLookup
 {
     [JsonProperty("options")]
-    public List<GenrerOptions> Options { get; set; }
+    public required List<GenrerOptions> Options { get; set; }
 }
 
 public class GenrerOptions
@@ -261,7 +261,22 @@ public class MovieOptions
     public int Key { get; set; }
 
     [JsonProperty("value")]
-    public string Value { get; set; }
+    public required string Value { get; set; }
+}
+
+public class VersionLookup
+{
+    [JsonProperty("options")]
+    public required List<VersionOptions> Options { get; set; }
+}
+
+public class VersionOptions
+{
+    [JsonProperty("key")]
+    public required string Key { get; set; }
+
+    [JsonProperty("value")]
+    public required string Value { get; set; }
 }
 
 public class Footer { }

@@ -68,7 +68,7 @@
     {
         var url = "https://calendar.google.com/calendar/u/0/r/eventedit?"
                   + $"text={_event.Title}"
-                  + $"&dates={showtime.Playtime.StartTime.ToLocalTime().ToString("yyyyMMddTHHmmss")}/{showtime.Playtime.StartTime.ToLocalTime().AddMinutes(showtime.Movie.Duration).ToString("yyyyMMddTHHmmss")}"
+                  + $"&dates={showtime.Playtime.StartTime.ToLocalTime().ToString("yyyyMMddTHHmmss")}/{showtime.Playtime.StartTime.ToLocalTime().AddMinutes(showtime.Movie.Duration ?? 0).ToString("yyyyMMddTHHmmss")}"
                   + $"&location={showtime.Cinema.Name}"
                   + $"&details={_event.Description} %0AFilm: {showtime.Movie.Title}, {showtime.Room.Name}, {showtime.VersionTag.Type}";
 
@@ -79,7 +79,7 @@
     private async Task DownloadCalendarFile(Showtime showtimeToCalendar)
     {
         var DateStart = showtimeToCalendar.Playtime.StartTime;
-        var DateEnd = showtimeToCalendar.Playtime.StartTime.AddMinutes(showtimeToCalendar.Movie.Duration);
+        var DateEnd = showtimeToCalendar.Playtime.StartTime.AddMinutes(showtimeToCalendar.Movie.Duration ?? 0);
         var Summary = _event.Title;
         var Location = showtimeToCalendar.Cinema.Name;
         var Description = _event.Description + "\n Film: " + showtimeToCalendar.Movie.Title + ", " + showtimeToCalendar.Room.Name + ", " + showtimeToCalendar.VersionTag.Type;

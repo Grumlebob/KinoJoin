@@ -48,7 +48,12 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
             services.AddDbContext<KinoContext>(
                 options =>
                 {
-                    options.UseNpgsql(configuration!["TestDatabaseConnection"]);
+                    string connectionString = Environment.GetEnvironmentVariable("TestDatabaseConnection");
+                    if (string.IsNullOrEmpty(connectionString))
+                    {
+                        throw new InvalidOperationException("Database connection string is not set.");
+                    }
+                    options.UseNpgsql(connectionString);
                 },
                 ServiceLifetime.Singleton
             ); // Lifetime must be Singleton to work with TestContainers
@@ -63,7 +68,12 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
-        _dbConnection = new NpgsqlConnection(Configuration["TestDatabaseConnection"]);
+        string connectionString = Environment.GetEnvironmentVariable("TestDatabaseConnection");
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException("Database connection string is not set.");
+        }
+        _dbConnection = new NpgsqlConnection(Configuration[connectionString]);
         HttpClient = CreateClient();
         await InitializeRespawner();
 

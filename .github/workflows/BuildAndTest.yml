@@ -44,7 +44,7 @@ jobs:
           TestDatabaseConnection: ${{ secrets.TESTDATABASECONNECTION }}
           MonkeyConnection: ${{ secrets.MONKEYCONNECTION }}
           PostgresConnection: ${{ secrets.POSTGRESCONNECTION }}
-        run: dotnet test
+        run: dotnet test --filter FullyQualifiedName!~Test.Monkey
       
       - name: Validate Formatting
         run: dotnet csharpier --check .

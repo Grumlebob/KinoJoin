@@ -42,16 +42,14 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
                 services.Remove(descriptor);
             }
 
-            var configuration = services.BuildServiceProvider().GetService<IConfiguration>();
-
             //Setup our new KinoContext connection to our docker postgres container
             services.AddDbContext<KinoContext>(
                 options =>
                 {
-                    string connectionString = Environment.GetEnvironmentVariable("TestDatabaseConnection");
+                    string? connectionString = Environment.GetEnvironmentVariable("TestDatabaseConnection");
                     if (string.IsNullOrEmpty(connectionString))
                     {
-                        throw new InvalidOperationException("Database connection string is not set.");
+                        connectionString = Configuration["TestDatabaseConnection"]!;
                     }
                     options.UseNpgsql(connectionString);
                 },
@@ -68,21 +66,21 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
-        string connectionString = Environment.GetEnvironmentVariable("TestDatabaseConnection");
+        string? connectionString = Environment.GetEnvironmentVariable("TestDatabaseConnection");
         if (string.IsNullOrEmpty(connectionString))
         {
-            throw new InvalidOperationException("Database connection string is not set.");
+            connectionString = Configuration["TestDatabaseConnection"];
         }
         
         _dbConnection = new NpgsqlConnection(connectionString);
         HttpClient = CreateClient();
-        await InitializeRespawner();
 
         //THIS IS WHERE YOU CAN ADD SEED DATA
         using var scope = Services.CreateScope();
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<KinoContext>();
         await context.Database.EnsureCreatedAsync();
+        await InitializeRespawner();
     }
 
     private async Task InitializeRespawner()
@@ -93,7 +91,7 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
             new RespawnerOptions()
             {
                 DbAdapter = DbAdapter.Postgres,
-                SchemasToInclude = new[] { "public", "KinoTest" }
+                SchemasToInclude = new[] { "public"}
             }
         );
     }

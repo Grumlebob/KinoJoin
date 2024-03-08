@@ -51,7 +51,7 @@ public class MonkeyServiceWebAppFactory : WebApplicationFactory<Program>, IAsync
                     string connectionString = Environment.GetEnvironmentVariable("MonkeyConnection");
                     if (string.IsNullOrEmpty(connectionString))
                     {
-                        throw new InvalidOperationException("Database connection string is not set.");
+                        connectionString = Configuration["MonkeyConnection"];
                     }
                     options.UseNpgsql(connectionString);
                 },
@@ -71,17 +71,19 @@ public class MonkeyServiceWebAppFactory : WebApplicationFactory<Program>, IAsync
         string connectionString = Environment.GetEnvironmentVariable("MonkeyConnection");
         if (string.IsNullOrEmpty(connectionString))
         {
-            throw new InvalidOperationException("Database connection string is not set.");
+            connectionString = Configuration["MonkeyConnection"];
         }
+
+        Console.WriteLine(connectionString);
         _dbConnection = new NpgsqlConnection(connectionString);
         HttpClient = CreateClient();
-        await InitializeRespawner();
 
         //THIS IS WHERE YOU CAN ADD SEED DATA
         using var scope = Services.CreateScope();
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<MonkeyContext>();
         await context.Database.EnsureCreatedAsync();
+        await InitializeRespawner();
     }
 
     private async Task InitializeRespawner()

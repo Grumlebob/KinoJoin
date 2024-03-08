@@ -74,7 +74,7 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
         string containerString = _dbContainer.GetConnectionString();
         Console.WriteLine($"Container connection string: {containerString}");
 
-        return connectionString;
+        return _dbContainer.GetConnectionString();
     }
 
     public async Task ResetDatabaseAsync()

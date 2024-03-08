@@ -47,19 +47,19 @@ public class UpsertJoinEventDto
                 })
                 .ToList(),
             Participants = joinEvent
-                .Participants.Select(p => new UpsertParticipantDto //+
+                .Participants.Select(p => new UpsertParticipantDto
                 {
-                    Id = p.Id, //1
+                    Id = p.Id,
                     AuthId = p.AuthId,
                     Email = p.Email,
                     Nickname = p.Nickname,
                     Note = p.Note,
-                    JoinEventId = joinEvent.Id, //1
+                    JoinEventId = joinEvent.Id,
                     VotedFor = p
                         .VotedFor.Select(v => new UpsertParticipantVoteDto
                         {
-                            ShowtimeId = v.ShowtimeId, //1
-                            VoteIndex = v.VoteIndex //0
+                            ShowtimeId = v.ShowtimeId,
+                            VoteIndex = v.VoteIndex
                         })
                         .ToList()
                 })
@@ -135,7 +135,7 @@ public class UpsertJoinEventDto
                     }
                 })
                 .ToList(),
-            ChosenShowtimeId = joinEventDto.ChosenShowtimeId,
+            ChosenShowtimeId = joinEventDto.ChosenShowtimeId
         };
 }
 

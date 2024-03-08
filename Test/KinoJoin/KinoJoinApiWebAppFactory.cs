@@ -71,6 +71,9 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
             connectionString = Configuration["TestDatabaseConnection"];
         }
 
+        string containerString = _dbContainer.GetConnectionString();
+        Console.WriteLine($"Container connection string: {containerString}");
+
         return connectionString;
     }
 

@@ -46,17 +46,32 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
             services.AddDbContext<KinoContext>(
                 options =>
                 {
-                    string? connectionString = Environment.GetEnvironmentVariable("TESTDATABASECONNECTION");
-                    if (string.IsNullOrEmpty(connectionString))
-                    {
-                        connectionString = Configuration["TestDatabaseConnection"]!;
-                    }
-
-                    options.UseNpgsql(connectionString);
+                    options.UseNpgsql(GetLocalOrGithubConnectionString());
                 },
                 ServiceLifetime.Singleton
             ); // Lifetime must be Singleton to work with TestContainers
         });
+    }
+
+    private string? GetLocalOrGithubConnectionString()
+    {
+        string? connectionString = Environment.GetEnvironmentVariable("TESTDATABASECONNECTION");
+        if (connectionString != null)
+        {
+            var mappedPort = _dbContainer.GetMappedPublicPort(5432);
+            var containerName = _dbContainer.Name.TrimStart('/');;
+            Console.WriteLine($"Container name: {containerName}, Mapped port: {mappedPort}");
+
+            connectionString =
+                $"Host={containerName};Port={mappedPort};Database=KinoTest;Username=postgres;Password=postgres;";
+        }
+        else
+        {
+            //Locally
+            connectionString = Configuration["TestDatabaseConnection"];
+        }
+
+        return connectionString;
     }
 
     public async Task ResetDatabaseAsync()
@@ -68,24 +83,8 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
     {
         await _dbContainer.StartAsync();
         
-        //In CI
-        string? connectionString = Environment.GetEnvironmentVariable("TESTDATABASECONNECTION");
-        if (connectionString != null)
-        {
-            var mappedPort = _dbContainer.GetMappedPublicPort(5432);
-            var containerName = _dbContainer.Name.TrimStart('/');;
-            Console.WriteLine($"Container name: {containerName}, Mapped port: {mappedPort}");
-            connectionString =
-                $"Host={containerName};Port={mappedPort};Database=KinoTest;Username=postgres;Password=postgres;";
-            _dbConnection = new NpgsqlConnection(connectionString);
-        }
-        else
-        {
-            //Locally
-            connectionString = Configuration["TestDatabaseConnection"];
-            _dbConnection = new NpgsqlConnection(connectionString);
-        }
-
+        var connectionString = GetLocalOrGithubConnectionString();
+        _dbConnection = new NpgsqlConnection(connectionString);
 
         HttpClient = CreateClient();
 

@@ -67,11 +67,14 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
     {
         await _dbContainer.StartAsync();
 
+        var mappedPort = _dbContainer.GetMappedPublicPort(5432);
+        var containerName = _dbContainer.Name;
+
         try
         {
             string? connectionString = Environment.GetEnvironmentVariable("TESTDATABASECONNECTION");
             Console.WriteLine($"Connection string after getting from environment: {connectionString[0..40]}");
-
+            Console.WriteLine($"Container name: {containerName}, Mapped port: {mappedPort}");
             
             if (string.IsNullOrEmpty(connectionString))
             {

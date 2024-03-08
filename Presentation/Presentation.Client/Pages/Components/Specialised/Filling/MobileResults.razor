@@ -1,203 +1,21 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
 
-@{
-    var orderedShowtimes = _sortedAfter == VotesString
-        ? Event.Showtimes.OrderByDescending(showtime =>
-            Event.Participants?
-                .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)) ?? 0)
-            .ThenBy(showtime =>
-                Event.Participants?
-                    .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)
-                        .Sum(v => v.VoteIndex)) ?? 0)
-            .ThenBy(s => s.Playtime.StartTime.ToLocalTime()).ToList()
-        : Event.Showtimes.OrderBy(s => s.Playtime.StartTime.ToLocalTime()).ToList();
-}
 <div class="space-y-3">
-    @foreach (var showtime in orderedShowtimes)
+    @foreach (var showtime in OrderedShowtimes)
     {
         <ResultCard IsHost="IsHost" Event="Event" Showtime="showtime" HasVoted="@(CurrentParticipant != null)" ChosenIndex="@(CurrentParticipant == null ? 0 : CurrentParticipant.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id).VoteIndex)"/>
     }
 </div>
 
-
 @code {
 
-    [Parameter]
-    public required JoinEvent Event { get; set; }
+    [Parameter] public required JoinEvent Event { get; set; }
 
-    [Parameter]
-    public bool IsHost { get; set; }
+    [Parameter] public bool IsHost { get; set; }
 
-    [Parameter]
-    public Participant CurrentParticipant { get; set; }
+    [Parameter] public Participant CurrentParticipant { get; set; }
 
-    private Participant? _participantToDelete;
-
-    private Showtime? _showtimeToCalendar = null;
-
-        private const string VotesString = "Stemmer";
-        private const string TimeString = "Tidspunkt";
-
-    private string _sortedAfter = VotesString;
-
-    private async Task OpenConfirmationDialog(int index)
-    {
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmEvent" + index);
-    }
-
-    private async Task CloseDialog(int index)
-    {
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + index);
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmDetails" + index);
-    }
-
-
-    //Delete participant
-    private async Task DeleteParticipant(int participantId)
-    {
-        var httpClient = new HttpClient();
-        var response = await httpClient.DeleteAsync($"{NavigationManager.BaseUri}deleteParticipant/{Event.Id}/{participantId}");
-        if (response.IsSuccessStatusCode)
-        {
-            Event.Participants.RemoveAll(p => p.Id == participantId);
-            StateHasChanged();
-        }
-    }
-
-
-    private async Task OpenGoogleCalendar(Showtime showtime)
-    {
-        var url = "https://calendar.google.com/calendar/u/0/r/eventedit?"
-                  + $"text={Event.Title}"
-                  + $"&dates={showtime.Playtime.StartTime.ToLocalTime().ToString("yyyyMMddTHHmmss")}/{showtime.Playtime.StartTime.ToLocalTime().AddMinutes((double)showtime.Movie.Duration).ToString("yyyyMMddTHHmmss")}"
-                  + $"&location={showtime.Cinema.Name}"
-                  + $"&details={Event.Description} %0AFilm: {showtime.Movie.Title}, {showtime.Room.Name}, {showtime.VersionTag.Type}";
-
-        await JsRuntime.InvokeVoidAsync("open", url, "_blank");
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
-    }
-
-    private async Task DownloadCalendarFile(Showtime showtimeToCalendar)
-    {
-        var DateStart = showtimeToCalendar.Playtime.StartTime;
-        var DateEnd = showtimeToCalendar.Playtime.StartTime.AddMinutes((double)showtimeToCalendar.Movie.Duration);
-        var Summary = Event.Title;
-        var Location = showtimeToCalendar.Cinema.Name;
-        var Description = Event.Description + "\n Film: " + showtimeToCalendar.Movie.Title + ", " + showtimeToCalendar.Room.Name + ", " + showtimeToCalendar.VersionTag.Type;
-
-    //create a new stringbuilder instance
-        var sb = new StringBuilder();
-
-    //start the calendar item
-        sb.AppendLine("BEGIN:VCALENDAR");
-        sb.AppendLine("VERSION:2.0");
-        sb.AppendLine("PRODID:stackoverflow.com");
-        sb.AppendLine("CALSCALE:GREGORIAN");
-        sb.AppendLine("METHOD:PUBLISH");
-
-    //create a time zone if needed, TZID to be used in the event itself
-        sb.AppendLine("BEGIN:VTIMEZONE");
-        sb.AppendLine("TZID:Europe/Amsterdam");
-        sb.AppendLine("BEGIN:STANDARD");
-        sb.AppendLine("TZOFFSETTO:+0100");
-        sb.AppendLine("TZOFFSETFROM:+0100");
-        sb.AppendLine("END:STANDARD");
-        sb.AppendLine("END:VTIMEZONE");
-
-    //add the event
-        sb.AppendLine("BEGIN:VEVENT");
-
-    //with time zone specified
-        sb.AppendLine("DTSTART;TZID=Europe/Amsterdam:" + DateStart.ToString("yyyyMMddTHHmm00"));
-        sb.AppendLine("DTEND;TZID=Europe/Amsterdam:" + DateEnd.ToString("yyyyMMddTHHmm00"));
-    //or without
-        sb.AppendLine("DTSTART:" + DateStart.ToString("yyyyMMddTHHmm00"));
-        sb.AppendLine("DTEND:" + DateEnd.ToString("yyyyMMddTHHmm00"));
-
-        sb.AppendLine("SUMMARY:" + Summary + "");
-        sb.AppendLine("LOCATION:" + Location + "");
-        sb.AppendLine("DESCRIPTION:" + Description + "");
-        sb.AppendLine("PRIORITY:3");
-        sb.AppendLine("END:VEVENT");
-
-    //end calendar item
-        sb.AppendLine("END:VCALENDAR");
-
-    //create a string from the stringbuilder
-        var CalendarItem = sb.ToString();
-
-
-        var fileName = "event.ics";
-
-        var bytes = Encoding.UTF8.GetBytes(CalendarItem);
-        var stream = new MemoryStream(bytes);
-        using var streamRef = new DotNetStreamReference(stream);
-        await JsRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
-
-
-    /*
-//send the calendar item to the browser
-Response.ClearHeaders();
-Response.Clear();
-Response.Buffer = true;
-Response.ContentType = "text/calendar";
-Response.AddHeader("content-length", CalendarItem.Length.ToString());
-Response.AddHeader("content-disposition", "attachment; filename=\"" + FileName + ".ics\"");
-Response.Write(CalendarItem);
-Response.Flush();
-HttpContext.Current.ApplicationInstance.CompleteRequest();
-*/
-    }
-
-    protected override void OnInitialized()
-    {
-        var sortedShowtimes = Event.Showtimes
-            .OrderByDescending(showtime =>
-                Event.Participants?
-                    .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)) ?? 0)
-            .ThenBy(showtime =>
-                Event.Participants?
-                    .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)
-                        .Sum(v => v.VoteIndex)) ?? 0);
-
-        foreach (var showtime in sortedShowtimes)
-        {
-            Console.WriteLine(showtime.Playtime.StartTime);
-        }
-    }
-
-    private async Task ShareEvent()
-    {
-        var showtime = Event.Showtimes.First(s => s.Id == Event.ChosenShowtimeId);
-
-        var data = new
-        {
-            title = Event.Title,
-            text = Event.Description + "\n" + "Valgt forestilling: " + showtime.Movie.Title + ", " + showtime.Cinema.Name + ", " + showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM HH:mm")
-        };
-
-        await JsRuntime.InvokeVoidAsync("navigator.share", data);
-    }
-
-    private async Task OpenDetailsDialog(Showtime showtime, int index)
-    {
-        Event.ChosenShowtimeId = showtime.Id;
-        Console.WriteLine("Upload event id " + Event.Id);
-        var httpClient = new HttpClient();
-        var response = await httpClient.PutAsJsonAsync($"{NavigationManager.BaseUri}putJoinEvent", Event);
-        var id = await response.Content.ReadAsStringAsync();
-        Console.WriteLine("Saved id " + id);
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + index);
-    }
-
-    private async Task GoToMailToLink(Showtime showtime)
-    {
-        var mails = Event.Participants.Where(p => p.Email is not null).Select(p => p.Email);
-        var text = Event.Description + "\n" + "Valgt forestilling: " + showtime.Movie.Title + ", " + showtime.Cinema.Name + ", " + showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM HH:mm");
-        await JsRuntime.InvokeVoidAsync("open", $"mailto:{string.Join(",", mails)}?subject={Event.Title}&body={text}", "_blank");
-    }
-
+    [Parameter] public List<Showtime> OrderedShowtimes { get; set; }
 
 }

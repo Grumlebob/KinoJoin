@@ -1,237 +1,40 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
 
-
-<style>
-/* Base container for each movie */
-.Redbox {
-    display: flex;
-    align-items: flex-start; /* Align the start of the items */
-    margin-bottom: 20px;
-}
-
-/* Styling for the poster image */
-.PosterImage {
-    position: sticky;
-    top: 65px;
-    margin-right: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-}
-
-/* Container for movie details */
-.MovieDetails {
-    flex-grow: 1; /* Allow the movie details to fill the remaining space */
-}
-
-/* Header for each movie */
-.MovieHeader h2 {
-    margin-top: 0; /* Remove top margin for the movie title */
-    margin-bottom: 0.5em; /* Add a little space below the title */
-}
-
-.MovieHeader p {
-    margin-top: 0; /* Remove top margin for other details */
-    margin-bottom: 0.5em; /* Consistent space below each detail */
-}
-
-/* Styling for cinema location */
-.CinemaLocation {
-    margin-top: 1em; /* Add space above the cinema location */
-    margin-bottom: 0.5em; /* Add space below the cinema location */
-}
-
-/* Styling for versions and showtimes */
-.Version {
-    margin-bottom: 1em; /* Add space below each version */
-}
-
-/* Base styles for the showtime labels */
-.Showtimes .showtime-label {
-
-    display: block; /* or inline-block, depending on how you want to handle the layout */
-    padding: 4px; /* Adjust padding as necessary */
-    margin-bottom: 4px;
-    
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    user-select: none;
-    background-color: #eee;
-    border-radius: 4px;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
-    white-space: nowrap; /* Keep text in a single line */
-    width: 100px;
-}
-
-/* Style for the room name */
-.Showtimes .showtime-room {
-    font-size: 14px; /* Smaller font size for sal name */
-    margin-bottom: 2px; /* Space between sal name and playtime */
-    overflow: hidden; /* Ensures the content does not expand the container */
-    text-overflow: ellipsis; /* Adds an ellipsis when the text overflows */
-    white-space: nowrap; /* Prevents the text from wrapping to the next line */
-   
-}
-
-/* Style for the playtime */
-.Showtimes .showtime-time {
-    font-weight: bold;
-    font-size: 24px; /* Larger font size for playtime */
-}
-
-.Showtimes .table-container {
-    overflow-x: auto; /* Adds horizontal scrollbar if the table exceeds the container width */
-
-}
-
-.Showtimes table {
-    border-collapse: collapse; /* Collapse borders for a clean look */
-}
-
-/* Style for the table headers and cells to have a fixed width */
-.Showtimes th,
-.Showtimes td {
-    width: 10px; /* Fixed width */
-    text-align: left; /* Align text to the left */
-    padding: 8px; /* Add some padding */
-    white-space: nowrap; /* Keep the content in a single line */
-    overflow: hidden; /* Hide overflow */
-    text-overflow: ellipsis; /* Add an ellipsis to clipped text */
-    border-bottom: 1px solid #ddd; /* Add a bottom border for separation */
-    vertical-align: top; /* Align the content to the top of the cell */
-}
-
-.Showtimes td {
-    padding: 8px; /* Add some padding */
-}
-
-
-.movie-info {
-    background-color: #E0E0E0; /* Light gray background */
-    padding: 5px;
-    border-radius: 5px; /* Optional: rounds the corners of the background */
-    display: inline-flex; /* Places children next to each other */
-    align-items: center; /* Aligns children vertically in the center */
-    justify-content: center; /* Centers children horizontally */
-    gap: 10px; /* Creates space between the children */
-}
-
-.movie-info .premiere,
-.movie-info .duration {
-    color: #333; /* Dark gray text color for better contrast */
-    font-size: 14px; /* Adjust font size as needed */
-}
-
-
-
-.empty-showtime {
-    width: 100px;
-    height: 67px;
-    padding: 12px;
-    margin-top: 0px;
-    margin-bottom: 4px;
-    
-    border-radius: 4px;
-    background-image: repeating-linear-gradient(
-        +45deg,
-        #ffffff, /* Lighter shade of gray for the streak */
-        #ffffff 10px,
-        #d5d5d5 10px, /* Darker shade of gray for the space between streaks */
-        #d5d5d5 20px
-    );
-}
-
-#trailerPopUp {
-    height: 100vh;
-    width: 100vw;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: rgba(0, 0, 0, 0.3);
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.delete-participant-button {
-        color: red;
-        font-size: 20px;
-}
-    
-.delete-participant-button:hover {
-        background-color: lightcoral;
-        cursor: pointer;
-}
-
-
-</style>
-
-
 <div class="w-full rounded-md border rounded p-3 shadow overflow-auto mb-2">
     <table class="border-separate border-spacing-2 ">
         <tr>
             <th></th>
-            @{
-                var orderedShowtimes = _sortedAfter == VotesString
-                    ? _event.Showtimes.OrderByDescending(showtime =>
-                            _event.Participants?
-                                .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)) ?? 0)
-                        .ThenBy(showtime =>
-                            _event.Participants?
-                                .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)
-                                    .Sum(v => v.VoteIndex)) ?? 0)
-                        .ThenBy(s => s.Playtime.StartTime.ToLocalTime()).ToList()
-                    : _event.Showtimes.OrderBy(s => s.Playtime.StartTime.ToLocalTime()).ToList();
-            }
-            @foreach (var showtime in orderedShowtimes)
+
+            @foreach (var showtime in OrderedShowtimes)
             {
                 <th >
-                    <ResultCard Event="_event" Showtime="showtime" Desktop="true" IsHost="_isHost"></ResultCard>
+                    <ResultCard Event="Event" Showtime="showtime" Desktop="true" IsHost="IsHost"></ResultCard>
                 </th>
             }
         </tr>
 
-        @foreach (var participant in _event.Participants ?? new List<Participant>())
+        @foreach (var participant in Event.Participants ?? new List<Participant>())
         {
             <tr>
                 <td>
-                    <div class="flex rounded w-50 shadow-md gap-2  p-5">
-                        @if (_isHost && participant.Id != 0)
+                    <div class="flex rounded w-50 shadow-md gap-1  p-5">
+                        @if (IsHost && participant.Id != 0)
                         {
-                            <button onclick="@(async () => { await OnDeleteParticipant.InvokeAsync(participant);})"> <DeleteIcon Class="stroke-error hover:stroke-error-dark"/> </button>
+                            <button onclick="@(async () => { await OnDeleteParticipant.InvokeAsync(participant); })">
+                                <DeleteIcon Class="stroke-error hover:stroke-error-dark"/>
+                            </button>
                         }
                         @if (!string.IsNullOrEmpty(participant.Note))
                         {
-                            <!-- .tooltip-container:hover {
-                                     background-color: grey;
-                                 }
-                                 
-                                 .tooltip-container:hover .tooltip-content {
-                                     visibility: visible;
-                                 }
-                                 
-                                 .tooltip-content {
-                                     visibility: hidden;
-                                     position: absolute;
-                                     z-index: 1;
-                                     transform: translateY(-8rem); /* hard coded for now */
-                                     background-color: lightgray;
-                                 }
-                                 -->
-                            
                             
                             <div class="relative flex items-center">
-                                <NoteIcon class="stroke-black peer" />
-                                <div class="absolute invisible z-5 bg-light-gray transform -translate-y-32 shadow-md rounded  bg-white border p-3 opacity-0 peer-hover:visible peer-hover:opacity-100">
-                                    <p class="font-bold t">@participant.Nickname's note</p>
+                                <NoteIcon Class="stroke-black peer" />
+                                <div class="absolute invisible z-5 bg-light-gray transform -translate-y-20 translate-x-8 shadow-md min-w-40 max-w-80 rounded text-wrap  bg-white border p-3 opacity-0 peer-hover:visible peer-hover:opacity-100">
+                                    <p class="font-bold ">@participant.Nickname's note</p>
                                     @if (!string.IsNullOrEmpty(participant.Note))
                                     {
-                                        <p>@participant.Note</p>
+                                        <p >@participant.Note</p>
                                     }
                                 </div>
                             </div>
@@ -244,14 +47,14 @@
                     </div>
 
                 </td>
-                @foreach (var showtime in orderedShowtimes)
+                @foreach (var showtime in OrderedShowtimes)
                 {
                     <td >
-                        <div class="h-16 flex items-center justify-center bg-@(_event.SelectOptions[participant.VotedFor.First(v => v.Showtime.Id == showtime.Id).VoteIndex].Color) rounded border border-gray-400 p-5 shadow-md">
+                        <div class="h-16 flex items-center justify-center bg-@(Event.SelectOptions[participant.VotedFor.First(v => v.Showtime.Id == showtime.Id).VoteIndex].Color) rounded border border-gray-400 p-5 shadow-md">
                             @if (participant.VotedFor.First(v => v.Showtime.Id == showtime.Id).VoteIndex != 0)
                             {
                                 <div class="rounded-full items-center justify-center bg-white w-8 h-8 gap-2">
-                                    <SingleCheckIcon Class="@("stroke-" + _event.SelectOptions[participant.VotedFor.First(v => v.Showtime.Id == showtime.Id).VoteIndex].Color)"/>
+                                    <SingleCheckIcon Class="@("stroke-" + Event.SelectOptions[participant.VotedFor.First(v => v.Showtime.Id == showtime.Id).VoteIndex].Color)"/>
                                 </div>
                             }
                         </div>
@@ -262,88 +65,17 @@
     </table>
 </div>
 
-
-
-
-
-
 @code {
 
+    [Parameter] public required JoinEvent Event { get; set; }
 
-    [Parameter] public JoinEvent _event { get; set; }
-
-    [Parameter] public bool _isHost { get; set; }
-
-    private Participant? _participantToDelete;
-
-    private Showtime? _showtimeToCalendar = null;
-
-    private const string VotesString = "Stemmer";
-    private const string TimeString = "Tidspunkt";
-
-    private string _sortedAfter = VotesString;
+    [Parameter]  public required bool IsHost { get; set; }
     
     [Parameter]
-    public EventCallback<Participant> OnDeleteParticipant { get; set; }
-
-    private async Task OpenConfirmationDialog(int index)
-    {
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmEvent" + index);
-    }
-
-    private async Task CloseDialog(int index)
-    {
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + index);
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmDetails" + index);
-    }
-
-
-    //Delete participant
-    private async Task DeleteParticipant(int participantId)
-    {
-        var httpClient = new HttpClient();
-        var response = await httpClient.DeleteAsync($"{NavigationManager.BaseUri}deleteParticipant/{_event.Id}/{participantId}");
-        if (response.IsSuccessStatusCode)
-        {
-            _event.Participants.RemoveAll(p => p.Id == participantId);
-            StateHasChanged();
-        }
-    }
-
-    /*
-//send the calendar item to the browser
-Response.ClearHeaders();
-Response.Clear();
-Response.Buffer = true;
-Response.ContentType = "text/calendar";
-Response.AddHeader("content-length", CalendarItem.Length.ToString());
-Response.AddHeader("content-disposition", "attachment; filename=\"" + FileName + ".ics\"");
-Response.Write(CalendarItem);
-Response.Flush();
-HttpContext.Current.ApplicationInstance.CompleteRequest();
-*/
-
-
-    protected override void OnInitialized()
-    {
-        var sortedShowtimes = _event.Showtimes
-            .OrderByDescending(showtime =>
-                _event.Participants?
-                    .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)) ?? 0)
-            .ThenBy(showtime =>
-                _event.Participants?
-                    .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)
-                        .Sum(v => v.VoteIndex)) ?? 0);
-
-        foreach (var showtime in sortedShowtimes)
-        {
-            Console.WriteLine(showtime.Playtime.StartTime);
-        }
-    }
-
-
-
-
- 
-
+    public required List<Showtime> OrderedShowtimes { get; set; }
+    
+    [Parameter]
+    public required EventCallback<Participant> OnDeleteParticipant { get; set; }
+    
+    
 }

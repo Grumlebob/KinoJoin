@@ -29,4 +29,12 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Application.csproj" />
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\Presentation\Presentation.Client\Presentation.Client.csproj" />
+    <ProjectReference Include="..\Presentation\Presentation\Presentation.csproj" />
+  </ItemGroup>
+
 </Project>

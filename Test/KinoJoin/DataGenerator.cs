@@ -71,13 +71,13 @@ public class DataGenerator
 
         JoinEventGenerator = new Faker<JoinEvent>().CustomInstantiator(f =>
         {
-            var JoinEventId = f.IndexFaker + 1;
+            //var JoinEventId = f.IndexFaker + 1;
 
             var participants = _participantGenerator.Generate(f.Random.Int(0, 5));
 
             var joinEvent = new JoinEvent
             {
-                Id = JoinEventId,
+                //Id = JoinEventId,
                 HostId = f.Random.Uuid().ToString(),
                 Title = f.Lorem.Sentence(),
                 Description = f.Lorem.Paragraph(),
@@ -96,7 +96,7 @@ public class DataGenerator
             // After the event has been created, insert some random participants who have made random votes
             foreach (var participant in joinEvent.Participants)
             {
-                participant.JoinEventId = JoinEventId;
+                //participant.JoinEventId = JoinEventId;
                 participant.VotedFor = new List<ParticipantVote>();
                 var numberOfVotes = f.Random.Int(0, joinEvent.Showtimes.Count);
                 var remainingShowtimes = joinEvent.Showtimes.Select(s => s.Id).ToList();

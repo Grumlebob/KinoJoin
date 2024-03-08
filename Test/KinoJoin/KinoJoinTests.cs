@@ -39,7 +39,7 @@ public class KinoJoinTests : IAsyncLifetime
             }
             catch (Exception e)
             {
-                throw new Exception(createResponse.Content.ReadAsStringAsync().Result, e);
+                throw new Exception(await createResponse.Content.ReadAsStringAsync(), e);
             }
             var id = await createResponse.Content.ReadFromJsonAsync<int>();
             var responseContent = await createResponse.Content.ReadAsStringAsync();

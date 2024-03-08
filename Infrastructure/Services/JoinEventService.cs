@@ -14,7 +14,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         await context.SelectOptions.UpsertRange(joinEventWithNavProps.SelectOptions)
             .On(s => new { s.VoteOption, s.Color })
             .RunAsync();
-
+        
         var playTimes = joinEventWithNavProps.Showtimes.Select(st => st.Playtime).DistinctBy(p => p.StartTime);
         await context.Playtimes.UpsertRange(playTimes).On(p => p.StartTime).RunAsync();
 
@@ -92,12 +92,12 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             
             joinEventWithNavProps.Host = null!; // avoid creating a new host
             EntityEntry<JoinEvent> newlyUpsertedJoinEvent; //is set by add or update
-            if (joinEventDto.Id == null)//new event
+            var voteOptions = joinEventDto.SelectOptions.Select(s => s.VoteOption);
+            var colorOptions = joinEventDto.SelectOptions.Select(s => s.Color);
+            if (joinEventDto.Id == null) //new event
             {
                 //As mulitple showtimes can reference the same movie etc, we must only attach it once in ef core 
                 var showtimeIds = joinEventDto.Showtimes.Select(s => s.Id);
-                var voteOptions = joinEventDto.SelectOptions.Select(s => s.VoteOption);
-                var colorOptions = joinEventDto.SelectOptions.Select(s => s.Color);
                 
                 //use existing showtimes etc
                 joinEventWithNavProps.Showtimes = context.Showtimes.Where(s => showtimeIds.Contains(s.Id)).ToList();
@@ -110,7 +110,9 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             {
                 //dont add already existing entities
                 joinEventWithNavProps.Participants.RemoveAll(p => p.Id != 0); //they are null if yet to be added to database
-                joinEventWithNavProps.SelectOptions.RemoveAll(s => s.Id != 0);
+                joinEventWithNavProps.SelectOptions = context.SelectOptions
+                    .Where(s => voteOptions.Contains(s.VoteOption) && colorOptions.Contains(s.Color))
+                    .ToList();
                 joinEventWithNavProps.Showtimes = []; //these cannot change after joinEvent is created
                 
                 newlyUpsertedJoinEvent = context.JoinEvents.Update(joinEventWithNavProps);

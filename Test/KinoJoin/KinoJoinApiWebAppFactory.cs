@@ -70,8 +70,7 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
         try
         {
             string? connectionString = Environment.GetEnvironmentVariable("TESTDATABASECONNECTION");
-            Console.WriteLine($"Connection string after getting from environment: {connectionString}");
-            Console.WriteLine($"Connection string after getting from environment: {connectionString[0..20]}");
+            Console.WriteLine($"Connection string after getting from environment: {connectionString[0..40]}");
 
             
             if (string.IsNullOrEmpty(connectionString))
@@ -86,6 +85,7 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
             Console.WriteLine(e.Message);
             throw;
         }
+        
 
         HttpClient = CreateClient();
 

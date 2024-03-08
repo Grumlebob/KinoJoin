@@ -1,8 +1,10 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace Domain.Entities;
 
 public class Host
 {
-    [Key]
+    [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public string AuthId { get; set; }
 
     public string Username { get; set; }
@@ -12,15 +14,12 @@ public class Host
 
 public class Participant
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-
     public string? AuthId { get; set; }
     public int JoinEventId { get; set; }
     public string Nickname { get; set; }
     public string? Email { get; set; }
-
     public string? Note { get; set; }
 
     //navigation property
@@ -32,21 +31,19 @@ public class Participant
 
 public class JoinEvent
 {
-    private DateTime _deadline;
-
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-
-    public string? HostId { get; set; }
+    public string HostId { get; set; }
     public string Title { get; set; }
     public string Description { get; set; }
-    public List<Showtime>? Showtimes { get; set; }
+    public List<Showtime> Showtimes { get; set; } = [];
 
     public int? ChosenShowtimeId { get; set; }
-    public List<Participant>? Participants { get; set; }
+    public List<Participant> Participants { get; set; } = [];
 
-    public List<SelectOption>? SelectOptions { get; set; }
+    public List<SelectOption> SelectOptions { get; set; } = [];
+
+    private DateTime _deadline;
 
     public DateTime Deadline
     {
@@ -55,15 +52,14 @@ public class JoinEvent
     }
 
     [ForeignKey("HostId")]
-    public Host? Host { get; set; }
+    public Host Host { get; set; }
 }
 
 public class Movie
 {
-    [Key]
+    [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int Id { get; set; }
     public string Title { get; set; }
-    public List<Showtime>? Showtimes { get; set; }
     public string? ImageUrl { get; set; }
     public string? KinoURL { get; set; }
     public int? Duration { get; set; }
@@ -73,8 +69,7 @@ public class Movie
 
 public class Showtime
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int Id { get; set; }
 
     public int MovieId { get; set; }
@@ -107,18 +102,16 @@ public class ParticipantVote
 {
     public int ParticipantId { get; set; }
     public int ShowtimeId { get; set; }
-
     public Participant Participant { get; set; } //ForeignKeys set in context
     public Showtime Showtime { get; set; }
     public int VoteIndex { get; set; }
 }
 
+[Index(nameof(VoteOption), nameof(Color), IsUnique = true)]
 public class SelectOption
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-
     public string VoteOption { get; set; }
     public string Color { get; set; }
 
@@ -126,13 +119,13 @@ public class SelectOption
     public List<JoinEvent> JoinEvents { get; set; }
 }
 
+[Index(nameof(StartTime), IsUnique = true)]
 public class Playtime
 {
-    private DateTime _startTime;
-
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
+
+    private DateTime _startTime;
 
     public DateTime StartTime
     {
@@ -141,10 +134,10 @@ public class Playtime
     }
 }
 
+[Index(nameof(Type), IsUnique = true)]
 public class VersionTag
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
     public string Type { get; set; }
@@ -152,16 +145,14 @@ public class VersionTag
 
 public class Cinema
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public required int Id { get; set; }
-
-    public required string Name { get; set; }
+    [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public int Id { get; set; }
+    public string Name { get; set; }
 }
 
 public class Room
 {
-    [Key]
+    [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int Id { get; set; }
 
     public string Name { get; set; }

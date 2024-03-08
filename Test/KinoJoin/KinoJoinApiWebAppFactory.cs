@@ -46,7 +46,7 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
             services.AddDbContext<KinoContext>(
                 options =>
                 {
-                    string? connectionString = Environment.GetEnvironmentVariable("TestDatabaseConnection");
+                    string? connectionString = Environment.GetEnvironmentVariable("TESTDATABASECONNECTION");
                     if (string.IsNullOrEmpty(connectionString))
                     {
                         connectionString = Configuration["TestDatabaseConnection"]!;
@@ -66,7 +66,7 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
-        string? connectionString = Environment.GetEnvironmentVariable("TestDatabaseConnection");
+        string? connectionString = Environment.GetEnvironmentVariable("TESTDATABASECONNECTION");
         if (string.IsNullOrEmpty(connectionString))
         {
             connectionString = Configuration["TestDatabaseConnection"];

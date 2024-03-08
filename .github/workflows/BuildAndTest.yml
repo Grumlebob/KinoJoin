@@ -41,9 +41,9 @@ jobs:
 
       - name: Test
         env:
-          TestDatabaseConnection: ${{ secrets.TESTDATABASECONNECTION }}
-          MonkeyConnection: ${{ secrets.MONKEYCONNECTION }}
-          PostgresConnection: ${{ secrets.POSTGRESCONNECTION }}
+          MONKEYCONNECTION: ${{ secrets.MONKEYCONNECTION }}
+          POSTGRESCONNECTION: ${{ secrets.POSTGRESCONNECTION }}
+          TESTDATABASECONNECTION: ${{ secrets.TESTDATABASECONNECTION }}
         run: dotnet test --filter FullyQualifiedName!~Test.Monkey
       
       - name: Validate Formatting

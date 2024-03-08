@@ -113,7 +113,7 @@ public class SelectOption
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
     public string VoteOption { get; set; }
-    
+
     /// <summary>
     /// The color of the select option in hex format. In order to use a color in a tailwind class dynamically, the class must be used somewhere else in the project statically.
     /// For example, if the color is primary, and you want to use it as a background, the class bg-primary must be used somewhere in the project. Add the class to the dummy component "GenerateCustomTailwindColorsBeforeRunTime.razor" to use it, if it is not used anywhere else.

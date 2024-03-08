@@ -1,13 +1,21 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
 
-<div class="flex flex-col justify-center items-start gap-2 bg-@(Event.ChosenShowtimeId == Showtime.Id ? "success" : "slate-50") @(Desktop ? "w-70 ..." : "w-full")   rounded p-5 shadow-md">
+<div class="flex flex-col justify-center items-start gap-2 bg-slate-50 @(Desktop ? "w-70 ..." : "w-full")   rounded p-5 shadow-md">
 
     <div class="gap-1">
-        <div class="flex items-center gap-1 w-full">
+        <div class="flex items-center gap-2 w-full">
             <p class="font-bold truncate ...">
                 @Showtime.Movie.Title
             </p>
+            
+            @if (Event.ChosenShowtimeId == Showtime.Id)
+            {
+                <div class=" bg-success text-success-darkest bg-opacity-25 p-1 py-0 rounded-full text-xs font-normal">
+                    <p >Aftalt tid</p>
+                </div>
+            }
+            
         </div>
         <div class="flex items-center gap-1 w-full ">
             <p class="font-normal truncate ... text-xs text-gray-700">@Showtime.VersionTag.Type</p>
@@ -43,10 +51,10 @@
         <div class="flex h-fit gap-1 justify-end w-full">
             @if (!Desktop)
             {
-                <button onclick="@ShowVotes" class=" border-2 border-gray-300 rounded-full flex items-center gap-1 py-1 px-2 hover:bg-gray-300">
-                    <DoubleCheckIcon/>
-                    <p>
-                        @Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.VoteIndex != 0))
+                <button onclick="@ShowVotes" class=" bg-white border-2 border-gray-300 rounded-full flex items-center gap-1 py-1 px-2 hover:bg-gray-300">
+                    
+                    <p class="whitespace-nowrap">
+                        Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.VoteIndex != 0)))
                     </p>
                 </button>
             }

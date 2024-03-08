@@ -53,7 +53,7 @@
         <!-- PosterImage -->
         <div class="row-start-1 row-end-3 lg:self-start lg:sticky lg:top-16 lg:mr-5 lg:min-w-48">
             <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank">
-                <img src="@movie.ImageUrl" alt="Movie Poster" class="h-72 w-48 rounded-sm shadow"/>
+                <img src="@movie.ImageUrl" alt="Movie Poster" class="w-36  lg:h-72 lg:w-48 rounded-sm shadow"/>
             </a>
             <!--Læs mere og trailer-->
             <div class="hidden lg:flex flex-col items-center">
@@ -67,7 +67,7 @@
         <!-- MovieHeader -->
         <div class="mt-0 mb-2">
             <a href=@($"https://kino.dk{movie.KinoURL}") target="_blank" class="text-black no-underline ">
-                <h2 class="mt-0 font-bold text-4xl mb-2.5">@movie.Title</h2>
+                <h2 class="mt-0 font-bold  mb-2.5 text-xl lg:text-4xl">@movie.Title</h2>
             </a>
 
             <div class="inline-flex items-center justify-center gap-4 rounded bg-gray-300 p-2">

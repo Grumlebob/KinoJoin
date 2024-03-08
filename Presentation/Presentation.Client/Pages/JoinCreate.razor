@@ -768,7 +768,7 @@ else
         HttpClient client = new HttpClient();
 
         _baseUrl = NavigationManager.BaseUri;
-        var url = $"{_baseUrl}putJoinEvent";
+        var url = $"{_baseUrl}api/events";
 
         var pickedShowtimes = selectedShowtimeIds.Select(id => showtimes.First(s => s.Id == id)).ToList();
 

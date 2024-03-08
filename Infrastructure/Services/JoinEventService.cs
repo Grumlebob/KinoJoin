@@ -71,7 +71,8 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             else
             {
                 //dont add already existing entities
-                joinEventWithNavProps.Participants.RemoveAll(p => p.Id != 0); //they are 0 if yet to be added to database
+                joinEventWithNavProps.Participants
+                    .RemoveAll(p => p.Id != 0); //they are 0 if yet to be added to database
                 joinEventWithNavProps.SelectOptions.RemoveAll(s =>
                     voteOptions.Contains(s.VoteOption) && colorOptions.Contains(s.Color)
                 );
@@ -138,7 +139,8 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             else
             {
                 //dont add already existing entities
-                joinEventWithNavProps.Participants.RemoveAll(p => p.Id != 0); //they are null if yet to be added to database
+                joinEventWithNavProps.Participants
+                    .RemoveAll(p => p.Id != 0); //they are null if yet to be added to database
                 joinEventWithNavProps.SelectOptions = context
                     .SelectOptions.Where(s =>
                         voteOptions.Contains(s.VoteOption) && colorOptions.Contains(s.Color)
@@ -156,7 +158,15 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
     public async Task<JoinEvent?> GetAsync(int id)
     {
-        return await context.JoinEvents.FindAsync(id);
-        
+        return await context.JoinEvents
+            .AsNoTracking()
+            .Include(j => j.Showtimes)
+                .ThenInclude(s => s.Movie)
+            .Include(j => j.Participants)
+                .ThenInclude(p => p.VotedFor)
+                .ThenInclude(v => v.Showtime)
+                .ThenInclude(s => s.Movie)
+            .Include(j => j.SelectOptions)
+            .FirstOrDefaultAsync(j => j.Id == id);
     }
 }

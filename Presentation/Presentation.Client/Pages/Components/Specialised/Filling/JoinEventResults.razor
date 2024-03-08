@@ -484,7 +484,7 @@ HttpContext.Current.ApplicationInstance.CompleteRequest();
         _event.ChosenShowtimeId = showtime.Id;
         Console.WriteLine("Upload event id " + _event.Id);
         var httpClient = new HttpClient();
-        var response = await httpClient.PutAsJsonAsync($"{NavigationManager.BaseUri}putJoinEvent", _event);
+        var response = await httpClient.PutAsJsonAsync($"{NavigationManager.BaseUri}api/events", _event);
         var id = await response.Content.ReadAsStringAsync();
         Console.WriteLine("Saved id " + id);
         await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + index);

@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Presentation.Client.NamedHttpClients;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddScoped<HttpClient>(_ => new HttpClient
+builder.Services.AddHttpClient<IJoinEventHttpClient, JoinEventHttpClient>(client =>
 {
-    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
+    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
 });
 
 builder.Services.AddOidcAuthentication(options =>

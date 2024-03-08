@@ -1,7 +1,9 @@
 ﻿@inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
+@inject IJoinEventHttpClient JoinEventHttpClient
 
 @page "/JoinCreate/{filterString}"
+@using Presentation.Client.NamedHttpClients
 
 
 <style>
@@ -765,10 +767,10 @@ else
 
     private async Task FinishJoinEvent()
     {
-        HttpClient client = new HttpClient();
-
-        _baseUrl = NavigationManager.BaseUri;
-        var url = $"{_baseUrl}api/events";
+        //HttpClient client = new HttpClient();
+//
+        //_baseUrl = NavigationManager.BaseUri;
+        //var url = $"{_baseUrl}api/events";
 
         var pickedShowtimes = selectedShowtimeIds.Select(id => showtimes.First(s => s.Id == id)).ToList();
 
@@ -844,8 +846,8 @@ else
             Participants = []
         };
 
-
-        var response = await client.PutAsJsonAsync(url, upsertJoinEventDto);
+        
+        var response = await JoinEventHttpClient.PutJoinEventAsync(upsertJoinEventDto);
         var id = await response.Content.ReadAsStringAsync();
 
 

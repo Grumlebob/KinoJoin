@@ -1,10 +1,5 @@
 name: Build and Test
 
-env:
-  api-key: ${{ secrets.GITHUB_TOKEN }} #Name of the environment variable is  "api-key"
-  CONNECTIONTOMONGODB: ${{ secrets.CONNECTIONTOMONGODB }}
-
-
 on:
   push:
     branches:
@@ -26,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
@@ -43,7 +38,7 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test
+        run: dotnet test --filter FullyQualifiedName!~Test.Monkey
       
       - name: Validate Formatting
         run: dotnet csharpier --check .

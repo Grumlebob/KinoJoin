@@ -1,11 +1,5 @@
-﻿using System.Net;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using Application.DTO;
-using Bogus;
-using Domain.Entities;
-using FluentAssertions;
-using Presentation;
-using Test.Monkey;
 
 namespace Test.KinoJoin;
 
@@ -19,7 +13,7 @@ public class KinoJoinTests : IAsyncLifetime
 
     private readonly DataGenerator _dataGenerator = new();
 
-    public KinoJoinTests(MonkeyServiceWebAppFactory factory)
+    public KinoJoinTests(KinoJoinApiWebAppFactory factory)
     {
         _client = factory.HttpClient;
         _resetDatabase = factory.ResetDatabaseAsync;
@@ -33,16 +27,7 @@ public class KinoJoinTests : IAsyncLifetime
         {
             var UpsertDto = UpsertJoinEventDto.FromModelToUpsertDto(joinEvent);
             var createResponse = await _client.PutAsJsonAsync("/putJoinEvent", UpsertDto);
-            try
-            {
-                createResponse.EnsureSuccessStatusCode();
-            }
-            catch (Exception e)
-            {
-                throw new Exception(await createResponse.Content.ReadAsStringAsync(), e);
-            }
-            var id = await createResponse.Content.ReadFromJsonAsync<int>();
-            var responseContent = await createResponse.Content.ReadAsStringAsync();
+            createResponse.EnsureSuccessStatusCode();
         }
     }
 

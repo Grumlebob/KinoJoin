@@ -71,7 +71,7 @@ else
     </p>
     <p>Tidsinterval: @_event?.Showtimes?.Min(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM") - @_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM")</p>
     
-    <ShowtimeSelector SelectOptions="_event.SelectOptions" Showtimes="_event.Showtimes" VotedFor="_votedFor.Select(v => (v.Showtime,v.VoteIndex )).ToList()"  VotedForChanged="OnVotesChanged" />
+    <ShowtimeSelector SelectOptions="_event.SelectOptions" Showtimes="_event.Showtimes" VotedFor="@(_votedFor.Select(v => (v.ShowtimeId, v.VoteIndex )).ToList())"  VotedForChanged="OnVotesChanged" />
 
     <RegisterParticipantVote Event="_event" OnAnswerSaved="@StateHasChanged"  @bind-Nickname="@_nickname" AlreadyAnswered="_alreadyAnswered"  VotedFor="_votedFor" LoggedInUserId="@_loggedInUserId" />
     
@@ -121,7 +121,7 @@ else
 
         if (_event is { Showtimes: not null })
         {
-            _votedFor = _event.Showtimes.Select(st => new ParticipantVote { ShowtimeId = st.Id, Showtime = st, VoteIndex = 0}).ToList(); // a vote for each showtime
+            _votedFor = _event.Showtimes.Select(st => new ParticipantVote { ShowtimeId = st.Id, VoteIndex = 0}).ToList(); // a vote for each showtime
         }
 
 
@@ -167,9 +167,9 @@ else
         Console.WriteLine(response.IsSuccessStatusCode ? "Updated" : "Failed to update");
     }
 
-    private void OnVotesChanged(List<(Showtime, int vote)> votes)
+    private void OnVotesChanged(List<(int showtimeId, int vote)> votes)
     {
-        _votedFor = votes.Select(v => new ParticipantVote { ShowtimeId = v.Item1.Id, Showtime = v.Item1, VoteIndex = v.vote}).ToList();
+        _votedFor = votes.Select(v => new ParticipantVote { ShowtimeId = v.showtimeId, VoteIndex = v.vote}).ToList();
     }
 
 }

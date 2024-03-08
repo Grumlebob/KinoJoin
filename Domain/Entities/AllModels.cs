@@ -9,7 +9,7 @@ public class Host
 
     public string Username { get; set; }
     public string? Email { get; set; }
-    public List<JoinEvent>? JoinEvents { get; set; }
+    public List<JoinEvent> JoinEvents { get; set; } = [];
 }
 
 public class Participant
@@ -22,10 +22,6 @@ public class Participant
     public string? Email { get; set; }
     public string? Note { get; set; }
 
-    //navigation property
-    [ForeignKey("JoinEventId")]
-    public JoinEvent? JoinEvent { get; set; }
-
     public ICollection<ParticipantVote> VotedFor { get; set; }
 }
 
@@ -37,7 +33,6 @@ public class JoinEvent
     public string Title { get; set; }
     public string Description { get; set; }
     public List<Showtime> Showtimes { get; set; } = [];
-
     public int? ChosenShowtimeId { get; set; }
     public List<Participant> Participants { get; set; } = [];
 
@@ -102,8 +97,6 @@ public class ParticipantVote
 {
     public int ParticipantId { get; set; }
     public int ShowtimeId { get; set; }
-    public Participant Participant { get; set; } //ForeignKeys set in context
-    public Showtime Showtime { get; set; }
     public int VoteIndex { get; set; }
 }
 
@@ -160,8 +153,7 @@ public class Room
 
 public class Genre
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public required int Id { get; set; }
 
     public string Name { get; set; }

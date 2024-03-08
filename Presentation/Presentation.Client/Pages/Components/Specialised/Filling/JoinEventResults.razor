@@ -261,7 +261,7 @@
                  @foreach (var showtime in orderedShowtimes)
                  {
                      <td>
-                         <div style="height:2rem; background: @(_event.SelectOptions[participant.VotedFor.First(v => v.Showtime.Id == showtime.Id).VoteIndex].Color)">
+                         <div style="height:2rem; background: @(_event.SelectOptions[participant.VotedFor.First(v => v.ShowtimeId == showtime.Id).VoteIndex].Color)">
                          </div>
                      </td>
                  }

@@ -345,7 +345,7 @@ else if (_cinemaIdsToNames.Count > 0 || _movieIdsToNames.Count > 0)
         }
     }
 
-    <ShowtimeSelector Showtimes="showtimes" MoviesWithOutShowTimes="moviesWithoutShowtimes" VotedFor="@(showtimes.Select(s => (s, selectedShowtimeIds.Contains(s.Id) ? 1 : 0)).ToList())" VotedForChanged="OnVoteChange"/>
+    <ShowtimeSelector Showtimes="showtimes" MoviesWithOutShowTimes="moviesWithoutShowtimes" VotedFor="@(showtimes.Select(s => (s.Id, selectedShowtimeIds.Contains(s.Id) ? 1 : 0)).ToList())" VotedForChanged="OnVoteChange"/>
 }
 else
 {
@@ -859,7 +859,7 @@ else
             {
                 AuthId = host.AuthId,
                 Nickname = host.Username, Email = host.Email, Note = null,
-                VotedFor = pickedShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, Showtime = s, VoteIndex = 1 }).ToList(),
+                VotedFor = pickedShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, VoteIndex = 1 }).ToList(),
                 JoinEventId = _joinEventId
             };
             var httpClient = new HttpClient();
@@ -867,9 +867,9 @@ else
         }
     }
 
-    private void OnVoteChange(List<(Showtime, int vote)> votes)
+    private void OnVoteChange(List<(int showtimeId, int vote)> votes)
     {
-        selectedShowtimeIds = votes.Where(v => v.vote == 1).Select(v => v.Item1.Id).ToList();
+        selectedShowtimeIds = votes.Where(v => v.vote == 1).Select(v => v.showtimeId).ToList();
     }
 
 }

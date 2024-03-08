@@ -98,9 +98,7 @@ public static class AllEndpoints
                                     .VotedFor.Select(v => new ParticipantVote
                                     {
                                         ParticipantId = v.ParticipantId,
-                                        Participant = v.Participant,
                                         ShowtimeId = v.ShowtimeId,
-                                        Showtime = v.Showtime,
                                         VoteIndex = v.VoteIndex
                                     })
                                     .ToList()
@@ -123,7 +121,7 @@ public static class AllEndpoints
                                 Cinema = s.Cinema,
                                 Playtime = s.Playtime,
                                 Room = s.Room,
-                                VersionTag = s.VersionTag,
+                                VersionTag = s.VersionTag
                             })
                             .ToList(),
                         SelectOptions = e

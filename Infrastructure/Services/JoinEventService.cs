@@ -158,15 +158,22 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
     public async Task<JoinEvent?> GetAsync(int id)
     {
-        return await context.JoinEvents
+        var result = await context.JoinEvents
             .AsNoTracking()
-            .Include(j => j.Showtimes)
-                .ThenInclude(s => s.Movie)
-            .Include(j => j.Participants)
-                .ThenInclude(p => p.VotedFor)
-                .ThenInclude(v => v.Showtime)
-                .ThenInclude(s => s.Movie)
+            .Include(j => j.Showtimes).ThenInclude(s => s.Movie)
+            .Include(j => j.Showtimes).ThenInclude(s => s.Cinema)
+            .Include(j => j.Showtimes).ThenInclude(s => s.Playtime)
+            .Include(j => j.Showtimes).ThenInclude(s => s.VersionTag)
+            .Include(j => j.Showtimes).ThenInclude(s => s.Room)
+            .Include(j => j.Participants).ThenInclude(p => p.VotedFor)
             .Include(j => j.SelectOptions)
+            .Include(j => j.Host)
             .FirstOrDefaultAsync(j => j.Id == id);
+        
+        //avoid circular reference
+        result?.Showtimes.ForEach(s => s.JoinEvents = []);
+        result?.SelectOptions.ForEach(s => s.JoinEvents = []);
+        result?.Host.JoinEvents.Clear();
+        return result;
     }
 }

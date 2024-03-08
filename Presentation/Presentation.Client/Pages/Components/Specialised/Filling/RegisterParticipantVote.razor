@@ -124,7 +124,6 @@ else if (!_answerSaved)
             _infoMessage = "Svar gemt";
             _answerSaved = true;
             p.Id = int.Parse(await response.Content.ReadAsStringAsync());
-            Event.Participants.Add(p);
             await OnAnswerSaved.InvokeAsync(p);
 
             StateHasChanged();

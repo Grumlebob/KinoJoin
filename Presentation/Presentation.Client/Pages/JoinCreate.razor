@@ -794,6 +794,19 @@ else
             host.Email = email;
         }
 
+        var participants = new List<UpsertParticipantDto>();
+        
+        if (HostCanAllShowtimes)
+        {
+            var p = new UpsertParticipantDto()
+            {
+                AuthId = host.AuthId,
+                Nickname = host.Username, Email = host.Email, Note = null,
+                VotedFor = pickedShowtimes.Select(s => new UpsertParticipantVoteDto() { ShowtimeId = s.Id, VoteIndex = 1 }).ToList(),
+                JoinEventId = _joinEventId
+            };
+            participants.Add(p);
+        }
 
         var upsertJoinEventDto = new UpsertJoinEventDto
         {
@@ -839,10 +852,9 @@ else
             Title = _eventDetails.EventTitle!,
             Description = _eventDetails.EventDescription ?? "",
             Deadline = _eventDetails.Deadline,
-            SelectOptions = new List<SelectOption>() { new SelectOption() { VoteOption = "Kan ikke", Color = "gray-100" }, new SelectOption() { VoteOption = "Kan godt", Color = "success" }, new SelectOption() { VoteOption = "Hvis Nødvendigt (Klik to gange)", Color = "warning" } }
-            SelectOptions = new List<UpsertSelectOptionDto> { new () { VoteOption = "Kan ikke", Color = "lightgray" }, new () { VoteOption = "Kan godt", Color = "lightgreen" }, new () { VoteOption = "Hvis Nødvendigt (Klik to gange)", Color = "orange" } },
+            SelectOptions = new List<UpsertSelectOptionDto> { new () { VoteOption = "Kan ikke", Color = "gray-100" }, new () { VoteOption = "Kan godt", Color = "success" }, new () { VoteOption = "Hvis Nødvendigt (Klik to gange)", Color = "warning" } },
             ChosenShowtimeId = null,
-            Participants = []
+            Participants = participants,
         };
 
 
@@ -854,18 +866,7 @@ else
 
         eventCreated = true;
 
-        if (HostCanAllShowtimes)
-        {
-            var p = new Participant
-            {
-                AuthId = host.AuthId,
-                Nickname = host.Username, Email = host.Email, Note = null,
-                VotedFor = pickedShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, Showtime = s, VoteIndex = 1 }).ToList(),
-                JoinEventId = _joinEventId
-            };
-            var httpClient = new HttpClient();
-            var participateResponse = await httpClient.PutAsJsonAsync($"{_baseUrl}participate/{_joinEventId}", p);
-        }
+        
     }
 
     private void OnVoteChange(List<(Showtime, int vote)> votes)

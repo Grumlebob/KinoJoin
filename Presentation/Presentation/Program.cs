@@ -89,11 +89,7 @@ using (var scope = app.Services.CreateScope())
         var cinema = await context.Cinemas.FindAsync(cinemaOption.Key);
         if (cinema == null)
         {
-            context.Cinemas.Add(new Cinema
-            {
-                Id = cinemaOption.Key,
-                Name = cinemaOption.Value
-            });
+            context.Cinemas.Add(new Cinema { Id = cinemaOption.Key, Name = cinemaOption.Value });
         }
         else
         {
@@ -104,13 +100,12 @@ using (var scope = app.Services.CreateScope())
     //VersionTags
     foreach (var versionOption in facets.Versions.Options)
     {
-        var version = await context.Versions.Where(v => v.Type == versionOption.Value).FirstOrDefaultAsync();
+        var version = await context
+            .Versions.Where(v => v.Type == versionOption.Value)
+            .FirstOrDefaultAsync();
         if (version == null)
         {
-            context.Versions.Add(new VersionTag
-            {
-                Type = versionOption.Value
-            });
+            context.Versions.Add(new VersionTag { Type = versionOption.Value });
         }
     }
 
@@ -120,18 +115,14 @@ using (var scope = app.Services.CreateScope())
         var genre = await context.Genres.FindAsync(genreOption.Key);
         if (genre == null)
         {
-            context.Genres.Add(new Genre
-            {
-                Id = genreOption.Key,
-                Name = genreOption.Value
-            });
+            context.Genres.Add(new Genre { Id = genreOption.Key, Name = genreOption.Value });
         }
         else
         {
             genre.Name = genreOption.Value;
         }
     }
-    
+
     //MOVIES
     //several cinemas may pose the same movie. No need to create the movie object every time
     Dictionary<int, string> _movieIdsToNames = new();
@@ -143,15 +134,14 @@ using (var scope = app.Services.CreateScope())
 
     foreach (var jsonCinema in apiResultObject.Content.Content.Content.Content)
     {
-        foreach (var jsonMovie in
-                 jsonCinema.Movies.Where(jsonMovie =>
-                     _movieIdsToNames
-                         .ContainsKey(jsonMovie
-                             .Id))) //if not contains key it is not a movie (there are events with different ids)
+        foreach (
+            var jsonMovie in jsonCinema.Movies.Where(jsonMovie =>
+                _movieIdsToNames.ContainsKey(jsonMovie.Id)
+            )
+        ) //if not contains key it is not a movie (there are events with different ids)
         {
             int.TryParse(jsonMovie.Content.FieldPlayingTime, out var duration);
-            if (!existingMovies.TryGetValue(jsonMovie.Id,
-                    out var movieObject)) //use existing movie object or create new
+            if (!existingMovies.TryGetValue(jsonMovie.Id, out var movieObject)) //use existing movie object or create new
             {
                 movieObject = new Movie
                 {
@@ -187,13 +177,10 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-
     await context.SaveChangesAsync();
 }
 
 app.Run();
 
 //A hacky solution to use Testcontainers with WebApplication.CreateBuilder for integration tests
-public partial class Program
-{
-}
+public partial class Program { }

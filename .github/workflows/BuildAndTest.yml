@@ -1,9 +1,5 @@
 name: Build and Test
 
-env:
-  api-key: ${{ secrets.GITHUB_TOKEN }} #Name of the environment variable is  "api-key"
-  CONNECTIONTOMONGODB: ${{ secrets.CONNECTIONTOMONGODB }}
-
 
 on:
   push:
@@ -24,6 +20,8 @@ jobs:
   buildAndTest:
     name: Build & Test
     runs-on: ubuntu-latest
+    environment:
+      name: GITHUBSECRETS  # This is defined in github.com/kinojoin settings
 
     steps:
       - uses: actions/checkout@v3
@@ -43,6 +41,10 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Test
+        env:
+          TestDatabaseConnection: ${{ secrets.TESTDATABASECONNECTION }}
+          MonkeyConnection: ${{ secrets.MONKEYCONNECTION }}
+          PostgresConnection: ${{ secrets.POSTGRESCONNECTION }}
         run: dotnet test
       
       - name: Validate Formatting

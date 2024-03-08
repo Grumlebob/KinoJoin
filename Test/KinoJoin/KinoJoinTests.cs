@@ -27,17 +27,7 @@ public class KinoJoinTests : IAsyncLifetime
         {
             var UpsertDto = UpsertJoinEventDto.FromModelToUpsertDto(joinEvent);
             var createResponse = await _client.PutAsJsonAsync("/putJoinEvent", UpsertDto);
-            try
-            {
-                createResponse.EnsureSuccessStatusCode();
-            }
-            catch (Exception e)
-            {
-                var responseContent = await createResponse.Content.ReadAsStringAsync();
-                var errorMessage =
-                    $"Error in HTTP request. Status: {createResponse.StatusCode}, Reason: {createResponse.ReasonPhrase}, Content: {responseContent}";
-                throw new HttpRequestException(errorMessage, e);
-            }
+            createResponse.EnsureSuccessStatusCode();
         }
     }
 

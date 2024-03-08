@@ -71,6 +71,9 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
         {
             string? connectionString = Environment.GetEnvironmentVariable("TESTDATABASECONNECTION");
             Console.WriteLine($"Connection string after getting from environment: {connectionString}");
+            Console.WriteLine($"Connection string after getting from environment: {connectionString[0..20]}");
+
+            
             if (string.IsNullOrEmpty(connectionString))
             {
                 connectionString = Configuration["TestDatabaseConnection"];

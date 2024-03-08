@@ -39,10 +39,10 @@ public class KinoJoinTests : IAsyncLifetime
             }
             catch (Exception e)
             {
-                throw new Exception(await createResponse.Content.ReadAsStringAsync(), e);
+                var responseContent = await createResponse.Content.ReadAsStringAsync();
+                var errorMessage = $"Error in HTTP request. Status: {createResponse.StatusCode}, Reason: {createResponse.ReasonPhrase}, Content: {responseContent}";
+                throw new HttpRequestException(errorMessage, e);
             }
-            var id = await createResponse.Content.ReadFromJsonAsync<int>();
-            var responseContent = await createResponse.Content.ReadAsStringAsync();
         }
     }
 

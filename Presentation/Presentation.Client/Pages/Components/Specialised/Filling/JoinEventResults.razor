@@ -1,7 +1,15 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
 
-<h2 class="text-2xl text-bold">Andres svar</h2>
+<div class="flex justify-between">
+    <h2 class="text-2xl text-bold">Andres svar</h2>
+    <button class="rounded-full bg-secondary text-white font-bold p-3 md:hidden flex" onclick="@ShowParticipantDialog">
+        <div class="flex gap-1">
+            <ParticipantsIcon Class="fill-white"/>
+            <p>Deltagere</p>
+        </div>
+    </button>
+</div>
 <label>
     Sortér efter:
     <select @bind="_sortedAfter">
@@ -11,33 +19,101 @@
 </label>
 
 <div class="hidden md:block ">
-    <DesktopResults _event="_event" _isHost="_isHost"/>
+    <DesktopResults _event="Event" _isHost="IsHost" OnDeleteParticipant="OpenDeleteDialog"/>
 </div>
 
 <div class="md:hidden">
-    <MobileResults CurrentParticipant="CurrentParticipant" Event="_event" IsHost="_isHost"/>
+    <MobileResults CurrentParticipant="CurrentParticipant" Event="Event" IsHost="IsHost"/>
 </div>
+
+<dialog id="participantsDialog" class="bg-slates-300 rounded max-w-md w-full fixed p-4 xs:h-dvh">
+
+    <div class="flex justify-between mb-4">
+        <h4 class="font-bold text-lg">Deltagere</h4>
+        <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", $"participantsDialog"))">
+            <CrossIcon/>
+        </button>
+    </div>
+
+    @foreach (var participant in Event.Participants)
+    {
+        if (!_showNote.ContainsKey(participant))
+        {
+            _showNote[participant] = false;
+        }
+
+        <div class="flex justify-between  gap-2 w-full">
+            <p>@participant.Nickname</p>
+            <div>
+                @if (IsHost)
+                {
+                    <button onclick="@(async () => { await OpenDeleteDialog(participant); })">
+                        <DeleteIcon Class="stroke-error"/>
+                    </button>
+                }
+                @if (!string.IsNullOrWhiteSpace(participant.Note))
+                {
+                    <button onclick="@(async () => { _showNote[participant] = !_showNote[participant]; StateHasChanged(); })">
+                        <NoteIcon Class="stroke-black"/>
+                    </button>
+                }
+            </div>
+        </div>
+
+
+        <div class="p-3 rounded border w-full @(_showNote[participant] ? "block" : "hidden")">
+            <p>@participant.Note</p>
+        </div>
+    }
+</dialog>
+
+<dialog class="p-5 rounded" id="confirm-delete-dialog">
+    @if (_participantToDelete != null)
+    {
+        <div class="flex flex-col gap-4 items-center">
+            <p class="font-bold">Er du sikker på at du vil slette @_participantToDelete.Nickname's svar?</p>
+            <div class="flex items-center gap-1">
+                <button class="bg-success rounded-full p-3 py-0.5 w-16 text-white hover:bg-success-dark" @onclick="@(async () => { await DeleteParticipant(_participantToDelete.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Ja</button>
+                <button class="bg-error rounded-full p-3 py-0.5 w-16 text-white hover:bg-error-dark" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Nej</button>
+            </div>
+        </div>
+    }
+</dialog >
+
+<dialog class="p-5 rounded" id="note-dialog">
+    @if (_participantToShowNoteFor != null)
+    {
+        <div class="flex justify-between mb-4">
+            <p class="font-bold">@_participantToShowNoteFor.Nickname's Note</p>
+            <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", $"note-dialog"))">
+                <CrossIcon/>
+            </button>
+        </div>
+        <p>@_participantToShowNoteFor.Note</p>
+    }
+</dialog>
 
 @code {
 
 
-    [Parameter]
-    public JoinEvent _event { get; set; }
+    [Parameter] public JoinEvent Event { get; set; }
 
-    [Parameter]
-    public bool _isHost { get; set; }
+    [Parameter] public bool IsHost { get; set; }
 
-    [Parameter]
-    public Participant CurrentParticipant { get; set; }
+    [Parameter] public Participant CurrentParticipant { get; set; }
 
     private Participant? _participantToDelete;
 
+    private Participant? _participantToShowNoteFor;
+
     private Showtime? _showtimeToCalendar = null;
 
-        private const string VotesString = "Stemmer";
-        private const string TimeString = "Tidspunkt";
+    private const string VotesString = "Stemmer";
+    private const string TimeString = "Tidspunkt";
 
     private string _sortedAfter = VotesString;
+
+    private Dictionary<Participant, bool> _showNote = new();
 
     private async Task OpenConfirmationDialog(int index)
     {
@@ -55,10 +131,10 @@
     private async Task DeleteParticipant(int participantId)
     {
         var httpClient = new HttpClient();
-        var response = await httpClient.DeleteAsync($"{NavigationManager.BaseUri}deleteParticipant/{_event.Id}/{participantId}");
+        var response = await httpClient.DeleteAsync($"{NavigationManager.BaseUri}deleteParticipant/{Event.Id}/{participantId}");
         if (response.IsSuccessStatusCode)
         {
-            _event.Participants.RemoveAll(p => p.Id == participantId);
+            Event.Participants.RemoveAll(p => p.Id == participantId);
             StateHasChanged();
         }
     }
@@ -67,10 +143,10 @@
     private async Task OpenGoogleCalendar(Showtime showtime)
     {
         var url = "https://calendar.google.com/calendar/u/0/r/eventedit?"
-                  + $"text={_event.Title}"
+                  + $"text={Event.Title}"
                   + $"&dates={showtime.Playtime.StartTime.ToLocalTime().ToString("yyyyMMddTHHmmss")}/{showtime.Playtime.StartTime.ToLocalTime().AddMinutes(showtime.Movie.Duration ?? 0).ToString("yyyyMMddTHHmmss")}"
                   + $"&location={showtime.Cinema.Name}"
-                  + $"&details={_event.Description} %0AFilm: {showtime.Movie.Title}, {showtime.Room.Name}, {showtime.VersionTag.Type}";
+                  + $"&details={Event.Description} %0AFilm: {showtime.Movie.Title}, {showtime.Room.Name}, {showtime.VersionTag.Type}";
 
         await JsRuntime.InvokeVoidAsync("open", url, "_blank");
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
@@ -80,21 +156,21 @@
     {
         var DateStart = showtimeToCalendar.Playtime.StartTime;
         var DateEnd = showtimeToCalendar.Playtime.StartTime.AddMinutes(showtimeToCalendar.Movie.Duration ?? 0);
-        var Summary = _event.Title;
+        var Summary = Event.Title;
         var Location = showtimeToCalendar.Cinema.Name;
-        var Description = _event.Description + "\n Film: " + showtimeToCalendar.Movie.Title + ", " + showtimeToCalendar.Room.Name + ", " + showtimeToCalendar.VersionTag.Type;
+        var Description = Event.Description + "\n Film: " + showtimeToCalendar.Movie.Title + ", " + showtimeToCalendar.Room.Name + ", " + showtimeToCalendar.VersionTag.Type;
 
-    //create a new stringbuilder instance
+        //create a new stringbuilder instance
         var sb = new StringBuilder();
 
-    //start the calendar item
+        //start the calendar item
         sb.AppendLine("BEGIN:VCALENDAR");
         sb.AppendLine("VERSION:2.0");
         sb.AppendLine("PRODID:stackoverflow.com");
         sb.AppendLine("CALSCALE:GREGORIAN");
         sb.AppendLine("METHOD:PUBLISH");
 
-    //create a time zone if needed, TZID to be used in the event itself
+        //create a time zone if needed, TZID to be used in the event itself
         sb.AppendLine("BEGIN:VTIMEZONE");
         sb.AppendLine("TZID:Europe/Amsterdam");
         sb.AppendLine("BEGIN:STANDARD");
@@ -103,13 +179,13 @@
         sb.AppendLine("END:STANDARD");
         sb.AppendLine("END:VTIMEZONE");
 
-    //add the event
+        //add the event
         sb.AppendLine("BEGIN:VEVENT");
 
-    //with time zone specified
+        //with time zone specified
         sb.AppendLine("DTSTART;TZID=Europe/Amsterdam:" + DateStart.ToString("yyyyMMddTHHmm00"));
         sb.AppendLine("DTEND;TZID=Europe/Amsterdam:" + DateEnd.ToString("yyyyMMddTHHmm00"));
-    //or without
+        //or without
         sb.AppendLine("DTSTART:" + DateStart.ToString("yyyyMMddTHHmm00"));
         sb.AppendLine("DTEND:" + DateEnd.ToString("yyyyMMddTHHmm00"));
 
@@ -119,10 +195,10 @@
         sb.AppendLine("PRIORITY:3");
         sb.AppendLine("END:VEVENT");
 
-    //end calendar item
+        //end calendar item
         sb.AppendLine("END:VCALENDAR");
 
-    //create a string from the stringbuilder
+        //create a string from the stringbuilder
         var CalendarItem = sb.ToString();
 
 
@@ -135,45 +211,33 @@
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
 
 
-    /*
-//send the calendar item to the browser
-Response.ClearHeaders();
-Response.Clear();
-Response.Buffer = true;
-Response.ContentType = "text/calendar";
-Response.AddHeader("content-length", CalendarItem.Length.ToString());
-Response.AddHeader("content-disposition", "attachment; filename=\"" + FileName + ".ics\"");
-Response.Write(CalendarItem);
-Response.Flush();
-HttpContext.Current.ApplicationInstance.CompleteRequest();
-*/
+        /*
+    //send the calendar item to the browser
+    Response.ClearHeaders();
+    Response.Clear();
+    Response.Buffer = true;
+    Response.ContentType = "text/calendar";
+    Response.AddHeader("content-length", CalendarItem.Length.ToString());
+    Response.AddHeader("content-disposition", "attachment; filename=\"" + FileName + ".ics\"");
+    Response.Write(CalendarItem);
+    Response.Flush();
+    HttpContext.Current.ApplicationInstance.CompleteRequest();
+    */
     }
 
     protected override void OnInitialized()
     {
-        var sortedShowtimes = _event.Showtimes
-            .OrderByDescending(showtime =>
-                _event.Participants?
-                    .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)) ?? 0)
-            .ThenBy(showtime =>
-                _event.Participants?
-                    .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)
-                        .Sum(v => v.VoteIndex)) ?? 0);
-
-        foreach (var showtime in sortedShowtimes)
-        {
-            Console.WriteLine(showtime.Playtime.StartTime);
-        }
+        _showNote = Event.Participants.ToDictionary(p => p, p => false);
     }
 
     private async Task ShareEvent()
     {
-        var showtime = _event.Showtimes.First(s => s.Id == _event.ChosenShowtimeId);
+        var showtime = Event.Showtimes.First(s => s.Id == Event.ChosenShowtimeId);
 
         var data = new
         {
-            title = _event.Title,
-            text = _event.Description + "\n" + "Valgt forestilling: " + showtime.Movie.Title + ", " + showtime.Cinema.Name + ", " + showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM HH:mm")
+            title = Event.Title,
+            text = Event.Description + "\n" + "Valgt forestilling: " + showtime.Movie.Title + ", " + showtime.Cinema.Name + ", " + showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM HH:mm")
         };
 
         await JsRuntime.InvokeVoidAsync("navigator.share", data);
@@ -181,10 +245,10 @@ HttpContext.Current.ApplicationInstance.CompleteRequest();
 
     private async Task OpenDetailsDialog(Showtime showtime, int index)
     {
-        _event.ChosenShowtimeId = showtime.Id;
-        Console.WriteLine("Upload event id " + _event.Id);
+        Event.ChosenShowtimeId = showtime.Id;
+        Console.WriteLine("Upload event id " + Event.Id);
         var httpClient = new HttpClient();
-        var response = await httpClient.PutAsJsonAsync($"{NavigationManager.BaseUri}putJoinEvent", _event);
+        var response = await httpClient.PutAsJsonAsync($"{NavigationManager.BaseUri}putJoinEvent", Event);
         var id = await response.Content.ReadAsStringAsync();
         Console.WriteLine("Saved id " + id);
         await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + index);
@@ -192,11 +256,28 @@ HttpContext.Current.ApplicationInstance.CompleteRequest();
 
     private async Task GoToMailToLink(Showtime showtime)
     {
-        var mails = _event.Participants.Where(p => p.Email is not null).Select(p => p.Email);
-        var text = _event.Description + "\n" + "Valgt forestilling: " + showtime.Movie.Title + ", " + showtime.Cinema.Name + ", " + showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM HH:mm");
-        await JsRuntime.InvokeVoidAsync("open", $"mailto:{string.Join(",", mails)}?subject={_event.Title}&body={text}", "_blank");
+        var mails = Event.Participants.Where(p => p.Email is not null).Select(p => p.Email);
+        var text = Event.Description + "\n" + "Valgt forestilling: " + showtime.Movie.Title + ", " + showtime.Cinema.Name + ", " + showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM HH:mm");
+        await JsRuntime.InvokeVoidAsync("open", $"mailto:{string.Join(",", mails)}?subject={Event.Title}&body={text}", "_blank");
     }
 
+    private async Task ShowParticipantDialog()
+    {
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "participantsDialog");
+    }
 
+    private async Task OpenDeleteDialog(Participant participant)
+    {
+        _participantToDelete = participant;
+        StateHasChanged();
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirm-delete-dialog");
+    }
+
+    private async Task OpenNoteDialog(Participant participant)
+    {
+        _participantToShowNoteFor = participant;
+        StateHasChanged();
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", $"note-dialog");
+    }
 
 }

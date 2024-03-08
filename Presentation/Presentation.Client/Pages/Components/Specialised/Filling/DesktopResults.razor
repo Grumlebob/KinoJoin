@@ -126,21 +126,7 @@
     font-size: 14px; /* Adjust font size as needed */
 }
 
-.tooltip-container:hover {
-    background-color: grey;
-}
 
-.tooltip-container:hover .tooltip-content {
-    visibility: visible;
-}
-
-.tooltip-content {
-    visibility: hidden;
-    position: absolute;
-    z-index: 1;
-    transform: translateY(-8rem); /* hard coded for now */
-    background-color: lightgray;
-}
 
 .empty-showtime {
     width: 100px;
@@ -217,20 +203,39 @@
                     <div class="flex rounded w-50 shadow-md gap-2  p-5">
                         @if (_isHost && participant.Id != 0)
                         {
-                            <div class="delete-participant-button" onclick="@(async () => { _participantToDelete = participant; StateHasChanged(); await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirm-delete-dialog"); })">🗑</div>
+                            <button onclick="@(async () => { await OnDeleteParticipant.InvokeAsync(participant);})"> <DeleteIcon Class="stroke-error hover:stroke-error-dark"/> </button>
                         }
                         @if (!string.IsNullOrEmpty(participant.Note))
                         {
-                            <div class="tooltip-container">
-                                <span style="font-size: 10px;">📝</span>
-                                <div class="tooltip-content" style="border-style: solid; border-width: 2px;border-color: #1a1e21; padding: 5px">
-                                    <p style="font-weight: bold">@participant.Nickname</p>
+                            <!-- .tooltip-container:hover {
+                                     background-color: grey;
+                                 }
+                                 
+                                 .tooltip-container:hover .tooltip-content {
+                                     visibility: visible;
+                                 }
+                                 
+                                 .tooltip-content {
+                                     visibility: hidden;
+                                     position: absolute;
+                                     z-index: 1;
+                                     transform: translateY(-8rem); /* hard coded for now */
+                                     background-color: lightgray;
+                                 }
+                                 -->
+                            
+                            
+                            <div class="relative flex items-center">
+                                <NoteIcon class="stroke-black peer" />
+                                <div class="absolute invisible z-5 bg-light-gray transform -translate-y-32 shadow-md rounded  bg-white border p-3 opacity-0 peer-hover:visible peer-hover:opacity-100">
+                                    <p class="font-bold t">@participant.Nickname's note</p>
                                     @if (!string.IsNullOrEmpty(participant.Note))
                                     {
-                                        <p>Note: @participant.Note</p>
+                                        <p>@participant.Note</p>
                                     }
                                 </div>
                             </div>
+
                         }
                         <p class="truncate ...">
                             @participant.Nickname
@@ -257,14 +262,7 @@
     </table>
 </div>
 
-<dialog id="confirm-delete-dialog">
-    @if (_participantToDelete != null)
-    {
-        <h4>Er du sikker på at du vil slette @_participantToDelete.Nickname's svar?</h4>
-        <button @onclick="@(async () => { await DeleteParticipant(_participantToDelete.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Ja</button>
-        <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Nej</button>
-    }
-</dialog>
+
 
 
 
@@ -284,6 +282,9 @@
     private const string TimeString = "Tidspunkt";
 
     private string _sortedAfter = VotesString;
+    
+    [Parameter]
+    public EventCallback<Participant> OnDeleteParticipant { get; set; }
 
     private async Task OpenConfirmationDialog(int index)
     {

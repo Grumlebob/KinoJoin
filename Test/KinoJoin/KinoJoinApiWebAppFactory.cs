@@ -66,13 +66,24 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
-        string? connectionString = Environment.GetEnvironmentVariable("TESTDATABASECONNECTION");
-        if (string.IsNullOrEmpty(connectionString))
+
+        try
         {
-            connectionString = Configuration["TestDatabaseConnection"];
+            string? connectionString = Environment.GetEnvironmentVariable("TESTDATABASECONNECTION");
+            Console.WriteLine($"Connection string after getting from environment: {connectionString}");
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                connectionString = Configuration["TestDatabaseConnection"];
+            }
+
+            _dbConnection = new NpgsqlConnection(connectionString);
         }
-        
-        _dbConnection = new NpgsqlConnection(connectionString);
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            throw;
+        }
+
         HttpClient = CreateClient();
 
         //THIS IS WHERE YOU CAN ADD SEED DATA

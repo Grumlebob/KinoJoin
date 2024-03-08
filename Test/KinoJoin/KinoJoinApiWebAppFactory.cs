@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Respawn;
@@ -24,9 +23,6 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
     private Respawner _respawner = default!;
     public HttpClient HttpClient { get; private set; } = default!;
 
-    //Config used for secrets
-    private IConfiguration Configuration => Services.GetRequiredService<IConfiguration>();
-
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         //Setup dependency injection for this test application
@@ -42,13 +38,11 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
                 services.Remove(descriptor);
             }
 
-            var configuration = services.BuildServiceProvider().GetService<IConfiguration>();
-
             //Setup our new KinoContext connection to our docker postgres container
             services.AddDbContext<KinoContext>(
                 options =>
                 {
-                    options.UseNpgsql(configuration!["TestDatabaseConnection"]);
+                    options.UseNpgsql(_dbContainer.GetConnectionString());
                 },
                 ServiceLifetime.Singleton
             ); // Lifetime must be Singleton to work with TestContainers
@@ -63,15 +57,17 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
-        _dbConnection = new NpgsqlConnection(Configuration["TestDatabaseConnection"]);
+
+        _dbConnection = new NpgsqlConnection(_dbContainer.GetConnectionString());
+
         HttpClient = CreateClient();
-        await InitializeRespawner();
 
         //THIS IS WHERE YOU CAN ADD SEED DATA
         using var scope = Services.CreateScope();
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<KinoContext>();
         await context.Database.EnsureCreatedAsync();
+        await InitializeRespawner();
     }
 
     private async Task InitializeRespawner()
@@ -82,7 +78,7 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
             new RespawnerOptions()
             {
                 DbAdapter = DbAdapter.Postgres,
-                SchemasToInclude = new[] { "public", "KinoTest" }
+                SchemasToInclude = new[] { "public" }
             }
         );
     }

@@ -40,25 +40,12 @@ public class UpsertJoinEventDto
                         ImageUrl = st.Movie.ImageUrl,
                         Duration = st.Movie.Duration
                     },
-                    Cinema = new UpsertCinemaDto
-                    {
-                        Id = st.Cinema.Id,
-                        Name = st.Cinema.Name
-                    },
-                    Playtime = new UpsertPlaytimeDto
-                    {
-                        StartTime = st.Playtime.StartTime
-                    },
-                    VersionTag = new UpsertVersionTagDto
-                    {
-                        Type = st.VersionTag.Type
-                    },
-                    Room = new UpsertRoomDto
-                    {
-                        Id = st.Room.Id,
-                        Name = st.Room.Name
-                    }
-                }).ToList(),
+                    Cinema = new UpsertCinemaDto { Id = st.Cinema.Id, Name = st.Cinema.Name },
+                    Playtime = new UpsertPlaytimeDto { StartTime = st.Playtime.StartTime },
+                    VersionTag = new UpsertVersionTagDto { Type = st.VersionTag.Type },
+                    Room = new UpsertRoomDto { Id = st.Room.Id, Name = st.Room.Name }
+                })
+                .ToList(),
             Participants = joinEvent
                 .Participants.Select(p => new UpsertParticipantDto //+
                 {
@@ -130,22 +117,11 @@ public class UpsertJoinEventDto
                 {
                     Id = s.Id,
                     Playtime = new Playtime { StartTime = s.Playtime.StartTime },
-                    VersionTag = new VersionTag
-                    {
-                        Type = s.VersionTag.Type
-                    },
+                    VersionTag = new VersionTag { Type = s.VersionTag.Type },
                     RoomId = s.Room.Id,
-                    Room = new Room
-                    {
-                        Id = s.Room.Id,
-                        Name = s.Room.Name
-                    },
+                    Room = new Room { Id = s.Room.Id, Name = s.Room.Name },
                     CinemaId = s.Cinema.Id,
-                    Cinema = new Cinema
-                    {
-                        Id = s.Cinema.Id,
-                        Name = s.Cinema.Name
-                    },
+                    Cinema = new Cinema { Id = s.Cinema.Id, Name = s.Cinema.Name },
                     MovieId = s.Movie.Id,
                     Movie = new Movie
                     {

@@ -31,7 +31,7 @@ public class JoinEvent
     public int Id { get; set; }
     public string HostId { get; set; }
     public string Title { get; set; }
-    public string Description { get; set; }
+    public string Description { get; set; } = string.Empty;
     public List<Showtime> Showtimes { get; set; } = [];
     public int? ChosenShowtimeId { get; set; }
     public List<Participant> Participants { get; set; } = [];

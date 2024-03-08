@@ -122,4 +122,10 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             return newlyUpsertedJoinEvent.Entity.Id;
         }
     }
+
+    public async Task<JoinEvent?> GetAsync(int id)
+    {
+        return await context.JoinEvents.FindAsync(id);
+        
+    }
 }

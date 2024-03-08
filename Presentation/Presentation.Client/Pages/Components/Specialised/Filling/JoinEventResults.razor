@@ -468,7 +468,7 @@ HttpContext.Current.ApplicationInstance.CompleteRequest();
 
     private async Task ShareEvent()
     {
-        Showtime showtime = _event.Showtimes.First(s => s.Id == _event.ChosenShowtimeId);
+        var showtime = _event.Showtimes.First(s => s.Id == _event.ChosenShowtimeId);
 
         var data = new
         {

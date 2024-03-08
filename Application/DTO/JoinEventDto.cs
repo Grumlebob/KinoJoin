@@ -13,8 +13,7 @@ public class UpsertJoinEventDto
     public DateTime Deadline { get; set; }
 
     public static UpsertJoinEventDto FromModelToUpsertDto(JoinEvent joinEvent)
-    {
-        var upsertJoinEventDto = new UpsertJoinEventDto
+         => new ()
         {
             Id = joinEvent.Id,
             Title = joinEvent.Title,
@@ -81,19 +80,14 @@ public class UpsertJoinEventDto
             SelectOptions = joinEvent
                 .SelectOptions.Select(s => new UpsertSelectOptionDto
                 {
-                    Id = s.Id,
                     VoteOption = s.VoteOption,
                     Color = s.Color
                 })
                 .ToList()
         };
 
-        return upsertJoinEventDto;
-    }
-
     public static JoinEvent FromUpsertDtoToModel(UpsertJoinEventDto joinEventDto)
-    {
-        return new JoinEvent
+    => new ()
         {
             Id = joinEventDto.Id ?? 0,
             Title = joinEventDto.Title,
@@ -167,7 +161,6 @@ public class UpsertJoinEventDto
                 .ToList(),
             ChosenShowtimeId = joinEventDto.ChosenShowtimeId,
         };
-    }
 }
 
 public class UpsertShowtimeDto
@@ -222,7 +215,6 @@ public class UpsertParticipantVoteDto
 
 public class UpsertSelectOptionDto
 {
-    public int? Id { get; set; } //If null, create new, else update existing
     public required string VoteOption { get; set; }
     public required string Color { get; set; }
 }

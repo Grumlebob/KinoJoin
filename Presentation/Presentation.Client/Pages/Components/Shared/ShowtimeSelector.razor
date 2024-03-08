@@ -47,7 +47,7 @@
 
 @foreach (var showtimesByMovie in Showtimes.GroupBy(s => s.Movie.Id))
 {
-    Movie movie = showtimesByMovie.First().Movie;
+    var movie = showtimesByMovie.First().Movie;
     <!-- Redbox -->
     <div class="mb-5 grid grid-cols-[200px_auto] grid-rows-[100px_100px_auto] lg:grid-rows-[100px_auto] gap-4  border rounded p-1 shadow lg:max-w-screen-lg">
         <!-- PosterImage -->

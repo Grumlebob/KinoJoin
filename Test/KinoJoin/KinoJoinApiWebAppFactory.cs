@@ -51,6 +51,7 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
                     {
                         connectionString = Configuration["TestDatabaseConnection"]!;
                     }
+
                     options.UseNpgsql(connectionString);
                 },
                 ServiceLifetime.Singleton
@@ -66,29 +67,25 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
-
-        var mappedPort = _dbContainer.GetMappedPublicPort(5432);
-        var containerName = _dbContainer.Name;
-
-        try
+        
+        //In CI
+        string? connectionString = Environment.GetEnvironmentVariable("TESTDATABASECONNECTION");
+        if (connectionString != null)
         {
-            string? connectionString = Environment.GetEnvironmentVariable("TESTDATABASECONNECTION");
-            Console.WriteLine($"Connection string after getting from environment: {connectionString[0..40]}");
+            var mappedPort = _dbContainer.GetMappedPublicPort(5432);
+            var containerName = _dbContainer.Name.TrimStart('/');;
             Console.WriteLine($"Container name: {containerName}, Mapped port: {mappedPort}");
-            
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                connectionString = Configuration["TestDatabaseConnection"];
-            }
-
+            connectionString =
+                $"Host={containerName};Port={mappedPort};Database=KinoTest;Username=postgres;Password=postgres;";
             _dbConnection = new NpgsqlConnection(connectionString);
         }
-        catch (Exception e)
+        else
         {
-            Console.WriteLine(e.Message);
-            throw;
+            //Locally
+            connectionString = Configuration["TestDatabaseConnection"];
+            _dbConnection = new NpgsqlConnection(connectionString);
         }
-        
+
 
         HttpClient = CreateClient();
 
@@ -108,7 +105,7 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
             new RespawnerOptions()
             {
                 DbAdapter = DbAdapter.Postgres,
-                SchemasToInclude = new[] { "public"}
+                SchemasToInclude = new[] { "public" }
             }
         );
     }

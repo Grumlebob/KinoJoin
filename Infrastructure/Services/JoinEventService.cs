@@ -71,8 +71,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             else
             {
                 //dont add already existing entities
-                joinEventWithNavProps.Participants
-                    .RemoveAll(p => p.Id != 0); //they are 0 if yet to be added to database
+                joinEventWithNavProps.Participants.RemoveAll(p => p.Id != 0); //they are 0 if yet to be added to database
                 joinEventWithNavProps.SelectOptions.RemoveAll(s =>
                     voteOptions.Contains(s.VoteOption) && colorOptions.Contains(s.Color)
                 );
@@ -139,8 +138,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             else
             {
                 //dont add already existing entities
-                joinEventWithNavProps.Participants
-                    .RemoveAll(p => p.Id != 0); //they are null if yet to be added to database
+                joinEventWithNavProps.Participants.RemoveAll(p => p.Id != 0); //they are null if yet to be added to database
                 joinEventWithNavProps.SelectOptions = context
                     .SelectOptions.Where(s =>
                         voteOptions.Contains(s.VoteOption) && colorOptions.Contains(s.Color)
@@ -158,18 +156,24 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
     public async Task<JoinEvent?> GetAsync(int id)
     {
-        var result = await context.JoinEvents
-            .AsNoTracking()
-            .Include(j => j.Showtimes).ThenInclude(s => s.Movie)
-            .Include(j => j.Showtimes).ThenInclude(s => s.Cinema)
-            .Include(j => j.Showtimes).ThenInclude(s => s.Playtime)
-            .Include(j => j.Showtimes).ThenInclude(s => s.VersionTag)
-            .Include(j => j.Showtimes).ThenInclude(s => s.Room)
-            .Include(j => j.Participants).ThenInclude(p => p.VotedFor)
+        var result = await context
+            .JoinEvents.AsNoTracking()
+            .Include(j => j.Showtimes)
+            .ThenInclude(s => s.Movie)
+            .Include(j => j.Showtimes)
+            .ThenInclude(s => s.Cinema)
+            .Include(j => j.Showtimes)
+            .ThenInclude(s => s.Playtime)
+            .Include(j => j.Showtimes)
+            .ThenInclude(s => s.VersionTag)
+            .Include(j => j.Showtimes)
+            .ThenInclude(s => s.Room)
+            .Include(j => j.Participants)
+            .ThenInclude(p => p.VotedFor)
             .Include(j => j.SelectOptions)
             .Include(j => j.Host)
             .FirstOrDefaultAsync(j => j.Id == id);
-        
+
         //avoid circular reference
         result?.Showtimes.ForEach(s => s.JoinEvents = []);
         result?.SelectOptions.ForEach(s => s.JoinEvents = []);

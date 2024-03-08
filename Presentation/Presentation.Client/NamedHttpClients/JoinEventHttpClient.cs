@@ -6,12 +6,12 @@ namespace Presentation.Client.NamedHttpClients;
 public class JoinEventHttpClient : IJoinEventHttpClient
 {
     private readonly HttpClient _httpClient;
- 
+
     public JoinEventHttpClient(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }
-    
+
     public async Task<HttpResponseMessage> PutJoinEventAsync(UpsertJoinEventDto upsertJoinEventDto)
     {
         return await _httpClient.PutAsJsonAsync("/api/events", upsertJoinEventDto);

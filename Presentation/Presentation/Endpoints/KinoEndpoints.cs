@@ -36,11 +36,12 @@ public class KinoEndpoints : ICarterModule
     }
 
     private static async Task<Results<Ok<List<JoinEvent>>, NotFound>> GetJoinEvents(
-        [FromServices] IJoinEventService joinEventService)
+        [FromServices] IJoinEventService joinEventService
+    )
     {
         return TypedResults.Ok(new List<JoinEvent>());
     }
-    
+
     private static async Task<Results<NotFound, Ok<JoinEvent>, BadRequest<string>>> GetJoinEvent(
         [FromRoute] int id,
         [FromServices] IJoinEventService joinEventService

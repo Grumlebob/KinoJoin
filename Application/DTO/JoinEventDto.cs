@@ -12,8 +12,8 @@ public class UpsertJoinEventDto
     public int? ChosenShowtimeId { get; set; } //Nullable, on create it isn't set, on filling it is set.
     public DateTime Deadline { get; set; }
 
-    public static UpsertJoinEventDto FromModelToUpsertDto(JoinEvent joinEvent)
-         => new ()
+    public static UpsertJoinEventDto FromModelToUpsertDto(JoinEvent joinEvent) =>
+        new()
         {
             Id = joinEvent.Id,
             Title = joinEvent.Title,
@@ -73,8 +73,8 @@ public class UpsertJoinEventDto
                 .ToList()
         };
 
-    public static JoinEvent FromUpsertDtoToModel(UpsertJoinEventDto joinEventDto)
-    => new ()
+    public static JoinEvent FromUpsertDtoToModel(UpsertJoinEventDto joinEventDto) =>
+        new()
         {
             Id = joinEventDto.Id ?? 0,
             Title = joinEventDto.Title,

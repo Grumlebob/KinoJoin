@@ -73,7 +73,8 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
         {
             throw new InvalidOperationException("Database connection string is not set.");
         }
-        _dbConnection = new NpgsqlConnection(Configuration[connectionString]);
+        
+        _dbConnection = new NpgsqlConnection(connectionString);
         HttpClient = CreateClient();
         await InitializeRespawner();
 

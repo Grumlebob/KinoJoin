@@ -48,12 +48,7 @@ public class MonkeyServiceWebAppFactory : WebApplicationFactory<Program>, IAsync
             services.AddDbContext<MonkeyContext>(
                 options =>
                 {
-                    string connectionString = Environment.GetEnvironmentVariable("MonkeyConnection");
-                    if (string.IsNullOrEmpty(connectionString))
-                    {
-                        connectionString = Configuration["MonkeyConnection"];
-                    }
-                    options.UseNpgsql(connectionString);
+                    options.UseNpgsql(_dbContainer.GetConnectionString());
                 },
                 ServiceLifetime.Singleton
             ); // Lifetime must be Singleton to work with TestContainers
@@ -68,14 +63,7 @@ public class MonkeyServiceWebAppFactory : WebApplicationFactory<Program>, IAsync
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
-        string connectionString = Environment.GetEnvironmentVariable("MonkeyConnection");
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            connectionString = Configuration["MonkeyConnection"];
-        }
-
-        Console.WriteLine(connectionString);
-        _dbConnection = new NpgsqlConnection(connectionString);
+        _dbConnection = new NpgsqlConnection(_dbContainer.GetConnectionString());
         HttpClient = CreateClient();
 
         //THIS IS WHERE YOU CAN ADD SEED DATA

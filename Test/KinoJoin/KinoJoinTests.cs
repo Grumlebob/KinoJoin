@@ -1,7 +1,6 @@
 ﻿using System.Net.Http.Json;
 using Application.DTO;
 
-
 namespace Test.KinoJoin;
 
 [Collection("KinoJoinCollection")]
@@ -35,7 +34,8 @@ public class KinoJoinTests : IAsyncLifetime
             catch (Exception e)
             {
                 var responseContent = await createResponse.Content.ReadAsStringAsync();
-                var errorMessage = $"Error in HTTP request. Status: {createResponse.StatusCode}, Reason: {createResponse.ReasonPhrase}, Content: {responseContent}";
+                var errorMessage =
+                    $"Error in HTTP request. Status: {createResponse.StatusCode}, Reason: {createResponse.ReasonPhrase}, Content: {responseContent}";
                 throw new HttpRequestException(errorMessage, e);
             }
         }

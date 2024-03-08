@@ -19,8 +19,6 @@ jobs:
   buildAndTest:
     name: Build & Test
     runs-on: ubuntu-latest
-    environment:
-      name: GITHUBSECRETS  # This is defined in github.com/kinojoin settings
 
     steps:
       - uses: actions/checkout@v3
@@ -40,10 +38,6 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Test
-        env:
-          MONKEYCONNECTION: ${{ secrets.MONKEYCONNECTION }}
-          POSTGRESCONNECTION: ${{ secrets.POSTGRESCONNECTION }}
-          TESTDATABASECONNECTION: ${{ secrets.TESTDATABASECONNECTION }}
         run: dotnet test --filter FullyQualifiedName!~Test.Monkey
       
       - name: Validate Formatting

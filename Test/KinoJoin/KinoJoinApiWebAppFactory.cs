@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Respawn;
@@ -23,9 +22,6 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
     private DbConnection _dbConnection = default!;
     private Respawner _respawner = default!;
     public HttpClient HttpClient { get; private set; } = default!;
-
-    //Config used for secrets
-    private IConfiguration Configuration => Services.GetRequiredService<IConfiguration>();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -46,35 +42,11 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
             services.AddDbContext<KinoContext>(
                 options =>
                 {
-                    options.UseNpgsql(GetLocalOrGithubConnectionString());
+                    options.UseNpgsql(_dbContainer.GetConnectionString());
                 },
                 ServiceLifetime.Singleton
             ); // Lifetime must be Singleton to work with TestContainers
         });
-    }
-
-    private string? GetLocalOrGithubConnectionString()
-    {
-        string? connectionString = Environment.GetEnvironmentVariable("TESTDATABASECONNECTION");
-        if (connectionString != null)
-        {
-            var mappedPort = _dbContainer.GetMappedPublicPort(5432);
-            var containerName = _dbContainer.Name.TrimStart('/');;
-            Console.WriteLine($"Container name: {containerName}, Mapped port: {mappedPort}");
-
-            connectionString =
-                $"Host={containerName};Port={mappedPort};Database=KinoTest;Username=postgres;Password=postgres;";
-        }
-        else
-        {
-            //Locally
-            connectionString = Configuration["TestDatabaseConnection"];
-        }
-
-        string containerString = _dbContainer.GetConnectionString();
-        Console.WriteLine($"Container connection string: {containerString}");
-
-        return _dbContainer.GetConnectionString();
     }
 
     public async Task ResetDatabaseAsync()
@@ -85,9 +57,8 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
     public async Task InitializeAsync()
     {
         await _dbContainer.StartAsync();
-        
-        var connectionString = GetLocalOrGithubConnectionString();
-        _dbConnection = new NpgsqlConnection(connectionString);
+
+        _dbConnection = new NpgsqlConnection(_dbContainer.GetConnectionString());
 
         HttpClient = CreateClient();
 

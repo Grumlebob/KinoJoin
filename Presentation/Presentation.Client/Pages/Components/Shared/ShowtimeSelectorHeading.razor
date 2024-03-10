@@ -2,15 +2,15 @@
 @inject IJSRuntime JsRuntime
 
 <div class="mb-5 w-full rounded border p-1 shadow">
-    <div class="grid gap-4 grid-cols-[100px_1fr] grid-rows-[auto_auto] lg:grid-cols-[200px_1fr]">
+    <div class="grid gap-4 grid-cols-[0.5fr_1fr] grid-rows-[auto_auto] lg:grid-cols-[200px_1fr]">
         <!-- PosterImage -->
         <div class="row-span-2 space-y-2 lg:min-w-48 lg:sticky lg:top-16 lg:row-span-3 lg:self-start">
-            <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank">
-                <img src="@Movie.ImageUrl" alt="Movie Poster" class="w-full rounded-sm shadow"/>
-            </a>
+                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank">
+                    <img src="@Movie.ImageUrl" alt="Movie Poster" class="w-full max-h-full rounded-sm shadow"/>
+                </a>
             <!--Læs mere og trailer-->
             <div class="hidden flex-col items-center lg:flex space-y-1">
-                    
+
                 <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class=" rounded-full border border-black shadow duration-300 transition px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
 
                 <button class="rounded-full border border-black shadow duration-300 transition px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white" @onclick="async () => { await ShowMovieTrailer(Movie); }">Se trailer</button>

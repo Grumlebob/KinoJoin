@@ -2,6 +2,6 @@
 
 public interface IJoinEventService
 {
-    Task<int> PutAsync(UpsertJoinEventDto joinEventDto);
+    Task<int> UpsertJoinEventAsync(UpsertJoinEventDto joinEventDto);
     Task<JoinEvent?> GetAsync(int id);
 }

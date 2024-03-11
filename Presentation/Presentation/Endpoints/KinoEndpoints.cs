@@ -11,11 +11,12 @@ public class KinoEndpoints : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("api/events"); //Tilføj prefix til alle endpoints såsom /.../Events/
-
+        var group = app.MapGroup("api/events");
+        
         group.MapPut("", UpsertJoinEvent);
-        group.MapGet("{id}", GetJoinEvent);
+        
         group.MapGet("", GetJoinEvents);
+        group.MapGet("{id}", GetJoinEvent);
     }
 
     //Result<> is a union type, that can be all the different responses we can return, so it is easier to test.
@@ -39,7 +40,9 @@ public class KinoEndpoints : ICarterModule
         [FromServices] IJoinEventService joinEventService
     )
     {
-        return TypedResults.Ok(new List<JoinEvent>());
+        var joinEvents = await joinEventService.GetAllAsync();
+        if (joinEvents.Count == 0) return TypedResults.NotFound();
+        return TypedResults.Ok(joinEvents);
     }
 
     private static async Task<Results<NotFound, Ok<JoinEvent>, BadRequest<string>>> GetJoinEvent(

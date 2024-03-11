@@ -1,10 +1,9 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 //Global settings
-
+using BenchmarkDotNet.Running;
 using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Playwright;
 using TestPlaywright;
@@ -12,6 +11,10 @@ using TestPlaywright;
 bool isHeadless = false;
 int slowDown = 1000;
 
+// to run use: dotnet run -c Release
+var summary = BenchmarkRunner.Run<SimdVsEnumerableBenchmark>();
+
+/*
 //SurveyCraft.Server has to be running for playwright to work, this does the setup
 var serverHandler = new RunProgramAutomatically();
 try
@@ -35,6 +38,7 @@ finally
 {
     serverHandler.StopServer();
 }
+*/
 
 async Task<bool> KinoDemo()
 {

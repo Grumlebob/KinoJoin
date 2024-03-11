@@ -36,14 +36,17 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public async Task SimdLinqTest()
     {
-        var joinEvents = _dataGenerator.JoinEventGenerator.Generate(1000).Select(s => s.Id).ToList();
+        var joinEvents = _dataGenerator
+            .JoinEventGenerator.Generate(1000)
+            .Select(s => s.Id)
+            .ToList();
 
         var maxWithoutSimd = Enumerable.Max(joinEvents);
         var minWithoutSimd = Enumerable.Min(joinEvents);
-        
+
         var (min, max) = SimdLinqExtensions.MinMax(joinEvents);
-        var doesContain = SimdLinqExtensions.Contains(joinEvents,joinEvents[0]);
-        
+        var doesContain = SimdLinqExtensions.Contains(joinEvents, joinEvents[0]);
+
         maxWithoutSimd.Should().Be(max);
         minWithoutSimd.Should().Be(min);
         doesContain.Should().BeTrue();

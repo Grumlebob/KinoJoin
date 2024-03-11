@@ -9,6 +9,7 @@
   </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
       <PackageReference Include="Microsoft.Playwright" Version="1.42.0-beta-3" />
@@ -20,6 +21,7 @@
       <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
       <ProjectReference Include="..\Presentation\Presentation.Client\Presentation.Client.csproj" />
       <ProjectReference Include="..\Presentation\Presentation\Presentation.csproj" />
+      <ProjectReference Include="..\Test\Test.csproj" />
     </ItemGroup>
 
 </Project>

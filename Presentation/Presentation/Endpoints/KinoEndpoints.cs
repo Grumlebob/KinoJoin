@@ -12,9 +12,9 @@ public class KinoEndpoints : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("api/events");
-        
+
         group.MapPut("", UpsertJoinEvent);
-        
+
         group.MapGet("", GetJoinEvents);
         group.MapGet("{id}", GetJoinEvent);
     }
@@ -42,7 +42,8 @@ public class KinoEndpoints : ICarterModule
     )
     {
         var joinEvents = await joinEventService.GetAllAsync();
-        if (joinEvents.Count == 0) return TypedResults.NotFound();
+        if (joinEvents.Count == 0)
+            return TypedResults.NotFound();
         return TypedResults.Ok(joinEvents);
     }
 
@@ -51,7 +52,6 @@ public class KinoEndpoints : ICarterModule
         [FromServices] IJoinEventService joinEventService
     )
     {
-        
         try
         {
             var joinEvent = await joinEventService.GetAsync(id);

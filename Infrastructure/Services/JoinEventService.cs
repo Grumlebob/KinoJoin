@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
-
-namespace Infrastructure.Services;
+﻿namespace Infrastructure.Services;
 
 /**
  * The overall goal is managing the database operations for JoinEvent
@@ -10,13 +8,27 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 {
     /*
      * The overall goal is to save the entire workpage of a JoinEvent, regardless of creating or filling
-     * 
+     *
      * Stages:
      * 1. We need to upsert entities that needs to exist in the database before JoinEvent is added.
      * 2. Upon program startup, the DB is seeded with a lot movies, cinemas, playtimes, versions and rooms.
      * 2.1 We try to insert the joinEvent using the preseeded data in the database.
      * 2.2 In unlikely scenario it fails, Kino have updated the database with new movies, cinemas, playtimes, versions and rooms, which will be added.
      * 3. If the JoinEventDto has no ID, we will insert the JoinEvent with the preseeded data, otherwise it will be updated
+     */
+
+    /**
+     * UpsertJoinEventAsync
+     * <returns>integer that descirbes</returns>
+     * <summary>upserts event</summary>
+     * <param name="joinEventDto">The JoinEventDto that will be upserted</param>
+     * <remarks>UpsertJoinEventAsync</remarks>
+     * <example>UpsertJoinEventAsync</example>
+     * <code>
+     * UpsertJoinEventAsync(joinEventDto);
+     * </code>
+     * <exception cref="Exception">Thrown when the upsert fails</exception>
+     * <exception cref="Exception">Thrown when the upsert fails</exception>
      */
     public async Task<int> UpsertJoinEventAsync(UpsertJoinEventDto joinEventDto)
     {
@@ -29,15 +41,10 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             .On(s => new { s.VoteOption, s.Color })
             .RunAsync();
 
-        var playTimes = joinEvent
-            .Showtimes.Select(st => st.Playtime)
-            .DistinctBy(p => p.StartTime);
+        var playTimes = joinEvent.Showtimes.Select(st => st.Playtime).DistinctBy(p => p.StartTime);
         await context.Playtimes.UpsertRange(playTimes).On(p => p.StartTime).RunAsync();
 
-        var newRooms = joinEvent
-            .Showtimes.Select(st => st.Room)
-            .DistinctBy(r => r.Id)
-            .ToList();
+        var newRooms = joinEvent.Showtimes.Select(st => st.Room).DistinctBy(r => r.Id).ToList();
         await context.Rooms.UpsertRange(newRooms).RunAsync();
         await context.SaveChangesAsync();
 
@@ -45,7 +52,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         {
             return await HandleJoinEventUpsert(joinEventDto, joinEvent);
         }
-        catch (Exception _)
+        catch (Exception)
         {
             await UpsertMissingEntities(joinEvent);
             return await HandleJoinEventUpsert(joinEventDto, joinEvent);
@@ -99,9 +106,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         {
             //We need to ensure many to many relationships, are only added once
             var showtimeIds = joinEventDto.Showtimes.Select(s => s.Id);
-            joinEvent.Showtimes = context
-                .Showtimes.Where(s => showtimeIds.Contains(s.Id))
-                .ToList();
+            joinEvent.Showtimes = context.Showtimes.Where(s => showtimeIds.Contains(s.Id)).ToList();
             joinEvent.SelectOptions = context
                 .SelectOptions.Where(s =>
                     voteOptions.Contains(s.VoteOption) && colorOptions.Contains(s.Color)
@@ -148,7 +153,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
         foreach (var showtime in showtimes)
         {
-            var LookupKey = showtime.Playtime.StartTime.ToOADate();
+            var lookupKey = showtime.Playtime.StartTime.ToOADate();
 
             // Assign PlaytimeId and VersionTagId using the dictionaries.
             if (versionDict.TryGetValue(showtime.VersionTag.Type, out var versionTagId))
@@ -156,7 +161,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                 showtime.VersionTagId = versionTagId;
             }
 
-            if (playtimeDict.TryGetValue(LookupKey, out var playtimeId))
+            if (playtimeDict.TryGetValue(lookupKey, out var playtimeId))
             {
                 showtime.PlaytimeId = playtimeId;
             }
@@ -219,6 +224,5 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         }
 
         return joinEvents;
-
     }
 }

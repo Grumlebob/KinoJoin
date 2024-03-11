@@ -1,0 +1,101 @@
+
+@inject IJSRuntime JsRuntime
+
+<div class="mb-5 w-full rounded border p-1 shadow">
+    <div class="grid gap-4 grid-cols-[0.5fr_1fr] grid-rows-[auto_auto] lg:grid-cols-[200px_1fr]">
+        <!-- PosterImage -->
+        <div class="row-span-2 space-y-2 lg:min-w-48 lg:sticky lg:top-16 lg:row-span-3 lg:self-start">
+                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank">
+                    <img src="@Movie.ImageUrl" alt="Movie Poster" class="w-full max-h-full rounded-sm shadow"/>
+                </a>
+            <!--Læs mere og trailer-->
+            <div class="hidden flex-col items-center lg:flex space-y-1">
+
+                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class=" rounded-full border border-black shadow duration-300 transition px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
+
+                <button class="rounded-full border border-black shadow duration-300 transition px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white" @onclick="async () => { await ShowMovieTrailer(Movie); }">Se trailer</button>
+            </div>
+        </div>
+        <!-- MovieHeader -->
+        <div class="col-start-2">
+            <div class="flex flex-col space-y-2">
+                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="block text-black no-underline">
+                    <h2 class="text-xl font-bold lg:text-4xl">@Movie.Title</h2>
+                </a>
+                <div class="block">
+                    <div class="inline-flex flex-col items-start justify-between gap-2 rounded lg:flex-row lg:items-center lg:gap-4 lg:p-2">
+                        <!-- movie-info -->
+                        <div class="flex space-x-1">
+                            <span class="hidden text-sm text-neutral-400 font-label lg:block">Premiere</span>
+                            <span class="text-sm text-neutral-400 font-label">@Movie.PremiereDate </span>
+                        </div>
+                        <span class="hidden text-sm text-neutral-400 lg:block">|</span>
+                        <div class="flex space-x-1">
+                            <span class="hidden text-sm text-neutral-400 font-label lg:block">Varighed</span>
+                            <span class="text-sm text-neutral-400 font-label">@Movie.Duration min</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="block lg:hidden">
+                    <!--Læs mere og trailer mobile-->
+                    <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="inline-block rounded-full border border-black px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
+                </div>
+                <div class="block lg:hidden">
+                    <button @onclick="async () => { await ShowMovieTrailer(Movie); }" class="inline-block rounded-full border border-black px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Se trailer</button>
+                </div>
+            </div>
+        </div>
+            
+        <div class="col-span-3 lg:col-start-2 lg:row-start-2 lg:row-end-3">
+            @if (ChildContent is not null)
+            {
+                
+            @ChildContent
+            }
+        </div>
+    </div>
+</div>
+
+@if (_trailerUrl != null)
+{
+    <div id="trailerPopUp">
+        <iframe src="@_trailerUrl" width="60%" height="60%" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
+        </iframe>
+        <button onclick="@(() => { _trailerUrl = null; })">Luk</button>
+    </div>
+}
+            
+            
+
+@code {
+    
+    
+    [Parameter]
+    public required Movie Movie { get; set; }
+    
+    // add children
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    private string? _trailerUrl;
+    
+    private async Task ShowMovieTrailer(Movie movie)
+    {
+        var client = new HttpClient();
+        var apiString = $"https://api.kino.dk{movie.KinoURL}?region=content&format=json";
+        var json = await client.GetStringAsync(apiString);
+
+        MovieRoot? movieRoot = JsonConvert.DeserializeObject<MovieRoot>(json);
+        if (movieRoot?.Content?.field_trailer?.FieldMediaOembedVideo?.trailerUrl == null) //no video found
+        {
+            await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
+            return;
+        }
+
+        var uri = new Uri(movieRoot.Content.field_trailer.FieldMediaOembedVideo.trailerUrl);
+        var videoId = uri.Segments.Last() == "watch" ? HttpUtility.ParseQueryString(uri.Query)["v"] : uri.Segments.Last();
+
+        if (videoId == null) await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
+        else _trailerUrl = $"https://www.youtube.com/embed/{videoId}";
+    }
+}

@@ -764,6 +764,18 @@ else
         }
 
         _joinEvent.Host = host;
+        
+        if (HostCanAllShowtimes)
+        {
+            _joinEvent.Participants.Add(new Participant
+            {
+                AuthId = host.AuthId,
+                Nickname = host.Username, Email = host.Email, Note = null,
+                VotedFor = _joinEvent.Showtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, VoteIndex = 1 }).ToList(),
+                JoinEventId = _joinEventId
+            });
+        }
+        
         Console.WriteLine("test it fr " + string.Join(",", _joinEvent.Showtimes.Select(s => s.Id)));
         var upsertJoinEventDto = UpsertJoinEventDto.FromModelToUpsertDto(_joinEvent);
         var response = await JoinEventHttpClient.PutJoinEventAsync(upsertJoinEventDto);
@@ -774,18 +786,6 @@ else
 
         eventCreated = true;
 
-        if (HostCanAllShowtimes)
-        {
-            var p = new Participant
-            {
-                AuthId = host.AuthId,
-                Nickname = host.Username, Email = host.Email, Note = null,
-                VotedFor = _joinEvent.Showtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, VoteIndex = 1 }).ToList(),
-                JoinEventId = _joinEventId
-            };
-            var httpClient = new HttpClient();
-            var participateResponse = await httpClient.PutAsJsonAsync($"{_baseUrl}api/events/{_joinEventId}", p);
-        }
     }
 
     private void OnVoteChange(List<(int showtimeId, int vote)> votes)

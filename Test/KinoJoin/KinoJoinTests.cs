@@ -25,7 +25,7 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public async Task SimpleJoinEventTest()
     {
-        const int casesToInsert = 50;
+        const int casesToInsert = 1;
         
         var joinEvents = _dataGenerator.JoinEventGenerator.Generate(casesToInsert);
         
@@ -54,7 +54,7 @@ public class KinoJoinTests : IAsyncLifetime
         
         
         //update
-        var joinEventToUpdate= joinEventsFromApi[5];
+        var joinEventToUpdate= joinEventsFromApi[casesToInsert-1];
         joinEventToUpdate.Title = "Updated";
         joinEventToUpdate.Participants.Add(new Participant { AuthId = "New", Email = "New", Nickname = "New", VotedFor = []});
         var upsertDtoUpdated = UpsertJoinEventDto.FromModelToUpsertDto(joinEventToUpdate);

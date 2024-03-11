@@ -99,12 +99,14 @@ public class JoinEventService(KinoContext context) : IJoinEventService
            
         }
         
-
-
         var newlyUpsertedJoinEvent = isUpdate
             ? context.JoinEvents.Update(joinEvent)
             : await context.JoinEvents.AddAsync(joinEvent);
 
+        // Debugging:
+        context.ChangeTracker.DetectChanges();
+        Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+        
         await context.SaveChangesAsync();
         return newlyUpsertedJoinEvent.Entity.Id;
     }

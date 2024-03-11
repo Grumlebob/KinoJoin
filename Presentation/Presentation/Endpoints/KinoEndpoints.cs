@@ -32,19 +32,28 @@ public class KinoEndpoints : ICarterModule
         }
         catch (Exception e)
         {
-            //Todo tror ikke man må exponere hele exception til klienten.
-            return TypedResults.BadRequest(e.Message);
+            return TypedResults.BadRequest(
+                "Sorry, we encountered an unexpected issue while processing your request. Please ensure that the data is correct. We suggest you try again later or contact support if the problem persists."
+            );
         }
     }
 
-    private static async Task<Results<Ok<List<JoinEvent>>, NotFound>> GetJoinEvents(
+    private static async Task<Results<Ok<List<JoinEvent>>, NotFound, BadRequest<string>>> GetJoinEvents(
         [FromServices] IJoinEventService joinEventService
     )
     {
-        var joinEvents = await joinEventService.GetAllAsync();
-        if (joinEvents.Count == 0)
-            return TypedResults.NotFound();
-        return TypedResults.Ok(joinEvents);
+        try
+        {
+            var joinEvents = await joinEventService.GetAllAsync();
+            if (joinEvents.Count == 0)
+                return TypedResults.NotFound();
+            return TypedResults.Ok(joinEvents);
+        }
+        catch (Exception e)
+        {
+            return TypedResults.BadRequest("Sorry, we encountered an unexpected issue while processing your request. We suggest you try again later or contact support if the problem persists.");
+        }
+       
     }
 
     private static async Task<Results<NotFound, Ok<JoinEvent>, BadRequest<string>>> GetJoinEvent(
@@ -59,7 +68,7 @@ public class KinoEndpoints : ICarterModule
         }
         catch (Exception e)
         {
-            return TypedResults.BadRequest(e.Message);
+            return TypedResults.BadRequest("Sorry, we encountered an unexpected issue while processing your request. We suggest you try again later or contact support if the problem persists.");
         }
     }
 }

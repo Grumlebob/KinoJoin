@@ -32,6 +32,7 @@ public class KinoEndpoints : ICarterModule
         }
         catch (Exception e)
         {
+            //Todo tror ikke man må exponere hele exception til klienten.
             return TypedResults.BadRequest(e.Message);
         }
     }
@@ -50,6 +51,7 @@ public class KinoEndpoints : ICarterModule
         [FromServices] IJoinEventService joinEventService
     )
     {
+        
         try
         {
             var joinEvent = await joinEventService.GetAsync(id);

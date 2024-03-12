@@ -6,206 +6,6 @@
 @using Presentation.Client.NamedHttpClients
 
 
-<style>
-/* Base container for each movie */
-
-/* Styling for the poster image */
-
-/* Container for movie details */
-
-/* Header for each movie */
-.MovieHeader h2 {
-    margin-top: 0; /* Remove top margin for the movie title */
-    margin-bottom: 0.5em; /* Add a little space below the title */
-}
-
-.MovieHeader p {
-    margin-top: 0; /* Remove top margin for other details */
-    margin-bottom: 0.5em; /* Consistent space below each detail */
-}
-
-/* Styling for cinema location */
-.CinemaLocation {
-    margin-top: 1em; /* Add space above the cinema location */
-    margin-bottom: 0.5em; /* Add space below the cinema location */
-}
-
-/* Styling for versions and showtimes */
-.Version {
-    margin-bottom: 1em; /* Add space below each version */
-}
-
-
-/* Hide the default checkbox input */
-.Showtimes input[type="checkbox"] {
-    display: none;
-}
-
-/* Style when checkbox is checked */
-.Showtimes input[type="checkbox"]:checked + .showtime-label {
-    background-color: #66bb6a;
-}
-
-/* Style when checkbox is not checked */
-.Showtimes input[type="checkbox"]:not(:checked) + .showtime-label {
-    background-color: #eee;
-}
-
-/* Style for checked checkbox text */
-.Showtimes input[type="checkbox"]:checked + .showtime-label .showtime-time {
-    color: white;
-}
-
-/* Style for unchecked checkbox text */
-.Showtimes input[type="checkbox"]:not(:checked) + .showtime-label .showtime-time {
-    color: black;
-}
-
-
-/* Base styles for the showtime labels */
-.Showtimes .showtime-label {
-
-    display: block; /* or inline-block, depending on how you want to handle the layout */
-    padding: 4px; /* Adjust padding as necessary */
-    margin-bottom: 4px;
-    
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    user-select: none;
-    background-color: #eee;
-    border-radius: 4px;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
-    white-space: nowrap; /* Keep text in a single line */
-    width: 100px;
-}
-
-/* Style for the sal name */
-.Showtimes .showtime-sal {
-    font-size: 14px; /* Smaller font size for sal name */
-    margin-bottom: 2px; /* Space between sal name and playtime */
-    overflow: hidden; /* Ensures the content does not expand the container */
-    text-overflow: ellipsis; /* Adds an ellipsis when the text overflows */
-    white-space: nowrap; /* Prevents the text from wrapping to the next line */
-   
-}
-
-/* Style for the playtime */
-.Showtimes .showtime-time {
-    font-weight: bold;
-    font-size: 24px; /* Larger font size for playtime */
-}
-
-.Showtimes .table-container {
-    width: 60vw;
-    overflow-x: auto; /* Adds horizontal scrollbar if the table exceeds the container width */
-    -ms-overflow-x: auto;
-    -webkit-overflow-scrolling: touch; /* Enables smooth scrolling on iOS */
-    scrollbar-width:auto;
-}
-
-.Showtimes table {
-    border-collapse: collapse; /* Collapse borders for a clean look */
-}
-
-/* Style for the table headers and cells to have a fixed width */
-.Showtimes th,
-.Showtimes td {
-    width: 10px; /* Fixed width */
-    text-align: left; /* Align text to the left */
-    padding: 8px; /* Add some padding */
-    white-space: nowrap; /* Keep the content in a single line */
-    overflow: hidden; /* Hide overflow */
-    text-overflow: ellipsis; /* Add an ellipsis to clipped text */
-    border-bottom: 1px solid #ddd; /* Add a bottom border for separation */
-    vertical-align: top; /* Align the content to the top of the cell */
-}
-
-.Showtimes td {
-    padding: 8px; /* Add some padding */
-}
-
-
-.movie-info {
-    background-color: #E0E0E0; /* Light gray background */
-    padding: 5px;
-    border-radius: 5px; /* Optional: rounds the corners of the background */
-    display: inline-flex; /* Places children next to each other */
-    align-items: center; /* Aligns children vertically in the center */
-    justify-content: center; /* Centers children horizontally */
-    gap: 10px; /* Creates space between the children */
-}
-
-.movie-info .premiere,
-.movie-info .duration {
-    color: #333; /* Dark gray text color for better contrast */
-    font-size: 14px; /* Adjust font size as needed */
-}
-
-
-.snackbar {
-    position: fixed;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #333;
-    color: #fff;
-    padding: 10px;
-    border-radius: 5px;
-    transition: opacity 0.3s;
-    background-color: red;
-}
-
-.chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 5px 10px;
-    margin: 5px;
-    border: 1px solid #ccc;
-    border-radius: 25px; /* This gives the chip a rounded appearance */
-    background-color: #f0f0f0;
-}
-.chip button {
-    margin-left: 5px;
-    border: none;
-    background-color: transparent;
-    cursor: pointer;
-}
-
-.empty-showtime {
-    width: 100px;
-    height: 67px;
-    padding: 12px;
-    margin-top: 0px;
-    margin-bottom: 4px;
-    
-    border-radius: 4px;
-    background-image: repeating-linear-gradient(
-        +45deg,
-        #ffffff, /* Lighter shade of gray for the streak */
-        #ffffff 10px,
-        #d5d5d5 10px, /* Darker shade of gray for the space between streaks */
-        #d5d5d5 20px
-    );
-}
-
-#trailerPopUp {
-    height: 100vh;
-    width: 100vw;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: rgba(0, 0, 0, 0.3);
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-</style>
-
 @* Shouldn't be a component, should stay on this parent component. *@
 @if (_loading)
 {
@@ -269,10 +69,9 @@ else if (_cinemaIdsToNames.Count > 0 || _movieIdsToNames.Count > 0)
         }
     </dialog>
 
-    @* Shouldn't be a component, should stay on this parent component. *@
     @if (_showSnackbar)
     {
-        <div class="snackbar">
+        <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-red-600 text-white p-2.5 rounded-md">
             @_snackbarMessage
         </div>
     }
@@ -824,7 +623,7 @@ else
             Title = _eventDetails.EventTitle!,
             Description = _eventDetails.EventDescription ?? "",
             Deadline = _eventDetails.Deadline,
-            SelectOptions = new List<UpsertSelectOptionDto> { new () { VoteOption = "Kan ikke", Color = "lightgray" }, new () { VoteOption = "Kan godt", Color = "lightgreen" }, new () { VoteOption = "Hvis Nødvendigt (Klik to gange)", Color = "orange" } },
+            SelectOptions = new List<UpsertSelectOptionDto> { new () { VoteOption = "Kan ikke", Color = "neutral-300" }, new () { VoteOption = "Kan godt", Color = "success" }, new () { VoteOption = "Hvis Nødvendigt (Klik to gange)", Color = "warning" } },
             ChosenShowtimeId = null,
             Participants = []
         };

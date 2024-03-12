@@ -20,4 +20,10 @@
     <ProjectReference Include="..\..\Application\Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Icons\CinemaIcon.razor">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

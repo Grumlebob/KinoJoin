@@ -54,7 +54,7 @@
             var cinema = showtimesByCinema.First().Cinema;
             <div class="mb-2">
                 <!-- CinemaLocation -->
-                <h3 id="@cinema.Id" class="text-2xl font-bold mb-2.5">@cinema.Name</h3>
+                <h3 id="@cinema.Id" class="text-xl font-bold mb-2.5">@cinema.Name</h3>
             </div>
             @foreach (var showtimesByVersionTag in showtimesByCinema.GroupBy(s => s.VersionTag.Id))
             {

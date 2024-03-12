@@ -6,79 +6,88 @@
 
 @if (_showFirstLoginDialog)
 {
-    @* Shouldn't be a component, should stay on this parent component. *@
-    <h4>@_event?.Host?.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h4>
-    <button onclick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + _event?.Id }); })">Anvend dit kino login til at stemme</button>
-    <button onclick="@(async () => { _showFirstLoginDialog = false; await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "firstLoginDialog"); })">Uden login</button>
-}
-else
-{
-    @if (_loading)
-    {
-        <h3>Indlæser...</h3>
-        return;
-    }
-
-    @if (_event is null)
-    {
-        <h3>Ingen events fundet</h3>
-        <p>Tjek at dit link er korrekt.</p>
-        return;
-    }
-
-    @* Shouldn't be a component, should stay on this parent component. *@
-    <div style="display: flex; flex-direction: row">
-        @if (_isEditing)
-        {
-            <input type="text" @bind="_event.Title" style="margin-right: 5px"/>
-        }
-        else
-        {
-            <h1>@_event.Title</h1>
-        }
-
-        @if (_isHost)
-        {
-            <button style="margin-left: 5px;height: 40px" @onclick="async () => { if (_isEditing) await UpdateJoinEvent(); _isEditing = !_isEditing; }">
-
-                @(_isEditing ? "Gem ændringer" : "✎")
-            </button>
-        }
-        <button style="margin-left: 5px;height: 40px" @onclick="ScrollToBottom">Gå til resultater</button>
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+        <div class="bg-white mx-4 p-6 rounded-lg shadow-xl mb-40">
+            @* Existing content *@
+            <div class="flex justify-center flex-col space-y-2">
+                <h4 class="font-bold">@_event?.Host?.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h4>
+                <div class=" flex md:justify-end md:items-end">
+                    <div class="w-full md:w-fit flex flex-col md:flex-row gap-2">
+                        <button class="rounded-full border border-black shadow px-3 py-2 duration-300 transition font-label bg-primary text-white hover:bg-neutral-950 hover:text-white" onclick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + _event?.Id }); })">Anvend dit kino login</button>
+                        <button class="rounded-full border border-black shadow px-3 py-2 duration-300 transition font-label hover:bg-neutral-950 hover:text-white" onclick="@(() => { _showFirstLoginDialog = false; })">Uden login</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+}
 
-    @* Shouldn't be a component, should stay on this parent component. *@
+@if (_loading)
+{
+    <h3>Indlæser...</h3>
+    return;
+}
+
+@if (_event is null)
+{
+    <h3>Ingen events fundet</h3>
+    <p>Tjek at dit link er korrekt.</p>
+    return;
+}
+
+@* Shouldn't be a component, should stay on this parent component. *@
+<div style="display: flex; flex-direction: row">
     @if (_isEditing)
     {
-        <textarea style="margin-bottom: 5px;width: 300px" type="text"   placeholder="Beskrivelse"  @bind="_event.Description"></textarea>
+        <input type="text" @bind="_event.Title" style="margin-right: 5px"/>
     }
     else
     {
-        <p>@_event.Description</p>
+        <h1>@_event.Title</h1>
     }
 
-    @* Shouldn't be a component, should stay on this parent component. *@
-    <p>
-        Deadline for tilmelding:
-        @if (_isEditing)
-        {
-            <input style="margin-bottom: 5px; width: 300px" type="date" placeholder="Deadline" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")" max="@_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("yyyy-MM-dd")" @bind="@_deadline"/>
-        }
-        else
-        {
-            @_deadline.ToString("dd. MMM")
-        }
-    </p>
-    <p>Tidsinterval: @_event?.Showtimes?.Min(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM") - @_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM")</p>
-    
-    <ShowtimeSelector SelectOptions="_event.SelectOptions" Showtimes="_event.Showtimes" VotedFor="@(_votedFor.Select(v => (v.ShowtimeId, v.VoteIndex )).ToList())"  VotedForChanged="OnVotesChanged" />
+    @if (_isHost)
+    {
+        <button style="margin-left: 5px;height: 40px" @onclick="async () => { if (_isEditing) await UpdateJoinEvent(); _isEditing = !_isEditing; }">
 
-    <RegisterParticipantVote Event="_event" OnAnswerSaved="@StateHasChanged"  @bind-Nickname="@_nickname" AlreadyAnswered="_alreadyAnswered"  VotedFor="_votedFor" LoggedInUserId="@_loggedInUserId" />
-    
-    <br/>
-    <br/>
-    <JoinEventResults _event="_event"  _isHost="_isHost"/>
+            @(_isEditing ? "Gem ændringer" : "✎")
+        </button>
+    }
+    <button style="margin-left: 5px;height: 40px" @onclick="ScrollToBottom">Gå til resultater</button>
+</div>
+
+@* Shouldn't be a component, should stay on this parent component. *@
+@if (_isEditing)
+{
+    <textarea style="margin-bottom: 5px;width: 300px" type="text"   placeholder="Beskrivelse"  @bind="_event.Description"></textarea>
 }
+else
+{
+    <p>@_event.Description</p>
+}
+
+@* Shouldn't be a component, should stay on this parent component. *@
+<p>
+    Deadline for tilmelding:
+    @if (_isEditing)
+    {
+        <input style="margin-bottom: 5px; width: 300px" type="date" placeholder="Deadline" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")" max="@_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("yyyy-MM-dd")" @bind="@_deadline"/>
+    }
+    else
+    {
+        @_deadline.ToString("dd. MMM")
+    }
+</p>
+<p>Tidsinterval: @_event?.Showtimes?.Min(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM") - @_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM")</p>
+
+<ShowtimeSelector SelectOptions="_event.SelectOptions" Showtimes="_event.Showtimes" VotedFor="@(_votedFor.Select(v => (v.ShowtimeId, v.VoteIndex)).ToList())" VotedForChanged="OnVotesChanged"/>
+
+<RegisterParticipantVote Event="_event" OnAnswerSaved="@StateHasChanged" @bind-Nickname="@_nickname" AlreadyAnswered="_alreadyAnswered" VotedFor="_votedFor" LoggedInUserId="@_loggedInUserId"/>
+
+<br/>
+<br/>
+<JoinEventResults _event="_event" _isHost="_isHost"/>
+
 
 @code {
     [Parameter] public required string JoinEventId { get; set; }
@@ -88,9 +97,9 @@ else
     private JoinEvent? _event;
 
     private List<ParticipantVote> _votedFor = [];
-    
+
     private string? _nickname;
-    
+
     private bool _loading = true;
 
     string _baseUrl = "";
@@ -106,7 +115,7 @@ else
     private DateTime _deadline;
 
     private string? _loggedInUserId;
-    
+
     private bool _isLoggedIn;
 
     protected override async Task OnInitializedAsync()
@@ -121,7 +130,7 @@ else
 
         if (_event is { Showtimes: not null })
         {
-            _votedFor = _event.Showtimes.Select(st => new ParticipantVote { ShowtimeId = st.Id, VoteIndex = 0}).ToList(); // a vote for each showtime
+            _votedFor = _event.Showtimes.Select(st => new ParticipantVote { ShowtimeId = st.Id, VoteIndex = 0 }).ToList(); // a vote for each showtime
         }
 
 
@@ -148,7 +157,7 @@ else
 
         _deadline = _event!.Deadline.ToLocalTime();
         _loading = false;
-        
+
         Console.WriteLine("selectOptions: " + _event?.SelectOptions.Count);
     }
 
@@ -169,7 +178,7 @@ else
 
     private void OnVotesChanged(List<(int showtimeId, int vote)> votes)
     {
-        _votedFor = votes.Select(v => new ParticipantVote { ShowtimeId = v.showtimeId, VoteIndex = v.vote}).ToList();
+        _votedFor = votes.Select(v => new ParticipantVote { ShowtimeId = v.showtimeId, VoteIndex = v.vote }).ToList();
     }
 
 }

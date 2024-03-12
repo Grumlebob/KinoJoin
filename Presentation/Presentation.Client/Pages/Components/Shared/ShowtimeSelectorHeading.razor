@@ -11,7 +11,7 @@
             <!--Læs mere og trailer-->
             <div class="hidden flex-col items-center lg:flex space-y-1">
 
-                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class=" rounded-full border border-black shadow duration-300 transition px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
+                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="rounded-full border border-black shadow duration-300 transition px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
 
                 <button class="rounded-full border border-black shadow duration-300 transition px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white" @onclick="async () => { await ShowMovieTrailer(Movie); }">Se trailer</button>
             </div>

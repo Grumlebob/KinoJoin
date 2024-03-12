@@ -4,6 +4,19 @@
 
 <PageTitle>JoinEvent</PageTitle>
 
+@if (_loading)
+{
+    <h3>Indlæser...</h3>
+    return;
+}
+
+@if (_event is null)
+{
+    <h3>Ingen events fundet</h3>
+    <p>Tjek at dit link er korrekt.</p>
+    return;
+}
+
 @if (_showFirstLoginDialog)
 {
     <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
@@ -21,22 +34,7 @@
     </div>
 }
 
-@if (_loading)
-{
-    <h3>Indlæser...</h3>
-    return;
-}
-
-@if (_event is null)
-{
-    <h3>Ingen events fundet</h3>
-    <p>Tjek at dit link er korrekt.</p>
-    return;
-}
-
-<button class="mx-3" style="margin-left: 5px;height: 40px" @onclick="ScrollToBottom">Gå til resultater</button>
-
-<div class="border rounded">
+<div class="p-2 border rounded my-2 w-1/2">
     <div>
         <div style="display: flex; flex-direction: row">
             @if (_isEditing)
@@ -45,7 +43,7 @@
             }
             else
             {
-                <h1 class="font-bold">@_event.Title</h1>
+                <h1 class="font-label text-2xl">@_event.Title</h1>
             }
 
             @if (_isHost)
@@ -63,12 +61,13 @@
         }
         else
         {
-            <p class="underline">Beskrivelse</p>
             <p>@_event.Description</p>
+            <br/>
         }
 
         <p>
-            Deadline for tilmelding:
+            <span class="underline">Deadline</span> 
+            <span>for tilmelding: </span>
             @if (_isEditing)
             {
                 <input style="margin-bottom: 5px; width: 300px" type="date" placeholder="Deadline" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")" max="@_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("yyyy-MM-dd")" @bind="@_deadline"/>
@@ -79,14 +78,17 @@
             }
         </p>
 
-        <p>Tidsinterval: @_event?.Showtimes?.Min(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM") - @_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM")</p>
+        <span class="underline">Tidsinterval:</span> 
+        <span> @_event?.Showtimes?.Min(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM") - @_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM")</span>
+        <br/>
+        <button class=" rounded-full border border-black shadow duration-300 transition px-1 py-0.5 transition duration-100 font-label hover:bg-neutral-950 hover:text-white"  @onclick="ScrollToBottom">Gå til resultater</button>
     </div>
 </div>
 
 <ShowtimeSelector SelectOptions="_event.SelectOptions" Showtimes="_event.Showtimes" VotedFor="@(_votedFor.Select(v => (v.ShowtimeId, v.VoteIndex)).ToList())" VotedForChanged="OnVotesChanged"/>
 
-<RegisterParticipantVote Event="_event" OnAnswerSaved="@(p => { _currentParticipant = p; StateHasChanged(); })"  @bind-Nickname="@_nickname" AlreadyAnswered="_alreadyAnswered"  VotedFor="_votedFor" LoggedInUserId="@_loggedInUserId" />
-    
+<RegisterParticipantVote Event="_event" OnAnswerSaved="@(p => { _currentParticipant = p; StateHasChanged(); })" @bind-Nickname="@_nickname" AlreadyAnswered="_alreadyAnswered" VotedFor="_votedFor" LoggedInUserId="@_loggedInUserId"/>
+
 <br/>
 <br/>
 

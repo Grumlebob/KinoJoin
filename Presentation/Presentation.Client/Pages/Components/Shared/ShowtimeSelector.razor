@@ -149,6 +149,7 @@
 
     [Parameter] public EventCallback<List<(int ShowtimeId, int Vote)>> VotedForChanged { get; set; }
 
+    //Disse selectoptions er sat til create siden....
     [Parameter] public List<SelectOption> SelectOptions { get; set; } = new List<SelectOption>() { new SelectOption() { VoteOption = "Kan ikke", Color = "gray-200" }, new SelectOption() { VoteOption = "Kan godt", Color = "success" } };
 
 

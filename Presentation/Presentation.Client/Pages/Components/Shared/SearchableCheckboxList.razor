@@ -1,18 +1,18 @@
 ﻿<div class="flex flex-col w-full">
     <!-- Accordion header -->
-    <div @onclick="toggleAccordion" class="cursor-pointer bg-gray-700 text-white px-5 py-3 @(isAccordionOpen ? "rounded-t" : "rounded") flex justify-between items-center">
+    <div @onclick="ToggleAccordion" class="cursor-pointer bg-gray-700 text-white px-5 py-3 @(_isAccordionOpen ? "rounded-t" : "rounded") flex justify-between items-center">
         @if (IconPath != null)
         {
             <img src="@IconPath" alt="Movie Icon" class="h-6 w-6 mr-2"/>
         }
         <span>@FilterTitle</span>
-        <svg class="transition-transform" style="@(isAccordionOpen ? "transform: rotate(0deg);" : "transform: rotate(-90deg);")" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+        <svg class="transition-transform" style="@(_isAccordionOpen ? "transform: rotate(0deg);" : "transform: rotate(-90deg);")" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
         </svg>
     </div>
 
     <!-- Accordion content including search bar and list -->
-    <div class="@(isAccordionOpen ? "block" : "hidden") transition-all overflow-hidden bg-white px-5 py-3 rounded-b shadow">
+    <div class="@(_isAccordionOpen ? "block" : "hidden") transition-all overflow-hidden bg-white px-5 py-3 rounded-b shadow">
         <!-- Search bar -->
         <input type="text" placeholder="Søg" @oninput="@(e => { _searchTerm = e.Value?.ToString() ?? string.Empty; })" class="w-full p-2 border border-gray-300 rounded-md mb-4"/>
         <!-- List -->
@@ -50,7 +50,7 @@
 
     [Parameter] public HashSet<int> SelectedItems { get; set; } = [];
 
-    [Parameter] public string FilterTitle { get; set; }
+    [Parameter] public string FilterTitle { get; set; } = "";
 
     [Parameter] public string? IconPath { get; set; }
 
@@ -68,11 +68,11 @@
         SelectedItems.Remove(movieId);
     }
 
-    private bool isAccordionOpen = false;
+    private bool _isAccordionOpen = false;
 
-    private void toggleAccordion()
+    private void ToggleAccordion()
     {
-        isAccordionOpen = !isAccordionOpen;
+        _isAccordionOpen = !_isAccordionOpen;
     }
 
 }

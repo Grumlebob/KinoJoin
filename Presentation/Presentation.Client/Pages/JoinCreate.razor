@@ -1,32 +1,17 @@
 ﻿@inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
+@inject IJoinEventHttpClient JoinEventHttpClient
 
 @page "/JoinCreate/{filterString}"
+@using Presentation.Client.NamedHttpClients
 
 
 <style>
 /* Base container for each movie */
-.Redbox {
-    display: flex;
-    align-items: flex-start; /* Align the start of the items */
-    margin-bottom: 20px;
-}
 
 /* Styling for the poster image */
-.PosterImage {
-    position: sticky;
-    top: 65px;
-    margin-right: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-}
 
 /* Container for movie details */
-.MovieDetails {
-    flex-grow: 1; /* Allow the movie details to fill the remaining space */
-}
 
 /* Header for each movie */
 .MovieHeader h2 {
@@ -345,7 +330,7 @@ else if (_cinemaIdsToNames.Count > 0 || _movieIdsToNames.Count > 0)
         }
     }
 
-    <ShowtimeSelector Showtimes="showtimes" MoviesWithOutShowTimes="moviesWithoutShowtimes" VotedFor="@(showtimes.Select(s => (s, selectedShowtimeIds.Contains(s.Id) ? 1 : 0)).ToList())" VotedForChanged="OnVoteChange"/>
+    <ShowtimeSelector Showtimes="showtimes" MoviesWithOutShowTimes="moviesWithoutShowtimes" VotedFor="@(showtimes.Select(s => (s.Id, selectedShowtimeIds.Contains(s.Id) ? 1 : 0)).ToList())" VotedForChanged="OnVoteChange"/>
 }
 else
 {
@@ -765,10 +750,10 @@ else
 
     private async Task FinishJoinEvent()
     {
-        HttpClient client = new HttpClient();
-
-        _baseUrl = NavigationManager.BaseUri;
-        var url = $"{_baseUrl}putJoinEvent";
+        //HttpClient client = new HttpClient();
+//
+        //_baseUrl = NavigationManager.BaseUri;
+        //var url = $"{_baseUrl}api/events";
 
         var pickedShowtimes = selectedShowtimeIds.Select(id => showtimes.First(s => s.Id == id)).ToList();
 
@@ -794,19 +779,6 @@ else
             host.Email = email;
         }
 
-        var participants = new List<UpsertParticipantDto>();
-        
-        if (HostCanAllShowtimes)
-        {
-            var p = new UpsertParticipantDto()
-            {
-                AuthId = host.AuthId,
-                Nickname = host.Username, Email = host.Email, Note = null,
-                VotedFor = pickedShowtimes.Select(s => new UpsertParticipantVoteDto() { ShowtimeId = s.Id, VoteIndex = 1 }).ToList(),
-                JoinEventId = _joinEventId
-            };
-            participants.Add(p);
-        }
 
         var upsertJoinEventDto = new UpsertJoinEventDto
         {
@@ -852,13 +824,13 @@ else
             Title = _eventDetails.EventTitle!,
             Description = _eventDetails.EventDescription ?? "",
             Deadline = _eventDetails.Deadline,
-            SelectOptions = new List<UpsertSelectOptionDto> { new () { VoteOption = "Kan ikke", Color = "gray-100" }, new () { VoteOption = "Kan godt", Color = "success" }, new () { VoteOption = "Hvis Nødvendigt (Klik to gange)", Color = "warning" } },
+            SelectOptions = new List<UpsertSelectOptionDto> { new () { VoteOption = "Kan ikke", Color = "lightgray" }, new () { VoteOption = "Kan godt", Color = "lightgreen" }, new () { VoteOption = "Hvis Nødvendigt (Klik to gange)", Color = "orange" } },
             ChosenShowtimeId = null,
-            Participants = participants,
+            Participants = []
         };
 
-
-        var response = await client.PutAsJsonAsync(url, upsertJoinEventDto);
+        
+        var response = await JoinEventHttpClient.PutJoinEventAsync(upsertJoinEventDto);
         var id = await response.Content.ReadAsStringAsync();
 
 
@@ -866,12 +838,23 @@ else
 
         eventCreated = true;
 
-        
+        if (HostCanAllShowtimes)
+        {
+            var p = new Participant
+            {
+                AuthId = host.AuthId,
+                Nickname = host.Username, Email = host.Email, Note = null,
+                VotedFor = pickedShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, VoteIndex = 1 }).ToList(),
+                JoinEventId = _joinEventId
+            };
+            var httpClient = new HttpClient();
+            var participateResponse = await httpClient.PutAsJsonAsync($"{_baseUrl}participate/{_joinEventId}", p);
+        }
     }
 
-    private void OnVoteChange(List<(Showtime, int vote)> votes)
+    private void OnVoteChange(List<(int showtimeId, int vote)> votes)
     {
-        selectedShowtimeIds = votes.Where(v => v.vote == 1).Select(v => v.Item1.Id).ToList();
+        selectedShowtimeIds = votes.Where(v => v.vote == 1).Select(v => v.showtimeId).ToList();
     }
 
 }

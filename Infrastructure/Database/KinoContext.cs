@@ -24,51 +24,71 @@ public class KinoContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Host>().HasKey(h => h.AuthId);
-
-        modelBuilder.Entity<JoinEvent>().HasKey(je => je.Id);
-
+        //Super keys
         modelBuilder
             .Entity<ParticipantVote>()
             .HasKey(pv => new { pv.ParticipantId, pv.ShowtimeId });
 
-        modelBuilder.Entity<JoinEvent>().HasMany(je => je.Showtimes).WithMany(s => s.JoinEvents);
-
-        modelBuilder.Entity<JoinEvent>().HasMany(je => je.Participants).WithOne(p => p.JoinEvent);
+        //Many to Many relations
+        modelBuilder
+            .Entity<JoinEvent>()
+            .HasMany(je => je.Showtimes)
+            .WithMany(s => s.JoinEvents)
+            .UsingEntity(
+                "JoinEventShowtime",
+                l =>
+                    l.HasOne(typeof(JoinEvent))
+                        .WithMany()
+                        .HasForeignKey("JoinEventsId")
+                        .HasPrincipalKey(nameof(JoinEvent.Id)),
+                r =>
+                    r.HasOne(typeof(Showtime))
+                        .WithMany()
+                        .HasForeignKey("ShowtimesId")
+                        .HasPrincipalKey(nameof(Showtime.Id)),
+                j => j.HasKey("JoinEventsId", "ShowtimesId")
+            );
 
         modelBuilder
             .Entity<JoinEvent>()
             .HasMany(je => je.SelectOptions)
-            .WithMany(so => so.JoinEvents);
+            .WithMany(so => so.JoinEvents)
+            .UsingEntity(
+                "JoinEventSelectOption",
+                l =>
+                    l.HasOne(typeof(JoinEvent))
+                        .WithMany()
+                        .HasForeignKey("JoinEventsId")
+                        .HasPrincipalKey(nameof(JoinEvent.Id)),
+                r =>
+                    r.HasOne(typeof(SelectOption))
+                        .WithMany()
+                        .HasForeignKey("SelectOptionsId")
+                        .HasPrincipalKey(nameof(SelectOption.Id)),
+                j => j.HasKey("JoinEventsId", "SelectOptionsId")
+            );
+        ;
 
-        // Configure primary keys
-        modelBuilder.Entity<Movie>().HasKey(m => m.Id);
-        modelBuilder.Entity<Showtime>().HasKey(s => s.Id);
-        modelBuilder.Entity<Playtime>().HasKey(p => p.Id);
-        modelBuilder.Entity<VersionTag>().HasKey(v => v.Id);
-        modelBuilder.Entity<Cinema>().HasKey(c => c.Id);
-        modelBuilder.Entity<Room>().HasKey(s => s.Id);
-        modelBuilder.Entity<SelectOption>().HasKey(s => s.Id);
-
-        // Make showtime key MovieId, CinemaId, ShowtimeId, VersionId, SalId
-        modelBuilder.Entity<Showtime>().HasKey(st => st.Id);
-
-        //modelBuilder.Entity<Playtime>().HasIndex(p => p.StartTime).IsUnique();
-
-        // Configure relations for ParticipantVote
+        // Many to one relations
         modelBuilder
-            .Entity<ParticipantVote>()
-            .HasOne(pv => pv.Participant)
-            .WithMany(p => p.VotedFor)
+            .Entity<JoinEvent>()
+            .HasMany(je => je.Participants)
+            .WithOne()
+            .HasForeignKey(p => p.JoinEventId);
+
+        modelBuilder
+            .Entity<Participant>()
+            .HasMany(p => p.VotedFor)
+            .WithOne()
             .HasForeignKey(pv => pv.ParticipantId);
 
         modelBuilder
-            .Entity<ParticipantVote>()
-            .HasOne(pv => pv.Showtime)
-            .WithMany()
-            .HasForeignKey(pv => pv.ShowtimeId);
+            .Entity<Showtime>()
+            .HasMany<ParticipantVote>()
+            .WithOne()
+            .HasForeignKey(v => v.ShowtimeId);
 
-        modelBuilder.Entity<ParticipantVote>().Property(pv => pv.VoteIndex);
+        //modelBuilder.Entity<ParticipantVote>().Property(pv => pv.VoteIndex);
 
         // Call the base method to ensure any configuration from the base class is applied
         base.OnModelCreating(modelBuilder);

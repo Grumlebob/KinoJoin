@@ -25,8 +25,8 @@ public class KinoJoinTests : IAsyncLifetime
         var joinEvents = _dataGenerator.JoinEventGenerator.Generate(1000);
         foreach (var joinEvent in joinEvents)
         {
-            var UpsertDto = UpsertJoinEventDto.FromModelToUpsertDto(joinEvent);
-            var createResponse = await _client.PutAsJsonAsync("/putJoinEvent", UpsertDto);
+            var upsertDto = UpsertJoinEventDto.FromModelToUpsertDto(joinEvent);
+            var createResponse = await _client.PutAsJsonAsync("api/events", upsertDto);
             createResponse.EnsureSuccessStatusCode();
         }
     }

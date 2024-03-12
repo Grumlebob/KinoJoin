@@ -118,7 +118,7 @@ else if (!_answerSaved)
         
         var upsertJoinEventDto = UpsertJoinEventDto.FromModelToUpsertDto(Event);
         var httpClient = new HttpClient();
-        var response = await httpClient.PutAsJsonAsync($"{NavigationManager.BaseUri}putJoinEvent", upsertJoinEventDto);
+        var response = await httpClient.PutAsJsonAsync($"{NavigationManager.BaseUri}api/events", upsertJoinEventDto);
         if (response.IsSuccessStatusCode)
         {
             _infoMessage = "Svar gemt";

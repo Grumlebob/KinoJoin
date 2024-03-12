@@ -61,24 +61,28 @@
         }
         else
         {
+            if (  _event.Description != "")
+            {
             <p>@_event.Description</p>
             <br/>
+            }
         }
 
-        <p>
-            <span class="underline">Deadline</span> 
-            <span>for tilmelding: </span>
+        <div class="flex space-x-1">
+            <span class="font-medium">Svarfrist</span> 
             @if (_isEditing)
             {
                 <input style="margin-bottom: 5px; width: 300px" type="date" placeholder="Deadline" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")" max="@_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("yyyy-MM-dd")" @bind="@_deadline"/>
             }
             else
             {
+                <span>
                 @_deadline.ToString("dd. MMM")
+                </span>
             }
-        </p>
+        </div>
 
-        <span class="underline">Tidsinterval:</span> 
+        <span class="underline">Tidsinterval</span> 
         <span> @_event?.Showtimes?.Min(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM") - @_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM")</span>
         <br/>
         <button class=" rounded-full border border-black shadow duration-300 transition px-1 py-0.5 transition duration-100 font-label hover:bg-neutral-950 hover:text-white"  @onclick="ScrollToBottom">Gå til resultater</button>

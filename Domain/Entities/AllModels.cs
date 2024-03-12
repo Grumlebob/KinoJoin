@@ -15,7 +15,7 @@ public class Participant
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
     public string? AuthId { get; set; }
-    public int JoinEventId { get; set; }
+    //public int JoinEventId { get; set; }
     public string Nickname { get; set; }
     public string? Email { get; set; }
     public string? Note { get; set; }
@@ -34,8 +34,7 @@ public class JoinEvent
     public int? ChosenShowtimeId { get; set; }
     public List<Participant> Participants { get; set; } = [];
     public List<SelectOption> SelectOptions { get; set; } = [];
-    public List<JoinEventSelectOption> JoinEventSelectOptions { get; set; } = [];
-    public SelectOption DefaultSelectOption { get; set; }
+    public int DefaultSelectOptionId { get; set; }
 
     private DateTime _deadline;
 
@@ -47,6 +46,8 @@ public class JoinEvent
 
     [ForeignKey("HostId")]
     public Host Host { get; set; }
+    [ForeignKey("DefaultSelectOptionId")]
+    public SelectOption DefaultSelectOption { get; set; }
 }
 
 public class Movie
@@ -93,6 +94,8 @@ public class ParticipantVote
 {
     public int ParticipantId { get; set; }
     public int ShowtimeId { get; set; }
+    public int SelectedOptionId { get; set; }
+    [ForeignKey("SelectedOptionId")]
     public SelectOption SelectedOption { get; set; }
 }
 
@@ -108,12 +111,6 @@ public class SelectOption
     /// For example, if the color is primary, and you want to use it as a background, the class bg-primary must be used somewhere in the project. Add the class to the dummy component "GenerateCustomTailwindColorsBeforeRunTime.razor" to use it, if it is not used anywhere else.
     /// </summary>
     public string Color { get; set; }
-}
-
-public class JoinEventSelectOption
-{
-    public int JoinEventsId { get; set; }
-    public int SelectOptionsId { get; set; }
 }
 
 [Index(nameof(StartTime), IsUnique = true)]

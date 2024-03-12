@@ -38,15 +38,19 @@ public class KinoContext : DbContext
         modelBuilder
             .Entity<JoinEvent>()
             .HasMany(je => je.SelectOptions)
+            .WithMany();
+
+        modelBuilder.Entity<JoinEvent>()
+            .HasOne(je => je.DefaultSelectOption)
             .WithMany()
-            .UsingEntity<JoinEventSelectOption>();
+            .HasForeignKey(je => je.DefaultSelectOptionId);
 
         // Many to one relations
         modelBuilder
             .Entity<JoinEvent>()
             .HasMany(je => je.Participants)
             .WithOne()
-            .HasForeignKey(p => p.JoinEventId);
+            .IsRequired();//.HasForeignKey(p => p.JoinEventId);
 
         modelBuilder
             .Entity<Participant>()
@@ -60,11 +64,14 @@ public class KinoContext : DbContext
             .WithOne()
             .HasForeignKey(v => v.ShowtimeId);
 
-        //modelBuilder.Entity<ParticipantVote>().Property(pv => pv.VoteIndex);a
 
         // Call the base method to ensure any configuration from the base class is applied
         base.OnModelCreating(modelBuilder);
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.EnableSensitiveDataLogging();
+        optionsBuilder.EnableDetailedErrors();
+    } 
 }

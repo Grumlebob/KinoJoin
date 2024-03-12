@@ -55,7 +55,8 @@ public class KinoJoinTests : IAsyncLifetime
         //update
         var joinEventToUpdate= joinEventsFromApi[casesToInsert-1];
         joinEventToUpdate.Title = "Updated";
-        joinEventToUpdate.Participants.Add(new Participant { AuthId = "New", Email = "New", Nickname = "New", VotedFor = []});
+        joinEventToUpdate.Participants.Add(new Participant { AuthId = "New", Email = "New", Nickname = "New", 
+            VotedFor = [new ParticipantVote() {ShowtimeId = joinEventToUpdate.Showtimes.First().Id, SelectedOptionId = joinEventToUpdate.SelectOptions.First().Id}]});
         var updateResponse = await _client.PutAsJsonAsync("api/events", joinEventToUpdate);
         updateResponse.EnsureSuccessStatusCode();
         
@@ -68,7 +69,7 @@ public class KinoJoinTests : IAsyncLifetime
         
         
         var getResponseAll2 = await _client.GetAsync("api/events");
-        var joinEventsFromApi2 = await getResponseAll.Content.ReadFromJsonAsync<List<JoinEvent>>();
+        var joinEventsFromApi2 = await getResponseAll2.Content.ReadFromJsonAsync<List<JoinEvent>>();
         joinEventsFromApi2.Count.Should().Be(casesToInsert);
         
 

@@ -8,17 +8,25 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
         if (isUpdate)
         {
-            var joinEventEntry = await context.JoinEvents.FindAsync(joinEvent.Id);
+            var joinEventEntry = await context.JoinEvents.Include(j => j.Participants)
+                .FirstOrDefaultAsync(j => j.Id == joinEvent.Id);
             if (joinEventEntry == null) return 0; // add
+            await context.SaveChangesAsync();
+            joinEventEntry.Participants.AddRange(joinEvent.Participants.Where(p => p.Id == 0));
+            context.ChangeTracker.DetectChanges();
+            Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+            await context.SaveChangesAsync();
 
             joinEventEntry.Title = joinEvent.Title;
             joinEventEntry.Description = joinEvent.Description;
             joinEventEntry.ChosenShowtimeId = joinEvent.ChosenShowtimeId;
             joinEventEntry.Deadline = joinEvent.Deadline;
+            
+            
 
-            await context.Participants.UpsertRange(joinEvent.Participants).RunAsync();
-            joinEventEntry.Participants = context.Participants.Where(p => p.JoinEventId == joinEventEntry.Id).ToList();
-            await context.SaveChangesAsync();
+            context.ChangeTracker.DetectChanges();
+            Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+            await context.SaveChangesAsync(true);
             return joinEventEntry.Id;
         }
 
@@ -32,15 +40,30 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
         var roomsToUpsert = joinEvent.Showtimes.Select(st => st.Room).DistinctBy(r => r.Id).ToList();
         await context.Rooms.UpsertRange(roomsToUpsert).RunAsync();
-        
+
+        //Set navigation properties
+        joinEvent.DefaultSelectOptionId = (await context.SelectOptions.AsNoTracking()
+            .FirstAsync(s =>
+                s.VoteOption == joinEvent.DefaultSelectOption.VoteOption &&
+                s.Color == joinEvent.DefaultSelectOption.Color)).Id;
+        joinEvent.DefaultSelectOption = null!; //avoid double tracking when adding
+
+
+        foreach (var vote in joinEvent.Participants.SelectMany(participant => participant.VotedFor))
+        {
+            vote.SelectedOptionId = (await context.SelectOptions.AsNoTracking()
+                .FirstAsync(s =>
+                    s.VoteOption == vote.SelectedOption.VoteOption && s.Color == vote.SelectedOption.Color)).Id;
+            vote.SelectedOption = null!; //avoid double tracking when adding
+        }
 
         foreach (var showtime in joinEvent.Showtimes)
         {
-            //Set navigation properties
             showtime.MovieId = showtime.Movie.Id;
             showtime.CinemaId = showtime.Cinema.Id;
             showtime.RoomId = showtime.Room.Id;
-            showtime.PlaytimeId = (await context.Playtimes.AsNoTracking().FirstAsync(p => p.StartTime == showtime.Playtime.StartTime))
+            showtime.PlaytimeId = (await context.Playtimes.AsNoTracking()
+                    .FirstAsync(p => p.StartTime == showtime.Playtime.StartTime))
                 .Id; //id's are genrated in database. Get them from there
         }
 
@@ -72,9 +95,11 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         //await AssignPlaytimeAndVersionIdFromDatabase(joinEvent.Showtimes);
         foreach (var showtime in joinEvent.Showtimes)
         {
-            //this asssumes we have versiontags, if it fails we insert missing entities
-            showtime.VersionTagId = (await context.Versions.AsNoTracking().FirstAsync(v => v.Type == showtime.VersionTag.Type)).Id;
+            //this asssumes we have versiontags, if it fails we insert missing entities and try again
+            showtime.VersionTagId =
+                (await context.Versions.AsNoTracking().FirstAsync(v => v.Type == showtime.VersionTag.Type)).Id;
         }
+
         await context.Showtimes.UpsertRange(joinEvent.Showtimes).RunAsync();
 
         //Use the entities from the database for many to many relationships,
@@ -89,18 +114,30 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                 s.VoteOption == option.VoteOption && s.Color == option.Color)).Id;
         }
 
-        joinEvent.JoinEventSelectOptions = joinEvent.SelectOptions
-            .Select(s => new JoinEventSelectOption { SelectOptionsId = s.Id }).ToList();
-
-        // Debugging:
         context.ChangeTracker.DetectChanges();
         Console.WriteLine(context.ChangeTracker.DebugView.LongView);
 
-        var newlyAddedJoinEvent = await context.JoinEvents.AddAsync(joinEvent);
-        
+        var newlyAddedJoinEvent = (context.JoinEvents.Add(joinEvent)).Entity;
+        context.ChangeTracker.DetectChanges();
+        Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+
+        for (var i = 0; i < newlyAddedJoinEvent.SelectOptions.Count; i++)
+        {
+            context.Entry(newlyAddedJoinEvent.SelectOptions[i]).State = EntityState.Unchanged;
+        }
+
+        context.Entry(newlyAddedJoinEvent.Host).State = EntityState.Unchanged;
+
+        for (var i = 0; i < newlyAddedJoinEvent.Showtimes.Count; i++)
+        {
+            context.Entry(newlyAddedJoinEvent.Showtimes[i]).State = EntityState.Unchanged;
+        }
+
+        context.ChangeTracker.DetectChanges();
+        Console.WriteLine(context.ChangeTracker.DebugView.LongView);
         await context.SaveChangesAsync();
-        
-        return newlyAddedJoinEvent.Entity.Id;
+
+        return newlyAddedJoinEvent.Id;
     }
 
     private async Task UpsertMissingEntities(JoinEvent joinEvent)

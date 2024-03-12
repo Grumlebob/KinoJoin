@@ -83,10 +83,12 @@ public class DataGenerator
                 Description = f.Lorem.Paragraph(),
                 Showtimes = _showtimeGenerator.Generate(f.Random.Int(1, 5)),
                 Participants = participants,
-                SelectOptions = _selectOptionGenerator.Generate(f.Random.Int(1, 5)),
+                SelectOptions = _selectOptionGenerator.Generate(f.Random.Int(2, 5)),
                 Deadline = f.Date.Future(),
                 Host = _hostGenerator.Generate(),
             };
+            joinEvent.DefaultSelectOptionId = joinEvent.SelectOptions.First().Id;
+            joinEvent.DefaultSelectOption = joinEvent.SelectOptions.First();
 
             if (joinEvent.Showtimes.Any())
             {

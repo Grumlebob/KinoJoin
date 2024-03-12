@@ -35,50 +35,57 @@
     return;
 }
 
-@* Shouldn't be a component, should stay on this parent component. *@
-<div style="display: flex; flex-direction: row">
-    @if (_isEditing)
-    {
-        <input type="text" @bind="_event.Title" style="margin-right: 5px"/>
-    }
-    else
-    {
-        <h1>@_event.Title</h1>
-    }
+<button class="mx-3" style="margin-left: 5px;height: 40px" @onclick="ScrollToBottom">Gå til resultater</button>
 
-    @if (_isHost)
-    {
-        <button style="margin-left: 5px;height: 40px" @onclick="async () => { if (_isEditing) await UpdateJoinEvent(); _isEditing = !_isEditing; }">
+<div class="border rounded">
+    <div>
+        @* Shouldn't be a component, should stay on this parent component. *@
+        <div style="display: flex; flex-direction: row">
+            @if (_isEditing)
+            {
+                <input type="text" @bind="_event.Title" style="margin-right: 5px"/>
+            }
+            else
+            {
+                <h1 class="font-bold" >@_event.Title</h1>
+            }
 
-            @(_isEditing ? "Gem ændringer" : "✎")
-        </button>
-    }
-    <button style="margin-left: 5px;height: 40px" @onclick="ScrollToBottom">Gå til resultater</button>
+            @if (_isHost)
+            {
+                <button style="margin-left: 5px;height: 40px" @onclick="async () => { if (_isEditing) await UpdateJoinEvent(); _isEditing = !_isEditing; }">
+
+                    @(_isEditing ? "Gem ændringer" : "✎")
+                </button>
+            }
+        </div>
+
+        @* Shouldn't be a component, should stay on this parent component. *@
+        @if (_isEditing)
+        {
+            <textarea style="margin-bottom: 5px;width: 300px" type="text" placeholder="Beskrivelse"  @bind="_event.Description"></textarea>
+        }
+        else
+        {
+            <p class="underline">Beskrivelse</p>
+            <p>@_event.Description</p>
+        }
+
+        @* Shouldn't be a component, should stay on this parent component. *@
+        <p>
+            Deadline for tilmelding:
+            @if (_isEditing)
+            {
+                <input style="margin-bottom: 5px; width: 300px" type="date" placeholder="Deadline" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")" max="@_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("yyyy-MM-dd")" @bind="@_deadline"/>
+            }
+            else
+            {
+                @_deadline.ToString("dd. MMM")
+            }
+        </p>
+
+        <p>Tidsinterval: @_event?.Showtimes?.Min(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM") - @_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM")</p>
+    </div>
 </div>
-
-@* Shouldn't be a component, should stay on this parent component. *@
-@if (_isEditing)
-{
-    <textarea style="margin-bottom: 5px;width: 300px" type="text"   placeholder="Beskrivelse"  @bind="_event.Description"></textarea>
-}
-else
-{
-    <p>@_event.Description</p>
-}
-
-@* Shouldn't be a component, should stay on this parent component. *@
-<p>
-    Deadline for tilmelding:
-    @if (_isEditing)
-    {
-        <input style="margin-bottom: 5px; width: 300px" type="date" placeholder="Deadline" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")" max="@_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("yyyy-MM-dd")" @bind="@_deadline"/>
-    }
-    else
-    {
-        @_deadline.ToString("dd. MMM")
-    }
-</p>
-<p>Tidsinterval: @_event?.Showtimes?.Min(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM") - @_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM")</p>
 
 <ShowtimeSelector SelectOptions="_event.SelectOptions" Showtimes="_event.Showtimes" VotedFor="@(_votedFor.Select(v => (v.ShowtimeId, v.VoteIndex)).ToList())" VotedForChanged="OnVotesChanged"/>
 

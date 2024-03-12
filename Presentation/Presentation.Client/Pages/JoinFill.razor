@@ -73,11 +73,11 @@ else
     
     <ShowtimeSelector SelectOptions="_event.SelectOptions" Showtimes="_event.Showtimes" VotedFor="@(_votedFor.Select(v => (v.ShowtimeId, v.VoteIndex )).ToList())"  VotedForChanged="OnVotesChanged" />
 
-    <RegisterParticipantVote Event="_event" OnAnswerSaved="@StateHasChanged"  @bind-Nickname="@_nickname" AlreadyAnswered="_alreadyAnswered"  VotedFor="_votedFor" LoggedInUserId="@_loggedInUserId" />
+    <RegisterParticipantVote Event="_event" OnAnswerSaved="@(p => { _currentParticipant = p; StateHasChanged(); })"  @bind-Nickname="@_nickname" AlreadyAnswered="_alreadyAnswered"  VotedFor="_votedFor" LoggedInUserId="@_loggedInUserId" />
     
     <br/>
     <br/>
-    <JoinEventResults _event="_event"  _isHost="_isHost"/>
+    <JoinEventResults CurrentParticipant="_currentParticipant" Event="_event"  IsHost="_isHost"/>
 }
 
 @code {
@@ -108,6 +108,8 @@ else
     private string? _loggedInUserId;
     
     private bool _isLoggedIn;
+    
+    private Participant _currentParticipant;
 
     protected override async Task OnInitializedAsync()
     {
@@ -138,6 +140,7 @@ else
             if (_event!.Participants!.Any(p => p.AuthId == _loggedInUserId))
             {
                 _alreadyAnswered = true;
+                _currentParticipant = _event.Participants.First(p => p.AuthId == _loggedInUserId);
             }
         }
         else

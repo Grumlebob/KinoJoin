@@ -1,0 +1,81 @@
+@inject IJSRuntime JsRuntime 
+@inject NavigationManager NavigationManager
+
+<div class="w-full rounded-md border rounded p-3 shadow overflow-auto mb-2">
+    <table class="border-separate border-spacing-2 ">
+        <tr>
+            <th></th>
+
+            @foreach (var showtime in OrderedShowtimes)
+            {
+                <th >
+                    <ResultCard Event="Event" Showtime="showtime" Desktop="true" IsHost="IsHost"></ResultCard>
+                </th>
+            }
+        </tr>
+
+        @foreach (var participant in Event.Participants ?? new List<Participant>())
+        {
+            <tr>
+                <td>
+                    <div class="flex rounded w-50 shadow-md gap-1  p-5">
+                        @if (IsHost && participant.Id != 0)
+                        {
+                            <button onclick="@(async () => { await OnDeleteParticipant.InvokeAsync(participant); })">
+                                <DeleteIcon Class="stroke-error hover:stroke-error-dark"/>
+                            </button>
+                        }
+                        @if (!string.IsNullOrEmpty(participant.Note))
+                        {
+                            
+                            <div class="relative flex items-center">
+                                <NoteIcon Class="stroke-black peer" />
+                                <div class="absolute invisible z-5 bg-light-gray transform -translate-y-20 translate-x-8 shadow-md min-w-40 max-w-80 rounded text-wrap  bg-white border p-3 opacity-0 peer-hover:visible peer-hover:opacity-100">
+                                    <p class="font-bold ">@participant.Nickname's note</p>
+                                    @if (!string.IsNullOrEmpty(participant.Note))
+                                    {
+                                        <p >@participant.Note</p>
+                                    }
+                                </div>
+                            </div>
+
+                        }
+                        <p class="truncate ...">
+                            @participant.Nickname
+                        </p>
+                        
+                    </div>
+
+                </td>
+                @foreach (var showtime in OrderedShowtimes)
+                {
+                    <td >
+                        <div class="h-16 flex items-center justify-center bg-@(Event.SelectOptions[participant.VotedFor.First(v => v.ShowtimeId == showtime.Id).VoteIndex].Color) rounded border border-gray-400 p-5 shadow-md">
+                            @if (participant.VotedFor.First(v => v.ShowtimeId == showtime.Id).VoteIndex != 0)
+                            {
+                                <div class="rounded-full items-center justify-center bg-white w-8 h-8 gap-2">
+                                    <SingleCheckIcon Class="@("stroke-" + Event.SelectOptions[participant.VotedFor.First(v => v.ShowtimeId == showtime.Id).VoteIndex].Color)"/>
+                                </div>
+                            }
+                        </div>
+                    </td>
+                }
+            </tr>
+        }
+    </table>
+</div>
+
+@code {
+
+    [Parameter] public required JoinEvent Event { get; set; }
+
+    [Parameter] public required bool IsHost { get; set; }
+    
+    [Parameter]
+    public required List<Showtime> OrderedShowtimes { get; set; }
+    
+    [Parameter]
+    public required EventCallback<Participant> OnDeleteParticipant { get; set; }
+    
+    
+}

@@ -8,7 +8,6 @@
 {
     <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
         <div class="bg-white mx-4 p-6 rounded-lg shadow-xl mb-40">
-            @* Existing content *@
             <div class="flex justify-center flex-col space-y-2">
                 <h4 class="font-bold">@_event?.Host?.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h4>
                 <div class=" flex md:justify-end md:items-end">
@@ -39,7 +38,6 @@
 
 <div class="border rounded">
     <div>
-        @* Shouldn't be a component, should stay on this parent component. *@
         <div style="display: flex; flex-direction: row">
             @if (_isEditing)
             {
@@ -59,7 +57,6 @@
             }
         </div>
 
-        @* Shouldn't be a component, should stay on this parent component. *@
         @if (_isEditing)
         {
             <textarea style="margin-bottom: 5px;width: 300px" type="text" placeholder="Beskrivelse"  @bind="_event.Description"></textarea>
@@ -70,7 +67,6 @@
             <p>@_event.Description</p>
         }
 
-        @* Shouldn't be a component, should stay on this parent component. *@
         <p>
             Deadline for tilmelding:
             @if (_isEditing)
@@ -95,7 +91,6 @@
 <br/>
 
 <JoinEventResults CurrentParticipant="_currentParticipant" Event="_event" IsHost="_isHost"/>
-}
 
 @code {
     [Parameter] public required string JoinEventId { get; set; }
@@ -125,7 +120,7 @@
     private string? _loggedInUserId;
 
     private bool _isLoggedIn;
-    
+
     private Participant _currentParticipant;
 
     protected override async Task OnInitializedAsync()

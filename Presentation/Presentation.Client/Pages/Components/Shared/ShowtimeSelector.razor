@@ -154,7 +154,7 @@
     public EventCallback<List<(int ShowtimeId, int Vote)>> VotedForChanged { get; set; }
 
     [Parameter]
-    public List<SelectOption> SelectOptions { get; set; } = new List<SelectOption>() { new SelectOption() { VoteOption = "Kan ikke", Color = "bg-gray-200" }, new SelectOption() { VoteOption = "Kan godt", Color = "bg-success" } };
+    public List<SelectOption> SelectOptions { get; set; } = new List<SelectOption>() { new SelectOption() { VoteOption = "Kan ikke", Color = "gray-200" }, new SelectOption() { VoteOption = "Kan godt", Color = "success" } };
 
 
     private string? _trailerUrl;

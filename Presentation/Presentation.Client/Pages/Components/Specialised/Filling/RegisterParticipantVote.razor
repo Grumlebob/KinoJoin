@@ -61,7 +61,7 @@ else if (!_answerSaved)
 
     [Parameter] public string LoggedInUserId { get; set; }
 
-    [Parameter] public EventCallback OnAnswerSaved { get; set; }
+    [Parameter] public EventCallback<Participant> OnAnswerSaved { get; set; }
 
     private string? Email { get; set; }
     private string? Note { get; set; }
@@ -124,7 +124,7 @@ else if (!_answerSaved)
             _infoMessage = "Svar gemt";
             _answerSaved = true;
             p.Id = int.Parse(await response.Content.ReadAsStringAsync());
-            await OnAnswerSaved.InvokeAsync();
+            await OnAnswerSaved.InvokeAsync(p);
 
             StateHasChanged();
         }

@@ -8,25 +8,37 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
         if (isUpdate)
         {
-            var joinEventEntry = await context.JoinEvents.Include(j => j.Participants)
-                .FirstOrDefaultAsync(j => j.Id == joinEvent.Id);
-            if (joinEventEntry == null) return 0; // add
-            await context.SaveChangesAsync();
-            joinEventEntry.Participants.AddRange(joinEvent.Participants.Where(p => p.Id == 0));
+            var id = context.Participants.Max(s => s.Id) + 1;
+            context.ChangeTracker.Clear();
+            await context.Participants.AddRangeAsync(joinEvent.Participants.Where(p => p.Id == 0).Select(p =>
+                new Participant
+                {
+                    Id = id, AuthId = p.AuthId, Nickname = p.Nickname, VotedFor = p.VotedFor, Note = p.Note,
+                    Email = p.Email, JoinEventId = joinEvent.Id
+                }));
             context.ChangeTracker.DetectChanges();
             Console.WriteLine(context.ChangeTracker.DebugView.LongView);
             await context.SaveChangesAsync();
+
+
+            var joinEventEntry = await context.JoinEvents.Include(j => j.Participants)
+                .FirstOrDefaultAsync(j => j.Id == joinEvent.Id);
+            if (joinEventEntry == null) return 0; // add
 
             joinEventEntry.Title = joinEvent.Title;
             joinEventEntry.Description = joinEvent.Description;
             joinEventEntry.ChosenShowtimeId = joinEvent.ChosenShowtimeId;
             joinEventEntry.Deadline = joinEvent.Deadline;
-            
-            
+            context.ChangeTracker.DetectChanges();
+            Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+            await context.SaveChangesAsync();
+
+            //context.Participants.Add(new ParticipantVote{SelectedOptionId = 2, ShowtimeId = 1, ParticipantId = 1});
 
             context.ChangeTracker.DetectChanges();
             Console.WriteLine(context.ChangeTracker.DebugView.LongView);
-            await context.SaveChangesAsync(true);
+            await context.SaveChangesAsync();
+
             return joinEventEntry.Id;
         }
 
@@ -121,16 +133,16 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         context.ChangeTracker.DetectChanges();
         Console.WriteLine(context.ChangeTracker.DebugView.LongView);
 
-        for (var i = 0; i < newlyAddedJoinEvent.SelectOptions.Count; i++)
+        foreach (var option in newlyAddedJoinEvent.SelectOptions)
         {
-            context.Entry(newlyAddedJoinEvent.SelectOptions[i]).State = EntityState.Unchanged;
+            context.Entry(option).State = EntityState.Unchanged;
         }
 
         context.Entry(newlyAddedJoinEvent.Host).State = EntityState.Unchanged;
 
-        for (var i = 0; i < newlyAddedJoinEvent.Showtimes.Count; i++)
+        foreach (var option in newlyAddedJoinEvent.Showtimes)
         {
-            context.Entry(newlyAddedJoinEvent.Showtimes[i]).State = EntityState.Unchanged;
+            context.Entry(option).State = EntityState.Unchanged;
         }
 
         context.ChangeTracker.DetectChanges();

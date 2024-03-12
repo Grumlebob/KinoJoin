@@ -1,8 +1,8 @@
 
 @inject IJSRuntime JsRuntime
 
-<div class="mb-5">
-    <div class="grid gap-4 grid-cols-[0.5fr_1fr] grid-rows-[auto_auto] md:grid-cols-[200px_1fr]">
+<div class="mb-8">
+    <div class="grid gap-4  grid-cols-[0.5fr_1fr] grid-rows-[auto_auto] md:grid-cols-[200px_1fr]">
         <!-- PosterImage -->
         <div class="row-span-2 space-y-2 md:min-w-48 md:sticky md:top-16 md:row-span-3 md:self-start">
                 <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank">
@@ -19,7 +19,8 @@
         <!-- MovieHeader -->
         <div class="col-start-2">
             <div class="flex flex-col space-y-2">
-                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="block text-black no-underline">
+                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="block text-black no-underline divide-y-8">
+                    <div></div>
                     <h2 class="text-2xl font-bold md:text-4xl">@Movie.Title</h2>
                 </a>
                 <div class="block">

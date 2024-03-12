@@ -33,41 +33,13 @@ public class KinoContext : DbContext
         modelBuilder
             .Entity<JoinEvent>()
             .HasMany(je => je.Showtimes)
-            .WithMany(s => s.JoinEvents)
-            .UsingEntity(
-                "JoinEventShowtime",
-                l =>
-                    l.HasOne(typeof(JoinEvent))
-                        .WithMany()
-                        .HasForeignKey("JoinEventsId")
-                        .HasPrincipalKey(nameof(JoinEvent.Id)),
-                r =>
-                    r.HasOne(typeof(Showtime))
-                        .WithMany()
-                        .HasForeignKey("ShowtimesId")
-                        .HasPrincipalKey(nameof(Showtime.Id)),
-                j => j.HasKey("JoinEventsId", "ShowtimesId")
-            );
+            .WithMany();
 
         modelBuilder
             .Entity<JoinEvent>()
             .HasMany(je => je.SelectOptions)
-            .WithMany(so => so.JoinEvents)
-            .UsingEntity(
-                "JoinEventSelectOption",
-                l =>
-                    l.HasOne(typeof(JoinEvent))
-                        .WithMany()
-                        .HasForeignKey("JoinEventsId")
-                        .HasPrincipalKey(nameof(JoinEvent.Id)),
-                r =>
-                    r.HasOne(typeof(SelectOption))
-                        .WithMany()
-                        .HasForeignKey("SelectOptionsId")
-                        .HasPrincipalKey(nameof(SelectOption.Id)),
-                j => j.HasKey("JoinEventsId", "SelectOptionsId")
-            );
-        ;
+            .WithMany()
+            .UsingEntity<JoinEventSelectOption>();
 
         // Many to one relations
         modelBuilder
@@ -88,7 +60,7 @@ public class KinoContext : DbContext
             .WithOne()
             .HasForeignKey(v => v.ShowtimeId);
 
-        //modelBuilder.Entity<ParticipantVote>().Property(pv => pv.VoteIndex);
+        //modelBuilder.Entity<ParticipantVote>().Property(pv => pv.VoteIndex);a
 
         // Call the base method to ensure any configuration from the base class is applied
         base.OnModelCreating(modelBuilder);

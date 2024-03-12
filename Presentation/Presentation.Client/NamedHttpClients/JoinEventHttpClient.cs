@@ -1,5 +1,5 @@
 ﻿using System.Net.Http.Json;
-using Application.DTO;
+using Domain.Entities;
 
 namespace Presentation.Client.NamedHttpClients;
 
@@ -12,13 +12,13 @@ public class JoinEventHttpClient : IJoinEventHttpClient
         _httpClient = httpClient;
     }
 
-    public async Task<HttpResponseMessage> PutJoinEventAsync(UpsertJoinEventDto upsertJoinEventDto)
+    public async Task<HttpResponseMessage> PutJoinEventAsync(JoinEvent joinEvent)
     {
-        return await _httpClient.PutAsJsonAsync("/api/events", upsertJoinEventDto);
+        return await _httpClient.PutAsJsonAsync("/api/events", joinEvent);
     }
 }
 
 public interface IJoinEventHttpClient
 {
-    Task<HttpResponseMessage> PutJoinEventAsync(UpsertJoinEventDto upsertJoinEventDto);
+    Task<HttpResponseMessage> PutJoinEventAsync(JoinEvent joinEvent);
 }

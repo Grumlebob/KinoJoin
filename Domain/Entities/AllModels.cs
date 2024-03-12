@@ -6,10 +6,8 @@ public class Host
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public string AuthId { get; set; }
-
     public string Username { get; set; }
     public string? Email { get; set; }
-    public List<JoinEvent> JoinEvents { get; set; } = [];
 }
 
 public class Participant
@@ -35,8 +33,9 @@ public class JoinEvent
     public List<Showtime> Showtimes { get; set; } = [];
     public int? ChosenShowtimeId { get; set; }
     public List<Participant> Participants { get; set; } = [];
-
     public List<SelectOption> SelectOptions { get; set; } = [];
+    public List<JoinEventSelectOption> JoinEventSelectOptions { get; set; } = [];
+    public SelectOption DefaultSelectOption { get; set; }
 
     private DateTime _deadline;
 
@@ -73,9 +72,6 @@ public class Showtime
     public int VersionTagId { get; set; }
     public int RoomId { get; set; }
 
-    //Many to many to JoinEvent
-    public List<JoinEvent> JoinEvents { get; set; }
-
     //Foreign Keys
     [ForeignKey("VersionTagId")]
     public VersionTag VersionTag { get; set; }
@@ -97,7 +93,7 @@ public class ParticipantVote
 {
     public int ParticipantId { get; set; }
     public int ShowtimeId { get; set; }
-    public int VoteIndex { get; set; }
+    public SelectOption SelectedOption { get; set; }
 }
 
 [Index(nameof(VoteOption), nameof(Color), IsUnique = true)]
@@ -107,9 +103,12 @@ public class SelectOption
     public int Id { get; set; }
     public string VoteOption { get; set; }
     public string Color { get; set; }
+}
 
-    //navigation property
-    public List<JoinEvent> JoinEvents { get; set; }
+public class JoinEventSelectOption
+{
+    public int JoinEventsId { get; set; }
+    public int SelectOptionsId { get; set; }
 }
 
 [Index(nameof(StartTime), IsUnique = true)]

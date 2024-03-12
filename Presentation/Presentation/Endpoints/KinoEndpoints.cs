@@ -1,5 +1,4 @@
-﻿using Application.DTO;
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using Carter;
 using Domain.Entities;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -21,13 +20,13 @@ public class KinoEndpoints : ICarterModule
 
     //Result<> is a union type, that can be all the different responses we can return, so it is easier to test.
     private static async Task<Results<Ok<int>, BadRequest<string>>> UpsertJoinEvent(
-        [FromBody] UpsertJoinEventDto upsertJoinEventDto,
+        [FromBody] JoinEvent joinEvent,
         [FromServices] IJoinEventService joinEventService
     )
     {
         try
         {
-            var result = await joinEventService.UpsertJoinEventAsync(upsertJoinEventDto);
+            var result = await joinEventService.UpsertJoinEventAsync(joinEvent);
             return TypedResults.Ok(result);
         }
         catch (Exception e)

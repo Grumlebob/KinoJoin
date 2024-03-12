@@ -108,7 +108,7 @@ public class DataGenerator
                         {
                             ParticipantId = participant.Id,
                             ShowtimeId = chosenShowtime,
-                            VoteIndex = f.Random.Int(0, joinEvent.Showtimes.Count - 1)
+                            SelectedOption = f.PickRandom(joinEvent.SelectOptions)
                         }
                     );
                     remainingShowtimes.Remove(chosenShowtime);

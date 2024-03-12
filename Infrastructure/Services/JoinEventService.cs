@@ -2,8 +2,59 @@
 
 public class JoinEventService(KinoContext context) : IJoinEventService
 {
-    public async Task<int> UpsertJoinEventAsync(UpsertJoinEventDto joinEventDto)
+    public async Task<int> UpsertJoinEventAsync(JoinEvent joinEvent)
     {
+        var isUpdate = joinEvent.Id != 0;
+
+        if (isUpdate)
+        {
+            var joinEventEntry = await context.JoinEvents.FindAsync(joinEvent.Id);
+            if (joinEventEntry == null) return 0; // add
+
+            joinEventEntry.Title = joinEvent.Title;
+            joinEventEntry.Description = joinEvent.Description;
+            joinEventEntry.ChosenShowtimeId = joinEvent.ChosenShowtimeId;
+            joinEventEntry.Deadline = joinEvent.Deadline;
+
+            await context.Participants.UpsertRange(joinEvent.Participants).RunAsync();
+            joinEventEntry.Participants = context.Participants.Where(p => p.JoinEventId == joinEventEntry.Id).ToList();
+            await context.SaveChangesAsync();
+            return joinEventEntry.Id;
+        }
+
+        //upsert children
+        await context.Hosts.Upsert(joinEvent.Host).RunAsync();
+        await context
+            .SelectOptions.UpsertRange(joinEvent.SelectOptions).On(s => new { s.VoteOption, s.Color }).RunAsync();
+
+        var playTimesToUpsert = joinEvent.Showtimes.Select(st => st.Playtime).DistinctBy(p => p.StartTime);
+        await context.Playtimes.UpsertRange(playTimesToUpsert).On(p => p.StartTime).RunAsync();
+
+        var roomsToUpsert = joinEvent.Showtimes.Select(st => st.Room).DistinctBy(r => r.Id).ToList();
+        await context.Rooms.UpsertRange(roomsToUpsert).RunAsync();
+        
+
+        foreach (var showtime in joinEvent.Showtimes)
+        {
+            //Set navigation properties
+            showtime.MovieId = showtime.Movie.Id;
+            showtime.CinemaId = showtime.Cinema.Id;
+            showtime.RoomId = showtime.Room.Id;
+            showtime.PlaytimeId = (await context.Playtimes.AsNoTracking().FirstAsync(p => p.StartTime == showtime.Playtime.StartTime))
+                .Id; //id's are genrated in database. Get them from there
+        }
+
+        try
+        {
+            return await TryInsertJoinEvent(joinEvent);
+        }
+        catch (Exception)
+        {
+            await UpsertMissingEntities(joinEvent);
+            return await TryInsertJoinEvent(joinEvent);
+        }
+
+
         /*
          * The overall goal is to save the entire workpage of a JoinEvent, regardless of creating or filling
          *
@@ -14,120 +65,56 @@ public class JoinEventService(KinoContext context) : IJoinEventService
          * 2.2 In unlikely scenario it fails, Kino have updated their database with new data, which will be added.
          * It is then reattempted to upsert the joinEvent.
          */
-
-        var joinEvent = UpsertJoinEventDto.FromUpsertDtoToModel(joinEventDto);
-        
-        
-        var existingJoinEvent = await context.JoinEvents.FindAsync(joinEvent.Id);
-        if (existingJoinEvent != null)
-        {
-            joinEvent = existingJoinEvent;
-            context.JoinEvents.Attach(joinEvent);
-        }
-
-        //Stage 1
-        await context.Hosts.Upsert(joinEvent.Host).RunAsync();
-
-        // Avoid creating a new host, when upserting join event, since it would try to insert the host again
-        joinEvent.Host = null!;
-
-        await context
-            .SelectOptions.UpsertRange(joinEvent.SelectOptions)
-            .On(s => new { s.VoteOption, s.Color })
-            .RunAsync();
-
-        var playTimes = joinEvent.Showtimes.Select(st => st.Playtime).DistinctBy(p => p.StartTime);
-        await context.Playtimes.UpsertRange(playTimes).On(p => p.StartTime).RunAsync();
-
-        var newRooms = joinEvent.Showtimes.Select(st => st.Room).DistinctBy(r => r.Id).ToList();
-        await context.Rooms.UpsertRange(newRooms).RunAsync();
-        await context.SaveChangesAsync();
-
-        //Stage 2
-        try
-        {
-            //2.1
-            return await TryUpsertJoinEvent(joinEventDto, joinEvent);
-        }
-        catch (Exception)
-        {
-            //2.2
-            await UpsertMissingEntities(joinEvent);
-
-            return await TryUpsertJoinEvent(joinEventDto, joinEvent);
-        }
     }
 
-    private async Task<int> TryUpsertJoinEvent(UpsertJoinEventDto joinEventDto, JoinEvent joinEvent)
+    private async Task<int> TryInsertJoinEvent(JoinEvent joinEvent)
     {
-        await AssignPlaytimeAndVersionIdFromDatabase(joinEvent.Showtimes);
-
+        //await AssignPlaytimeAndVersionIdFromDatabase(joinEvent.Showtimes);
+        foreach (var showtime in joinEvent.Showtimes)
+        {
+            //this asssumes we have versiontags, if it fails we insert missing entities
+            showtime.VersionTagId = (await context.Versions.AsNoTracking().FirstAsync(v => v.Type == showtime.VersionTag.Type)).Id;
+        }
         await context.Showtimes.UpsertRange(joinEvent.Showtimes).RunAsync();
-        await context.SaveChangesAsync();
 
-        bool isUpdate = joinEventDto.Id != null && joinEventDto.Id != 0;
+        //Use the entities from the database for many to many relationships,
+        //so EF Core doesn't try to add them again, when the join event is added.
 
-        if (isUpdate)
+        //var showtimeIds = joinEvent.Showtimes.Select(s => s.Id).ToList();
+        //joinEvent.Showtimes = context.Showtimes.Where(s => showtimeIds.Contains(s.Id)).ToList();
+        joinEvent.Showtimes = joinEvent.Showtimes.Select(s => new Showtime { Id = s.Id }).ToList();
+        foreach (var option in joinEvent.SelectOptions)
         {
-            //Ensure that entities in many to many relationships that are already in the database are not added again,
-            //when the join event is updated, to avoid duplication issues
-
-            // Participant ids are 0 if they are yet to be added to database
-            joinEvent.Participants.RemoveAll(p => p.Id != 0);
-
-            joinEvent.SelectOptions.RemoveAll(s =>
-                context.SelectOptions.Any(dto =>
-                    dto.VoteOption == s.VoteOption && dto.Color == s.Color
-                )
-            );
-
-            // The list of showtimes cannot change after the joinEvent is created
-            joinEvent.Showtimes = [];
+            option.Id = (await context.SelectOptions.AsNoTracking().FirstAsync(s =>
+                s.VoteOption == option.VoteOption && s.Color == option.Color)).Id;
         }
-        else
-        {
-            //Use the entities from the database for many to many relationships,
-            //so EF Core doesn't try to add them again, when the join event is added.
-            
-            var showtimeIds = joinEventDto.Showtimes.Select(s => s.Id).ToList();
-            joinEvent.Showtimes = context.Showtimes.Where(s => showtimeIds.Contains(s.Id)).ToList();
-            joinEvent.SelectOptions = context
-                .SelectOptions.Where(s =>
-                    context.SelectOptions.Any(o => o.VoteOption == s.VoteOption && o.Color == s.Color)
-                )
-                .ToList();
-           
-        }
-        
-        var newlyUpsertedJoinEvent = isUpdate
-            ? context.JoinEvents.Update(joinEvent)
-            : await context.JoinEvents.AddAsync(joinEvent);
+
+        joinEvent.JoinEventSelectOptions = joinEvent.SelectOptions
+            .Select(s => new JoinEventSelectOption { SelectOptionsId = s.Id }).ToList();
 
         // Debugging:
         context.ChangeTracker.DetectChanges();
         Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+
+        var newlyAddedJoinEvent = await context.JoinEvents.AddAsync(joinEvent);
         
         await context.SaveChangesAsync();
-        return newlyUpsertedJoinEvent.Entity.Id;
+        
+        return newlyAddedJoinEvent.Entity.Id;
     }
 
-    private async Task UpsertMissingEntities(JoinEvent joinEventWithNavProps)
+    private async Task UpsertMissingEntities(JoinEvent joinEvent)
     {
-        var movies = joinEventWithNavProps.Showtimes.Select(st => st.Movie).DistinctBy(m => m.Id);
+        var movies = joinEvent.Showtimes.Select(st => st.Movie).DistinctBy(m => m.Id);
         await context.Movies.UpsertRange(movies).RunAsync();
 
-        var cinemas = joinEventWithNavProps.Showtimes.Select(st => st.Cinema).DistinctBy(c => c.Id);
+        var cinemas = joinEvent.Showtimes.Select(st => st.Cinema).DistinctBy(c => c.Id);
         await context.Cinemas.UpsertRange(cinemas).RunAsync();
 
-        var versions = joinEventWithNavProps
+        var versions = joinEvent
             .Showtimes.Select(st => st.VersionTag)
             .DistinctBy(v => v.Type);
         await context.Versions.UpsertRange(versions).On(v => v.Type).RunAsync();
-
-        await AssignPlaytimeAndVersionIdFromDatabase(joinEventWithNavProps.Showtimes);
-
-        await context.Showtimes.UpsertRange(joinEventWithNavProps.Showtimes).RunAsync();
-        await context.SaveChangesAsync();
     }
 
     private async Task AssignPlaytimeAndVersionIdFromDatabase(List<Showtime> showtimes)
@@ -183,11 +170,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             .Include(j => j.SelectOptions)
             .Include(j => j.Host)
             .FirstOrDefaultAsync(j => j.Id == id);
-
-        //avoid circular reference
-        result?.Showtimes.ForEach(s => s.JoinEvents = []);
-        result?.SelectOptions.ForEach(s => s.JoinEvents = []);
-        result?.Host.JoinEvents.Clear();
         return result;
     }
 
@@ -220,14 +202,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         if (filter != null)
         {
             joinEvents = joinEvents.Where(filter).ToList();
-        }
-
-        //avoid circular reference
-        foreach (var joinEvent in joinEvents)
-        {
-            joinEvent.Showtimes.ForEach(s => s.JoinEvents = []);
-            joinEvent.SelectOptions.ForEach(s => s.JoinEvents = []);
-            joinEvent.Host.JoinEvents.Clear();
         }
 
         return joinEvents;

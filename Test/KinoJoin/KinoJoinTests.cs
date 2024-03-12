@@ -32,8 +32,7 @@ public class KinoJoinTests : IAsyncLifetime
         foreach (var joinEvent in joinEvents)
         {
             //Insert
-            var upsertDto = UpsertJoinEventDto.FromModelToUpsertDto(joinEvent);
-            var createResponse = await _client.PutAsJsonAsync("api/events", upsertDto);
+            var createResponse = await _client.PutAsJsonAsync("api/events", joinEvent);
             createResponse.EnsureSuccessStatusCode();
             
             //get
@@ -57,8 +56,7 @@ public class KinoJoinTests : IAsyncLifetime
         var joinEventToUpdate= joinEventsFromApi[casesToInsert-1];
         joinEventToUpdate.Title = "Updated";
         joinEventToUpdate.Participants.Add(new Participant { AuthId = "New", Email = "New", Nickname = "New", VotedFor = []});
-        var upsertDtoUpdated = UpsertJoinEventDto.FromModelToUpsertDto(joinEventToUpdate);
-        var updateResponse = await _client.PutAsJsonAsync("api/events", upsertDtoUpdated);
+        var updateResponse = await _client.PutAsJsonAsync("api/events", joinEventToUpdate);
         updateResponse.EnsureSuccessStatusCode();
         
         //check update

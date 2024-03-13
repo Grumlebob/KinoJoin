@@ -2,12 +2,10 @@
 @inject NavigationManager NavigationManager
 @inject IJoinEventHttpClient JoinEventHttpClient
 
-@attribute [StreamRendering]
-
 @page "/JoinCreate/{filterString}"
 
 
-@if (_loading)
+@if (_loadingPage)
 {
     <p>Indlæser...</p>
     return;
@@ -151,7 +149,6 @@
 <ShowtimeSelector Showtimes="@_availableShowtimes" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_availableShowtimeVotes" VotesChanged="OnVoteChange" SelectOptions="_createSelectOptions"/>
 
 <button class="w-14 h-14 shadow-primary md:w-auto md:h-auto  md:px-4 md:py-2 fixed bottom-12 right-12 z-50 shadow-md rounded-full bg-primary flex items-center justify-center" @onclick="OpenEventDetailsDialog">
-
     <span class="hidden md:block text-white py-1">
         Opret Event
     </span>
@@ -188,7 +185,7 @@
 
     private bool _hostCanAllShowtimes = true;
 
-    private bool _loading = true;
+    private bool _loadingPage = true;
     private bool _loadingShowtimes = true;
 
     string _baseUrl = "";
@@ -231,7 +228,7 @@
 
         if (_selectedCinemas.Count == 0 && _selectedMovies.Count == 0) //these are set by the ParseFilterString method
         {
-            _loading = false;
+            _loadingPage = false;
             return;
         }
 
@@ -264,7 +261,7 @@
         (_availableShowtimes, _moviesWithoutShowtimes) = await GetShowtimesFromJsonResult(apiResultObject);
 
         _availableShowtimeVotes = _availableShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _createSelectOptions[NoVoteIndex] }).ToList();
-        _loading = false;
+        _loadingPage = false;
     }
 
     /**
@@ -273,8 +270,6 @@
     private string ParseFilterStringToKinoUrl(string filterString)
     {
         var query = "?" + filterString;
-
-        //Convert url to something the kino api can pass
         var queryParams = HttpUtility.ParseQueryString(query);
 
         var movieApiString = new StringBuilder();

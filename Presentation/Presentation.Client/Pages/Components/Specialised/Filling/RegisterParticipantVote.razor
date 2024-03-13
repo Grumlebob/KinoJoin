@@ -82,11 +82,11 @@ else if (!_answerSaved)
                 return;
             }
 
-            /*if (VotedFor.All(v => v.VoteIndex == 0))
+            if (VotedFor.All(v => v.SelectedOptionId == Event.DefaultSelectOptionId))
             {
                 _confirmSubmit = true;
                 return;
-            }*/
+            }
         }
         if (!sameNameConfirmed)
         {

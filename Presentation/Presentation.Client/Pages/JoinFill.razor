@@ -127,7 +127,7 @@
 
     private bool _isLoggedIn;
 
-    private Participant _currentParticipant = new ();
+    private Participant _currentParticipant = new () {VotedFor = []};
 
     protected override async Task OnInitializedAsync()
     {

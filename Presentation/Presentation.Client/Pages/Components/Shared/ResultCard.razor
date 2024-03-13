@@ -38,12 +38,12 @@
     <div class="flex items-center gap-1 w-full">
         @if (!Desktop)
         {
-            @if (HasVoted)
+            if (HasVoted)
             {
                 <div class="flex items-center gap-1 w-full">
-                    @if (ChosenIndex != 0)
+                    @if (Vote != null && Vote.SelectedOptionId != Event.DefaultSelectOptionId)
                     {
-                        <SingleCheckIcon Class="@("stroke-" + Event.SelectOptions[ChosenIndex].Color)"/>
+                        <SingleCheckIcon Class="@("stroke-" + Vote.SelectedOption.Color)"/>
                     }
                 </div>
             }
@@ -51,10 +51,10 @@
         <div class="flex h-fit gap-1 justify-end w-full">
             @if (!Desktop)
             {
-                <button onclick="@ShowVotes" class=" bg-white border-2 border-gray-300 rounded-full flex items-center gap-1 py-1 px-2 hover:bg-gray-300">
+                <button @onclick="ShowVotes" class=" bg-white border-2 border-gray-300 rounded-full flex items-center gap-1 py-1 px-2 hover:bg-gray-300">
                     
                     <p class="whitespace-nowrap">
-                        @*Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.VoteIndex != 0)))*@
+                        Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)))
                     </p>
                 </button>
             }
@@ -69,7 +69,7 @@
 
 </div>
 @if (!Desktop)
-{ /*
+{ 
     <dialog id="@($"votesDialog{Showtime.Id}")" class="bg-slates-300  rounded max-w-md w-full fixed p-4 xs:h-dvh">
 
         
@@ -79,15 +79,15 @@
                     <CrossIcon/>
                 </button>
          </div>
-        @{ var participantsAndVotes = Event.Participants?.Where(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id)).Select(p => (p, (p.VotedFor.First(v => v.ShowtimeId == Showtime.Id).VoteIndex))).ToList(); }
+        @{ var participantsAndVotes = Event.Participants?.Where(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id)).Select(p => (p, p.VotedFor.First(v => v.ShowtimeId == Showtime.Id))).ToList(); }
         @foreach (var (participant, vote) in participantsAndVotes)
         {
             <div class="flex justify-between  gap-2 w-full">
                 <p>@participant.Nickname</p>
-                <SingleCheckIcon Class="@("stroke-" + Event.SelectOptions[vote].Color)"/>
+                <SingleCheckIcon Class="@("stroke-" + vote.SelectedOption.Color)"/>
             </div>
         }
-    </dialog>*/
+    </dialog>
 }
 
 <dialog class="p-5 rounded " id="@("confirmEvent" + Showtime.Id + Desktop)">
@@ -122,7 +122,7 @@
 
     [Parameter] public bool HasVoted { get; set; }
 
-    [Parameter] public int ChosenIndex { get; set; }
+    [Parameter] public ParticipantVote? Vote { get; set; }
 
     [Parameter] public bool Desktop { get; set; }
 

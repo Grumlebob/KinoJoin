@@ -53,8 +53,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         // Update existing participants
         foreach (var existingParticipant in existingParticipants)
         {
-            var updatedParticipant = updatedJoinEvent.Participants
-                .FirstOrDefault(p => p.Id == existingParticipant.Id);
+            var updatedParticipant = updatedJoinEvent.Participants?.FirstOrDefault(p => p.Id == existingParticipant.Id);
 
             if (updatedParticipant != null)
             {
@@ -63,19 +62,22 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         }
 
         // Identify and add new participants
-        var newParticipants = updatedJoinEvent.Participants
-            .Where(p => p.Id == 0)
-            .ToList();
-
-        if (newParticipants.Any())
+        if (updatedJoinEvent.Participants != null)
         {
-            foreach (var newParticipant in newParticipants)
-            {
-                newParticipant.JoinEventId = updatedJoinEvent.Id;
-                await context.Participants.AddAsync(newParticipant);
-            }
+            var newParticipants = updatedJoinEvent.Participants
+                .Where(p => p.Id == 0)
+                .ToList();
 
-            await context.Participants.AddRangeAsync(newParticipants);
+            if (newParticipants.Count != 0)
+            {
+                foreach (var newParticipant in newParticipants)
+                {
+                    newParticipant.JoinEventId = updatedJoinEvent.Id;
+                    await context.Participants.AddAsync(newParticipant);
+                }
+
+                await context.Participants.AddRangeAsync(newParticipants);
+            }
         }
 
         await context.SaveChangesAsync();
@@ -86,25 +88,26 @@ public class JoinEventService(KinoContext context) : IJoinEventService
     private async Task<int> InsertJoinEventAsync(JoinEvent joinEvent)
     {
         context.ChangeTracker.Clear();
-        
+
         //Handle Cinemas, Playtimes, VersionTags, Sal, Movies
         foreach (var st in joinEvent.Showtimes)
         {
-            var cinemaIds = joinEvent.Showtimes.Select(st => st.Cinema.Id).Distinct();
+            var cinemaIds = joinEvent.Showtimes.Select(showtime => showtime.Cinema.Id).Distinct();
             foreach (var cinemaId in cinemaIds)
             {
                 var existingCinema = await context.Cinemas.FindAsync(cinemaId);
                 if (existingCinema == null)
                 {
                     // This should only happen if you're sure you want to add new Cinemas
-                    var cinemaName = joinEvent.Showtimes.FirstOrDefault(st => st.Cinema.Id == cinemaId)?.Cinema
+                    var cinemaName = joinEvent.Showtimes.FirstOrDefault(showtime => showtime.Cinema.Id == cinemaId)
+                        ?.Cinema
                         .Name;
-                    context.Cinemas.Add(new Cinema { Id = cinemaId, Name = cinemaName });
+                    context.Cinemas.Add(new Cinema { Id = cinemaId, Name = cinemaName! });
                 }
                 else
                 {
                     // Attach existing cinemas to each showtime
-                    foreach (var showtime in joinEvent.Showtimes.Where(st => st.Cinema.Id == cinemaId))
+                    foreach (var showtime in joinEvent.Showtimes.Where(showtime => showtime.Cinema.Id == cinemaId))
                     {
                         showtime.Cinema = existingCinema;
                     }
@@ -163,16 +166,17 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                 {
                     var movie = joinEvent.Showtimes.FirstOrDefault(st => st.Movie.Id == movieId)?.Movie;
 
-                    context.Movies.Add(new Movie
-                    {
-                        Id = movieId,
-                        KinoURL = movie.KinoURL,
-                        AgeRating = movie.AgeRating,
-                        Duration = movie.Duration,
-                        ImageUrl = movie.ImageUrl,
-                        Title = movie.Title,
-                        PremiereDate = movie.PremiereDate
-                    }); 
+                    if (movie != null)
+                        context.Movies.Add(new Movie
+                        {
+                            Id = movieId,
+                            KinoURL = movie.KinoURL,
+                            AgeRating = movie.AgeRating,
+                            Duration = movie.Duration,
+                            ImageUrl = movie.ImageUrl,
+                            Title = movie.Title,
+                            PremiereDate = movie.PremiereDate
+                        });
                 }
                 else
                 {
@@ -198,38 +202,41 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         {
             context.Hosts.Add(joinEvent.Host);
         }
+
         await context.SaveChangesAsync();
 
         //Handle showtimes
         var processedShowtimes = await HandleShowtimes(joinEvent.Showtimes);
 
         //Handle SelectOptions
-        var SelectOptionsToAttach = new List<SelectOption>();
-        foreach (var selectOption in joinEvent.SelectOptions)
+        var selectOptionsToAttach = new List<SelectOption>();
+        if (joinEvent.SelectOptions != null)
         {
-            // Find existing based on color and voteOption
-            var existingSelectOption = await context.SelectOptions
-                .FirstOrDefaultAsync(so => so.VoteOption == selectOption.VoteOption && so.Color == selectOption.Color);
-
-            if (existingSelectOption != null)
+            foreach (var selectOption in joinEvent.SelectOptions)
             {
-                // Existing option found, update the ID of the current option
-                selectOption.Id = existingSelectOption.Id;
-                SelectOptionsToAttach.Add(existingSelectOption); // Attach the existing one
-            }
-            else
-            {
-                // No existing option found, add a new one
-                context.SelectOptions.Add(selectOption);
-                SelectOptionsToAttach.Add(selectOption); // Add the new one
-            }
-        }
+                // Find existing based on color and voteOption
+                var existingSelectOption = await context.SelectOptions
+                    .FirstOrDefaultAsync(so =>
+                        so.VoteOption == selectOption.VoteOption && so.Color == selectOption.Color);
 
-        await context.SaveChangesAsync();
+                if (existingSelectOption != null)
+                {
+                    // Existing option found, update the ID of the current option
+                    selectOption.Id = existingSelectOption.Id;
+                    selectOptionsToAttach.Add(existingSelectOption); // Attach the existing one
+                }
+                else
+                {
+                    // No existing option found, add a new one
+                    context.SelectOptions.Add(selectOption);
+                    selectOptionsToAttach.Add(selectOption); // Add the new one
+                }
+            }
 
-        // Handle DefaultSelectOption
-        if (joinEvent.DefaultSelectOption != null)
-        {
+            await context.SaveChangesAsync();
+
+            // Handle DefaultSelectOption
+
             var existingDefaultSelectOption = await context.SelectOptions
                 .FirstOrDefaultAsync(so =>
                     so.VoteOption == joinEvent.DefaultSelectOption.VoteOption &&
@@ -248,76 +255,82 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                 await context.SaveChangesAsync(); // Ensure the DefaultSelectOption gets an ID
                 joinEvent.DefaultSelectOptionId = joinEvent.DefaultSelectOption.Id;
             }
-        }
 
-        // Handle JoinEvent
-        var newJoinEventId = 0;
-        joinEvent.HostId = joinEvent.Host.AuthId;
 
-        var newJoinEvent = new JoinEvent
-        {
-            Showtimes = processedShowtimes,
-            Id = joinEvent.Id,
-            Title = joinEvent.Title,
-            Description = joinEvent.Description,
-            Deadline = joinEvent.Deadline,
-            HostId = joinEvent.Host.AuthId,
-            ChosenShowtimeId = joinEvent.ChosenShowtimeId,
-            DefaultSelectOptionId = joinEvent.DefaultSelectOptionId,
-            SelectOptions = SelectOptionsToAttach,
-            Participants = null,
-        };
+            // Handle JoinEvent
+            joinEvent.HostId = joinEvent.Host.AuthId;
 
-        var addedId = context.JoinEvents.Add(newJoinEvent);
-        await context.SaveChangesAsync();
-        
-        //We need to handle participants, after JoinEvent is added, so we can get the ID
-        //Handle VotedFor - Update ParticipantVote records with the correct SelectedOptionId
-        foreach (var participant in joinEvent.Participants)
-        {
-            foreach (var vote in participant.VotedFor)
+            var newJoinEvent = new JoinEvent
             {
-                var selectOption = await context.SelectOptions
-                    .FirstOrDefaultAsync(so =>
-                        so.VoteOption == vote.SelectedOption.VoteOption && so.Color == vote.SelectedOption.Color);
-
-                if (selectOption != null)
-                {
-                    vote.SelectedOptionId = selectOption.Id; // Update the ID
-                }
-            }
-        }
-
-        //Handle participants
-        foreach (var p in joinEvent.Participants)
-        {
-            var participant = new Participant
-            {
-                Id = p.Id,
-                AuthId = p.AuthId,
-                JoinEventId = addedId.Entity.Id,
-                Nickname = p.Nickname,
-                Email = p.Email,
-                Note = p.Note,
-                VotedFor = p.VotedFor.Select(v =>
-                    new ParticipantVote()
-                    {
-                        ParticipantId = p.Id, ShowtimeId = processedShowtimes.First(s => s.Id == v.ShowtimeId).Id,
-                        SelectedOptionId = v.SelectedOptionId
-                    }).ToList()
+                Showtimes = processedShowtimes,
+                Id = joinEvent.Id,
+                Title = joinEvent.Title,
+                Description = joinEvent.Description,
+                Deadline = joinEvent.Deadline,
+                HostId = joinEvent.Host.AuthId,
+                ChosenShowtimeId = joinEvent.ChosenShowtimeId,
+                DefaultSelectOptionId = joinEvent.DefaultSelectOptionId,
+                SelectOptions = selectOptionsToAttach,
+                Participants = null,
             };
 
-            await context.Participants.AddAsync(participant);
+            var addedId = context.JoinEvents.Add(newJoinEvent);
+            await context.SaveChangesAsync();
+
+            //We need to handle participants, after JoinEvent is added, so we can get the ID
+            //Handle VotedFor - Update ParticipantVote records with the correct SelectedOptionId
+            if (joinEvent.Participants != null)
+            {
+                foreach (var vote in joinEvent.Participants.SelectMany(participant => participant.VotedFor))
+                {
+                    var selectOption = await context.SelectOptions
+                        .FirstOrDefaultAsync(so =>
+                            so.VoteOption == vote.SelectedOption.VoteOption &&
+                            so.Color == vote.SelectedOption.Color);
+
+                    if (selectOption != null)
+                    {
+                        vote.SelectedOptionId = selectOption.Id; // Update the ID
+                    }
+                }
+
+                //Handle participants
+                foreach (var p in joinEvent.Participants)
+                {
+                    var participant = new Participant
+                    {
+                        Id = p.Id,
+                        AuthId = p.AuthId,
+                        JoinEventId = addedId.Entity.Id,
+                        Nickname = p.Nickname,
+                        Email = p.Email,
+                        Note = p.Note,
+                        VotedFor = p.VotedFor.Select(v =>
+                            new ParticipantVote()
+                            {
+                                ParticipantId = p.Id,
+                                ShowtimeId = processedShowtimes.First(s => s.Id == v.ShowtimeId).Id,
+                                SelectedOptionId = v.SelectedOptionId
+                            }).ToList()
+                    };
+
+                    await context.Participants.AddAsync(participant);
+                }
+            }
+
+            await context.SaveChangesAsync();
+
+            return addedId.Entity.Id;
         }
-
-        await context.SaveChangesAsync();
-
-        return addedId.Entity.Id;
+        else
+        {
+            throw new Exception("No SelectOptions found");
+        }
     }
-    
+
     private async Task<List<Showtime>> HandleShowtimes(IEnumerable<Showtime> showtimes)
     {
-        var ShowtimesToAttach = new List<Showtime>();
+        var showtimesToAttach = new List<Showtime>();
 
         foreach (var showtime in showtimes)
         {
@@ -331,13 +344,13 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                                        VersionTagId = showtime.VersionTag.Id,
                                        RoomId = showtime.Room.Id
                                    }).Entity;
-            ShowtimesToAttach.Add(existingShowtime);
+            showtimesToAttach.Add(existingShowtime);
         }
 
         await context.SaveChangesAsync();
-        return ShowtimesToAttach;
+        return showtimesToAttach;
     }
- 
+
 
     private async Task UpsertMissingEntities(JoinEvent joinEvent)
     {
@@ -367,7 +380,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             .ThenInclude(s => s.VersionTag)
             .Include(j => j.Showtimes)
             .ThenInclude(s => s.Room)
-            .Include(j => j.Participants)
+            .Include(j => j.Participants)!
             .ThenInclude(p => p.VotedFor).ThenInclude(pv => pv.SelectedOption)
             .Include(j => j.SelectOptions)
             .Include(j => j.DefaultSelectOption)
@@ -396,7 +409,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             .ThenInclude(s => s.VersionTag)
             .Include(j => j.Showtimes)
             .ThenInclude(s => s.Room)
-            .Include(j => j.Participants)
+            .Include(j => j.Participants)!
             .ThenInclude(p => p.VotedFor).ThenInclude(pv => pv.SelectedOption)
             .Include(j => j.SelectOptions)
             .Include(j => j.DefaultSelectOption)

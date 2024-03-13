@@ -441,9 +441,10 @@
         {
             filterString.Append($"&movies[{index++}]={movieId}");
         }
+
         _loadingShowtimes = false;
         if (filterString.Length == 0) return (showtimes, []); //all movies had showtimes
-        
+
         var apiString = "https://api.kino.dk/ticketflow/showtimes?sort=most_purchased" +
                         filterString + "&region=content&format=json";
         var httpClient = new HttpClient();
@@ -451,7 +452,7 @@
         var root = JsonConvert.DeserializeObject<Root>(json);
         _loadingShowtimes = false;
         if (root == null) return (showtimes, []);
-        
+
         List<Movie> missingMovies = [];
         foreach (var movie in root.Content.Content.Content.SelectMany(cinema => cinema.Movies
                      .Where(movie => missingMovies.All(m => m.Id != movie.Id))))
@@ -516,7 +517,7 @@
         (_availableShowtimes, _moviesWithoutShowtimes) = await GetShowtimesFromJsonResult(apiResultObject);
         _availableShowtimeVotes = _availableShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _createSelectOptions[NoVoteIndex] }).ToList();
     }
-    
+
     private async Task OpenEventDetailsDialog()
     {
         if (_joinEvent.Showtimes.Count < 1)

@@ -32,19 +32,20 @@
     return;
 }
 
-<div class="mb-3 w-fit rounded border p-2 shadow">
-    <p class="font-semibold">Klik på spilletider for at vælge:</p>
-    @{ var counter = 0; }
-    <div class="mb-2 w-fit">
-        @foreach (var option in SelectOptions)
-        {
-            <div class="rounded bg-@option.Color ">
-                <p>@(counter++): @option.VoteOption</p>
-            </div>
-        }
-    </div>
+<div class="mb-3 w-fit space-y-1 ">
+    <p class="font-semibold pl-2">Tryk på de tider du kan</p>
+        <div class="mb-2 divide-x-2 flex w-fit">
+            @foreach (var option in SelectOptions)
+            {
+                <div class="px-2 ">
+                    <div class="rounded px-1 shadow-sm  bg-@option.Color ">
+                        <p>@option.VoteOption</p>
+                    </div>
+                    </div>
+            }
+        </div>
 </div>
-
+<div class="space-y-5 ">
 @foreach (var showtimesByMovie in Showtimes.GroupBy(s => s.Movie.Id))
 {
     var movie = showtimesByMovie.First().Movie;
@@ -54,14 +55,16 @@
             var cinema = showtimesByCinema.First().Cinema;
             <div class="mb-2">
                 <!-- CinemaLocation -->
-                <h3 id="@cinema.Id" class="text-2xl font-bold mb-2.5">@cinema.Name</h3>
+                <h3 id="@cinema.Id" class="text-xl font-bold mb-2.5">@cinema.Name</h3>
             </div>
             @foreach (var showtimesByVersionTag in showtimesByCinema.GroupBy(s => s.VersionTag.Id))
             {
                 var versionTag = showtimesByVersionTag.First().VersionTag;
                 <div class="mb-4 max-w-screen-md">
                     <!-- Version -->
-                    <p class="rounded border bg-gray-200 shadow-sm font-label">@versionTag.Type</p>
+                    <div class="w-fit">
+                        <p class="bg-gray-200 px-2 py-1 font-label">@versionTag.Type</p>
+                        </div>
                     <!-- Showtimes -->
                     <div class="overflow-x-auto">
                         <table class="border-collapse">
@@ -115,6 +118,7 @@
         }
     </ShowtimeSelectorHeading>
 }
+</div>
 
 @if (Showtimes.Count > 0)
 {
@@ -149,6 +153,7 @@
 
     [Parameter] public EventCallback<List<(int ShowtimeId, int Vote)>> VotedForChanged { get; set; }
 
+    //Disse selectoptions er sat til create siden....
     [Parameter] public List<SelectOption> SelectOptions { get; set; } = new List<SelectOption>() { new SelectOption() { VoteOption = "Kan ikke", Color = "gray-200" }, new SelectOption() { VoteOption = "Kan godt", Color = "success" } };
 
 

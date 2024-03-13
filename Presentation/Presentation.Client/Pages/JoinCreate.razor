@@ -8,157 +8,156 @@
 @if (_loading)
 {
     <p>Indlæser...</p>
+    return;
 }
 
-else if (_cinemaIdsToNames.Count > 0 || _movieIdsToNames.Count > 0)
-{
-    <h1 class="mb-6 text-2xl font-bold leading-tight text-gray-800 md:text-2xl lg:text-3xl text-center">
-        Velkommen til KinoJoin - Planlæg dit biograf event her
-    </h1>
-
-    <button style="margin-bottom: 5px;width: 200px;height: 50px;bottom: 3rem; right: 3rem; position: fixed; z-index: 1" @onclick="OpenEventDetailsDialog">Opret Event</button>
-
-    <dialog id="hostEventModal" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
-        <form>
-            <!-- Text Input for Title -->
-            <p class="text-lg font-semibold text-blue-600 mb-0.5">Event Titel</p>
-            <input class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-4 focus:ring-blue-500 md:w-96"
-                   type="text" placeholder="Titel"
-                   @bind="_joinEvent.Title"/>
-
-            <!-- Textarea for Description -->
-            <p class="text-lg font-semibold text-blue-600 mb-0.5">Event Beskrivelse</p>
-            <textarea class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-4 focus:ring-blue-500 md:w-96"
-                  placeholder="Beskrivelse (valgfrit)" 
-                  @bind="@_joinEvent.Description"></textarea>
-
-            <!-- Paragraph for Deadline -->
-            <p class="text-lg font-semibold text-blue-600 mb-0.5">Deadline</p>
-            <input class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-4 focus:ring-blue-500 md:w-96"
-                   type="date" placeholder="Deadline" value="@_joinEvent.Deadline.ToLocalTime()" @oninput="@(v => { if (DateTime.TryParse(v.Value?.ToString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsedDate)) _joinEvent.Deadline = parsedDate; })"/>
-            <div class="flex justify-end space-x-3">
-                <button type="button" @onclick="CloseEventDetailsDialog" class="rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400">Annuller</button>
-                <button type="submit" @onclick="ValidateAndOpenConfirmationDialog" class="rounded-md bg-green-500 px-4 py-2 text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">Opret</button>
-            </div>
-        </form>
-    </dialog>
-    
-    <dialog id="eventDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl min-w-96">
-
-        @if (!_eventCreated)
-        {
-            @* Dialog to confirm the user is done creating the event *@
-            <p class="text-lg font-semibold text-blue-600 mb-0.5">Bekræft oprettelse</p>
-            <div class="mb-4 flex items-center">
-                <input id="CanAllShowtimes" type="checkbox" @bind="_hostCanAllShowtimes" class="mr-2"/>
-                <label for="CanAllShowtimes" class="text-md">
-                    @(_hostCanAllShowtimes ? "Jeg kan alle valgte tider" : "Jeg ønsker selv at angive tider hvor jeg kan")
-                </label>
-            </div>
-            <div class="flex justify-end space-x-3">
-                <button @onclick="CloseDialog" class="rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400">Rediger videre</button>
-                <button @onclick="FinishJoinEvent" class="rounded-md bg-green-500 px-4 py-2 text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">Opret</button>
-            </div>
-        }
-        else
-        {
-            @* Dialog which shows the share link *@
-            <div class="space-y-1">
-                <p class="text-lg font-semibold text-blue-600 mb-0.5">Dit event er nu oprettet</p>
-                <p class="font-semibold">Send dette link til dine venner</p>
-                <div class="flex items-center gap-4">
-                    <a href="@(_baseUrl + "filling/" + _joinEventId)" class="text-lg text-blue-600 hover:text-blue-700">
-                        @(_baseUrl + "filling/" + _joinEventId)
-                    </a>
-                    <button @onclick="ShareEvent" class="rounded-full bg-blue-400 p-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 30 30">
-                            <path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"></path>
-                        </svg>
-                    </button>
-                </div>
-                @if (!_hostCanAllShowtimes)
-                {
-                    <p>Angiv hvilke tider du selv kan ved at gå ind på linket</p>
-                }
-            </div>
-        }
-    </dialog>
-    
-    @if (_showSnackbar)
-    {
-        <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-red-600 text-white p-2.5 rounded-md">
-            @_snackbarMessage
-        </div>
-    }
-
-    <div class="flex items-center justify-center">
-        <button @onclick="ToggleFilters" class="mb-4 rounded-lg lg:hidden bg-gray-700 px-6 py-2 font-semibold text-white shadow-md transition duration-200 ease-in hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-opacity-50">
-            @(_showAllFilters ? "Skjul filtrer" : "Vis alle filtrer")
-        </button>
-    </div>
-
-    <div id="ShowAllFilters" class="@(_showAllFilters ? "" : "hidden lg:block")">
-        <div class="flex flex-col lg:space-x-4 lg:flex-row">
-            <div class="mt-4 lg:mt-0 lg:w-1/3">
-                <SearchableCheckboxList IconPath="/Icons/CinemaFilterIcon.svg" FilterTitle="Vælg biograffer" SelectedItems="_selectedCinemas" IdsToLabels="@_cinemaIdsToNames"/>
-            </div>
-            <div class="lg:w-1/3">
-                <SearchableCheckboxList IconPath="Icons/MovieFilterIcon.svg" FilterTitle="Vælg film" SelectedItems="_selectedMovies" IdsToLabels="@_movieIdsToNames"/>
-            </div>
-            <div class="mt-4 lg:mt-0 lg:w-1/3">
-                <SearchableCheckboxList IconPath="Icons/GenreFilterIcon.svg" FilterTitle="Vælg genrer" SelectedItems="_selectedGenres" IdsToLabels="@_genreIdsToNames"/>
-            </div>
-        </div>
-
-        <div class="flex flex-col space-y-4 mt-4 lg:mt-0 lg:w-1/3">
-            <div class="flex flex-wrap justify-start w-full">
-                <div class="w-1/2 p-3">
-                    <div class="rounded bg-gray-100 shadow">
-                        <label for="start-date" class="block rounded-t bg-gray-700 text-center text-sm font-medium text-white">Start dato</label>
-                        <input id="start-date" type="date" @bind="_startDate" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"/>
-                    </div>
-                </div>
-                <div class="w-1/2 p-3">
-                    <div class="rounded bg-gray-100 shadow ">
-                        <label for="end-date" class="block rounded-t bg-gray-700 text-center text-sm font-medium text-white">Slut dato</label>
-                        <input id="end-date" type="date" @bind="_endDate" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"/>
-                    </div>
-                </div>
-            </div>
-            <button @onclick="UpdateShowtimeFilters" class="rounded-md border border-transparent bg-gray-700 px-6 py-2 text-base font-medium text-white shadow-sm max-w-40 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                Opdater filtrer
-            </button>
-        </div>
-    </div>
-
-    if (_availableShowtimes.Count == 0)
-    {
-        if ((_selectedCinemas.Count > 0 || _selectedMovies.Count > 0) && !_noFilters)
-        {
-            <p>Der er ingen forestillinger for de valgte filtre</p>
-        }
-        else
-        {
-            <p>Du skal vælge mindst en film eller biograf til filteret</p>
-        }
-    }
-    <ShowtimeSelector Showtimes="@_availableShowtimes" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_hostVotes" VotesChanged="OnVoteChange" SelectOptions="_createSelectOptions"/>
-    
-    <button class="w-14 h-14 shadow-primary md:w-auto md:h-auto  md:px-4 md:py-2 fixed bottom-12 right-12 z-50 shadow-md rounded-full bg-primary flex items-center justify-center" @onclick="OpenEventDetailsDialog">
-
-        <span class="hidden md:block text-white py-1">
-            Opret Event
-        </span>
-        <span class=" translate-x-0.5 -translate-y-0.5 md:hidden ">
-            <img src="../Icons/CreateIcon.svg" alt="Opret event" class="w-8 h-8 "/>
-        </span>
-    </button>
-}
-else
+@if (_cinemaIdsToNames.Count == 0 && _movieIdsToNames.Count == 0)
 {
     <p>Du skal vælge mindst en film eller biograf som filter</p>
     <button onclick="@(async () => { await JsRuntime.InvokeVoidAsync("history.back"); })">Gå Tilbage</button>
+    return;
 }
+
+
+<h1 class="mb-6 text-2xl font-bold leading-tight text-gray-800 md:text-2xl lg:text-3xl text-center">
+    Velkommen til KinoJoin - Planlæg dit biograf event her
+</h1>
+
+<button style="margin-bottom: 5px;width: 200px;height: 50px;bottom: 3rem; right: 3rem; position: fixed; z-index: 1" @onclick="OpenEventDetailsDialog">Opret Event</button>
+
+
+@* Dialog where user enters title and other event details *@
+<dialog id="eventDetailsDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
+    <form @onsubmit="ValidateAndOpenConfirmationDialog">
+        <p class="text-lg font-semibold text-blue-600 mb-0.5">Event Titel</p>
+        <input class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-4 focus:ring-blue-500 md:w-96"
+               type="text" placeholder="Titel"
+               @bind="_joinEvent.Title"/>
+        
+        <p class="text-lg font-semibold text-blue-600 mb-0.5">Event Beskrivelse</p>
+        <textarea class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-4 focus:ring-blue-500 md:w-96"
+                  placeholder="Beskrivelse (valgfrit)" 
+                  @bind="@_joinEvent.Description"></textarea>
+        
+        <p class="text-lg font-semibold text-blue-600 mb-0.5">Deadline</p>
+        <input class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-transparent focus:outline-none focus:ring-4 focus:ring-blue-500 md:w-96"
+               type="date" placeholder="Deadline" value="@_joinEvent.Deadline.ToLocalTime().ToString("yyyy-MM-dd")" @oninput="@(v => { if (DateTime.TryParse(v.Value?.ToString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsedDate)) _joinEvent.Deadline = parsedDate; })"/>
+        <div class="flex justify-end space-x-3">
+            <button type="button" @onclick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog"))" class="rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400">Annuller</button>
+            <button type="submit" class="rounded-md bg-green-500 px-4 py-2 text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">Opret</button>
+        </div>
+    </form>
+</dialog>
+
+@* Dialog to confirm the user is done creating the event *@
+<dialog id="eventConfirmDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl min-w-96">
+    <p class="text-lg font-semibold text-blue-600 mb-0.5">Bekræft oprettelse</p>
+    <div class="mb-4 flex items-center">
+        <input id="CanAllShowtimes" type="checkbox" @bind="_hostCanAllShowtimes" class="mr-2"/>
+        <label for="CanAllShowtimes" class="text-md">
+            @(_hostCanAllShowtimes ? "Jeg kan alle valgte tider" : "Jeg ønsker selv at angive tider hvor jeg kan")
+        </label>
+    </div>
+    <div class="flex justify-end space-x-3">
+        <button @onclick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog"))" class="rounded-md bg-red-500 px-4 py-2 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400">Rediger videre</button>
+        <button @onclick="FinishJoinEvent" class="rounded-md bg-green-500 px-4 py-2 text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400">Opret</button>
+    </div>
+</dialog>
+
+@* Dialog which shows the share link *@
+<dialog id="eventShareDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl min-w-96">
+    <div class="space-y-1">
+        <p class="text-lg font-semibold text-blue-600 mb-0.5">Dit event er nu oprettet</p>
+        <p class="font-semibold">Send dette link til dine venner</p>
+        <div class="flex items-center gap-4">
+            <a href="@(_baseUrl + "filling/" + _joinEvent.Id)" class="text-lg text-blue-600 hover:text-blue-700">
+                @(_baseUrl + "filling/" + _joinEvent.Id)
+            </a>
+            <button @onclick="ShareEvent" class="rounded-full bg-blue-400 p-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 30 30">
+                    <path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"></path>
+                </svg>
+            </button>
+        </div>
+        @if (!_hostCanAllShowtimes)
+        {
+            <p>Angiv hvilke tider du selv kan ved at gå ind på linket</p>
+        }
+    </div>
+</dialog>
+
+
+<div class="flex items-center justify-center">
+    <button @onclick="ToggleFilters" class="mb-4 rounded-lg lg:hidden bg-gray-700 px-6 py-2 font-semibold text-white shadow-md transition duration-200 ease-in hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-opacity-50">
+        @(_showAllFilters ? "Skjul filtrer" : "Vis alle filtrer")
+    </button>
+</div>
+
+<div id="ShowAllFilters" class="@(_showAllFilters ? "" : "hidden lg:block")">
+    <div class="flex flex-col lg:space-x-4 lg:flex-row">
+        <div class="mt-4 lg:mt-0 lg:w-1/3">
+            <SearchableCheckboxList IconPath="/Icons/CinemaFilterIcon.svg" FilterTitle="Vælg biograffer" SelectedItems="_selectedCinemas" IdsToLabels="@_cinemaIdsToNames"/>
+        </div>
+        <div class="lg:w-1/3">
+            <SearchableCheckboxList IconPath="Icons/MovieFilterIcon.svg" FilterTitle="Vælg film" SelectedItems="_selectedMovies" IdsToLabels="@_movieIdsToNames"/>
+        </div>
+        <div class="mt-4 lg:mt-0 lg:w-1/3">
+            <SearchableCheckboxList IconPath="Icons/GenreFilterIcon.svg" FilterTitle="Vælg genrer" SelectedItems="_selectedGenres" IdsToLabels="@_genreIdsToNames"/>
+        </div>
+    </div>
+
+    <div class="flex flex-col space-y-4 mt-4 lg:mt-0 lg:w-1/3">
+        <div class="flex flex-wrap justify-start w-full">
+            <div class="w-1/2 p-3">
+                <div class="rounded bg-gray-100 shadow">
+                    <label for="start-date" class="block rounded-t bg-gray-700 text-center text-sm font-medium text-white">Start dato</label>
+                    <input id="start-date" type="date" @bind="_startDate" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"/>
+                </div>
+            </div>
+            <div class="w-1/2 p-3">
+                <div class="rounded bg-gray-100 shadow ">
+                    <label for="end-date" class="block rounded-t bg-gray-700 text-center text-sm font-medium text-white">Slut dato</label>
+                    <input id="end-date" type="date" @bind="_endDate" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"/>
+                </div>
+            </div>
+        </div>
+        <button @onclick="UpdateShowtimeFilters" class="rounded-md border border-transparent bg-gray-700 px-6 py-2 text-base font-medium text-white shadow-sm max-w-40 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            Opdater filtrer
+        </button>
+    </div>
+</div>
+
+@if (_availableShowtimes.Count == 0)
+{
+    if ((_selectedCinemas.Count > 0 || _selectedMovies.Count > 0) && !_noFilters)
+    {
+        <p>Der er ingen forestillinger for de valgte filtre</p>
+    }
+    else
+    {
+        <p>Du skal vælge mindst en film eller biograf til filteret</p>
+    }
+}
+
+<ShowtimeSelector Showtimes="@_availableShowtimes" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_hostVotes" VotesChanged="OnVoteChange" SelectOptions="_createSelectOptions"/>
+
+<button class="w-14 h-14 shadow-primary md:w-auto md:h-auto  md:px-4 md:py-2 fixed bottom-12 right-12 z-50 shadow-md rounded-full bg-primary flex items-center justify-center" @onclick="OpenEventDetailsDialog">
+
+    <span class="hidden md:block text-white py-1">
+        Opret Event
+    </span>
+    <span class=" translate-x-0.5 -translate-y-0.5 md:hidden ">
+        <img src="../Icons/CreateIcon.svg" alt="Opret event" class="w-8 h-8 "/>
+    </span>
+</button>
+
+@if (_showSnackbar)
+{
+    <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-red-600 text-white p-2.5 rounded-md">
+        @_snackbarMessage
+    </div>
+}
+
 
 @code {
     [Parameter] public string FilterString { get; set; } = "";
@@ -173,10 +172,6 @@ else
         ],
         Deadline = DateTime.Today.AddDays(30)
     };
-
-    private bool _eventCreated;
-
-    private int _joinEventId;
 
     private string _snackbarMessage = string.Empty;
 
@@ -219,7 +214,7 @@ else
     }
 
     //filters end
-    
+
     private async Task OpenEventDetailsDialog()
     {
         if (_joinEvent.Showtimes.Count < 1)
@@ -230,7 +225,7 @@ else
         }
         else
         {
-            await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "hostEventModal");
+            await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventDetailsDialog");
         }
     }
 
@@ -241,7 +236,7 @@ else
         {
             title = _joinEvent.Title,
             text = _joinEvent.Description,
-            url = _baseUrl + "filling/" + _joinEventId
+            url = _baseUrl + "filling/" + _joinEvent.Id
         };
 
         await JsRuntime.InvokeVoidAsync("navigator.share", data);
@@ -284,7 +279,7 @@ else
             missingMovies.Add(movieObject);
         }
 
-        return missingMovies.ToList();
+        return missingMovies;
     }
 
     private void UpdateShowtimeFilters()
@@ -412,9 +407,16 @@ else
             _genreIdsToNames.Add(genreOption.Key, genreOption.Value);
         }
 
+        await GetShowtimesFromJsonResult(apiResultObject);
+
+        _hostVotes = _availableShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _createSelectOptions[0] }).ToList();
+        _loading = false;
+    }
+
+    private async Task GetShowtimesFromJsonResult(Root apiResultObject)
+    {
         var existingMovies = new Dictionary<int, Movie>(); //several cinemas may pose the same movie. No need to create the movie object every time
 
-        //get show times from json result 
         foreach (var jsonCinema in apiResultObject.Content.Content.Content)
         {
             var cinemaObject = new Cinema
@@ -508,9 +510,7 @@ else
             }
         }
 
-        _hostVotes = _availableShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _createSelectOptions[0] }).ToList();
         _moviesWithoutShowtimes = await GetMoviesWithoutShowtimes();
-        _loading = false;
     }
 
 
@@ -536,21 +536,8 @@ else
         }
         else
         {
-            await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventDialog");
+            await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventConfirmDialog");
         }
-    }
-
-
-    private async Task CloseDialog()
-    {
-        // Hide the dialog using JavaScript interop
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDialog");
-    }
-
-    private async Task CloseEventDetailsDialog()
-    {
-        // Hide the dialog using JavaScript interop
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "hostEventModal");
     }
 
     private async Task FinishJoinEvent()
@@ -584,18 +571,19 @@ else
             {
                 AuthId = host.AuthId,
                 Nickname = host.Username, Email = host.Email, Note = null,
-                VotedFor = _joinEvent.Showtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _joinEvent.SelectOptions[1]}).ToList(),
-                JoinEventId = _joinEventId
+                VotedFor = _hostVotes,
+                JoinEventId = _joinEvent.Id
             });
         }
-        
+
         var response = await JoinEventHttpClient.PutJoinEventAsync(_joinEvent);
         var id = await response.Content.ReadAsStringAsync();
 
-
-        _joinEventId = int.Parse(id);
-
-        _eventCreated = true;
+        _joinEvent.Id = int.Parse(id);
+        
+        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog");
+        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog");
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventShareDialog");
     }
 
     private void OnVoteChange(List<ParticipantVote> votes)

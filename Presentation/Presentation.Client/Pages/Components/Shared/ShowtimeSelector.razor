@@ -49,7 +49,7 @@
     @foreach (var showtimesByMovie in Showtimes.GroupBy(s => s.Movie.Id))
     {
         var movie = showtimesByMovie.First().Movie;
-        <ShowtimeSelectorHeading Movie="movie">
+        <ShowtimeSelectorHeading Movie="@movie">
             @foreach (var showtimesByCinema in showtimesByMovie.GroupBy(s => s.Cinema.Id))
             {
                 var cinema = showtimesByCinema.First().Cinema;
@@ -87,8 +87,7 @@
                                     <!-- Create table data for each showtime within the grouped date -->
                                     @for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
                                     {
-                                        //Check if it exists if not, else
-                                        @if (Showtimes.Any(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
+                                        if (Showtimes.Any(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
                                         {
                                             <td class="p-2 align-top">
                                                 @foreach (var showtime in Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
@@ -151,48 +150,22 @@
 
     [Parameter] public List<ParticipantVote> Votes { get; set; } = [];
 
-    [Parameter] public EventCallback<List<ParticipantVote>> VotedForChanged { get; set; }
+    [Parameter] public EventCallback<List<ParticipantVote>> VotesChanged { get; set; }
 
     //Default options for create page
-    [Parameter] public List<SelectOption> SelectOptions { get; set; } = [new SelectOption { VoteOption = "Kan ikke", Color = "gray-200" }, new SelectOption { VoteOption = "Kan godt", Color = "success" }];
+    [Parameter] public required List<SelectOption> SelectOptions { get; set; }
 
 
     private string? _trailerUrl;
 
-    protected override void OnInitialized()
-    {
-        foreach (var vote in Votes)
-        {
-            vote.SelectedOption = SelectOptions[0];
-        }
-    }
-
-    private async Task ShowMovieTrailer(Movie movie)
-    {
-        var client = new HttpClient();
-        var apiString = $"https://api.kino.dk{movie.KinoURL}?region=content&format=json";
-        var json = await client.GetStringAsync(apiString);
-
-        MovieRoot? movieRoot = JsonConvert.DeserializeObject<MovieRoot>(json);
-        if (movieRoot?.Content?.field_trailer?.FieldMediaOembedVideo?.trailerUrl == null) //no video found
-        {
-            await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
-            return;
-        }
-
-        var uri = new Uri(movieRoot.Content.field_trailer.FieldMediaOembedVideo.trailerUrl);
-        var videoId = uri.Segments.Last() == "watch" ? HttpUtility.ParseQueryString(uri.Query)["v"] : uri.Segments.Last();
-
-        if (videoId == null) await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
-        else _trailerUrl = $"https://www.youtube.com/embed/{videoId}";
-    }
-
     private async Task HandleShowtimeClick(ParticipantVote voteToIncrement)
     {
         //find index of select option in order to increment it
-        var next = (SelectOptions.FindIndex(s => s.Id == voteToIncrement.SelectedOptionId) + 1) % SelectOptions.Count;
+        var next = (SelectOptions.FindIndex(s => s.VoteOption == voteToIncrement.SelectedOption.VoteOption) + 1) % SelectOptions.Count;
+        Console.WriteLine("next " + next);
         voteToIncrement.SelectedOption = SelectOptions[next];
-        await VotedForChanged.InvokeAsync(Votes);
+        
+        await VotesChanged.InvokeAsync(Votes);
     }
 
 }

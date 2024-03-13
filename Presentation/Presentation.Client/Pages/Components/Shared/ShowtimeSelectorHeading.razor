@@ -86,7 +86,7 @@
         var apiString = $"https://api.kino.dk{movie.KinoURL}?region=content&format=json";
         var json = await client.GetStringAsync(apiString);
 
-        MovieRoot? movieRoot = JsonConvert.DeserializeObject<MovieRoot>(json);
+        var movieRoot = JsonConvert.DeserializeObject<MovieRoot>(json);
         if (movieRoot?.Content?.field_trailer?.FieldMediaOembedVideo?.trailerUrl == null) //no video found
         {
             await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube

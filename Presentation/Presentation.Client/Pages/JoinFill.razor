@@ -89,7 +89,7 @@
     </div>
 </div>
 
-<ShowtimeSelector SelectOptions="@_event.SelectOptions" Showtimes="@_event.Showtimes" Votes="@_votes" VotedForChanged="OnVotesChanged"/>
+<ShowtimeSelector SelectOptions="@_event.SelectOptions" Showtimes="@_event.Showtimes" Votes="@_votes" VotesChanged="OnVotesChanged"/>
 
 <RegisterParticipantVote Event="_event" OnAnswerSaved="@(p => { _currentParticipant = p; StateHasChanged(); })" @bind-Nickname="@_nickname" AlreadyAnswered="_alreadyAnswered" VotedFor="_votes" LoggedInUserId="@_loggedInUserId"/>
 

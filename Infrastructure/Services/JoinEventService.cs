@@ -334,6 +334,8 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
         var addedId = context.JoinEvents.Add(newJoinEvent);
         await context.SaveChangesAsync();
+        
+        //We need to handle participants, after JoinEvent is added, so we can get the ID
 
         //Handle VotedFor
         //Update ParticipantVote records with the correct SelectedOptionId

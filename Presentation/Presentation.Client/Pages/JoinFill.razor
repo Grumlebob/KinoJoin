@@ -144,7 +144,7 @@
             _votes = _event.Showtimes.Select(st =>
                 new ParticipantVote
                 {
-                    ShowtimeId = st.Id, SelectedOptionId = _event.DefaultSelectOptionId ?? 0 , SelectedOption = _event.DefaultSelectOption
+                    ShowtimeId = st.Id, SelectedOptionId = _event.DefaultSelectOptionId , SelectedOption = _event.DefaultSelectOption
                 }).ToList(); // a default vote for each showtime
         }
 

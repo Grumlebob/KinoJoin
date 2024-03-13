@@ -20,11 +20,9 @@ public class DataGenerator
     public DataGenerator()
     {
         _playtimeGenerator = new Faker<Playtime>()
-            //.RuleFor(p => p.Id, (f, p) => f.IndexFaker + 1)
             .RuleFor(p => p.StartTime, f => f.Date.Future().ToUniversalTime());
 
         _versionTagGenerator = new Faker<VersionTag>()
-            //.RuleFor(v => v.Id, (f, v) => f.IndexFaker + 1)
             .RuleFor(v => v.Type, f => f.Lorem.Word());
 
         _roomGenerator = new Faker<Room>()
@@ -58,26 +56,21 @@ public class DataGenerator
             .RuleFor(s => s.Room, f => f.PickRandom(_roomGenerator.Generate(5)));
 
         _participantGenerator = new Faker<Participant>()
-            //.RuleFor(p => p.Id, (f, p) => f.IndexFaker + 1)
             .RuleFor(p => p.AuthId, f => f.Random.Uuid().ToString())
             .RuleFor(p => p.Nickname, f => f.Internet.UserName())
             .RuleFor(p => p.Email, f => f.Internet.Email())
             .RuleFor(p => p.Note, f => f.Lorem.Sentence());
 
         _selectOptionGenerator = new Faker<SelectOption>()
-            //.RuleFor(o => o.Id, (f, o) => f.IndexFaker + 1)
             .RuleFor(o => o.VoteOption, f => f.Lorem.Word())
             .RuleFor(o => o.Color, f => f.Commerce.Color());
 
         JoinEventGenerator = new Faker<JoinEvent>().CustomInstantiator(f =>
         {
-            //var JoinEventId = f.IndexFaker + 1;
-
             var participants = _participantGenerator.Generate(f.Random.Int(0, 5));
 
             var joinEvent = new JoinEvent
             {
-                //Id = JoinEventId,
                 HostId = f.Random.Uuid().ToString(),
                 Title = f.Lorem.Sentence(),
                 Description = f.Lorem.Paragraph(),
@@ -87,8 +80,9 @@ public class DataGenerator
                 Deadline = f.Date.Future(),
                 Host = _hostGenerator.Generate(),
             };
-            //joinEvent.DefaultSelectOptionId = joinEvent.SelectOptions.First().Id;
-            //joinEvent.DefaultSelectOption = joinEvent.SelectOptions.First();
+            
+            joinEvent.DefaultSelectOptionId = joinEvent.SelectOptions.First().Id;
+            joinEvent.DefaultSelectOption = joinEvent.SelectOptions.First();
 
             if (joinEvent.Showtimes.Any())
             {

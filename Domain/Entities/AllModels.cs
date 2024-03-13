@@ -34,7 +34,7 @@ public class JoinEvent
     public int? ChosenShowtimeId { get; set; }
     public List<Participant>? Participants { get; set; } = [];
     public List<SelectOption>? SelectOptions { get; set; } = [];
-    public int? DefaultSelectOptionId { get; set; }
+    public int DefaultSelectOptionId { get; set; }
 
     private DateTime _deadline;
     public DateTime Deadline
@@ -47,7 +47,7 @@ public class JoinEvent
     public Host Host { get; set; }
     
     [ForeignKey("DefaultSelectOptionId")]
-    public SelectOption? DefaultSelectOption { get; set; }
+    public SelectOption DefaultSelectOption { get; set; }
 }
 
 public class Movie

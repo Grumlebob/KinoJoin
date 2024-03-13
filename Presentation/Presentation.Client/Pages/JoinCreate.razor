@@ -578,7 +578,7 @@ else
             host.Email = email;
         }
 
-
+        /*
         var upsertJoinEventDto = new UpsertJoinEventDto
         {
             Showtimes = pickedShowtimes.Select(s => new UpsertShowtimeDto
@@ -648,7 +648,7 @@ else
             };
             var httpClient = new HttpClient();
             var participateResponse = await httpClient.PutAsJsonAsync($"{_baseUrl}participate/{_joinEventId}", p);
-        }
+        }*/
     }
 
     private void OnVoteChange(List<(int showtimeId, int vote)> votes)

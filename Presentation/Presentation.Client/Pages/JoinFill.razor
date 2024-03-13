@@ -70,14 +70,14 @@ else
         }
     </p>
     <p>Tidsinterval: @_event?.Showtimes?.Min(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM") - @_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM")</p>
-    
+    @*
     <ShowtimeSelector SelectOptions="_event.SelectOptions" Showtimes="_event.Showtimes" VotedFor="@(_votedFor.Select(v => (v.ShowtimeId, v.VoteIndex )).ToList())"  VotedForChanged="OnVotesChanged" />
-
-    <RegisterParticipantVote Event="_event" OnAnswerSaved="@(p => { _currentParticipant = p; StateHasChanged(); })"  @bind-Nickname="@_nickname" AlreadyAnswered="_alreadyAnswered"  VotedFor="_votedFor" LoggedInUserId="@_loggedInUserId" />
+*@
+    <RegisterParticipantVote Event="_event" OnAnswerSaved="@StateHasChanged"  @bind-Nickname="@_nickname" AlreadyAnswered="_alreadyAnswered"  VotedFor="_votedFor" LoggedInUserId="@_loggedInUserId" />
     
     <br/>
     <br/>
-    <JoinEventResults CurrentParticipant="_currentParticipant" Event="_event"  IsHost="_isHost"/>
+    <JoinEventResults _event="_event"  _isHost="_isHost"/>
 }
 
 @code {
@@ -108,8 +108,6 @@ else
     private string? _loggedInUserId;
     
     private bool _isLoggedIn;
-    
-    private Participant _currentParticipant;
 
     protected override async Task OnInitializedAsync()
     {
@@ -123,7 +121,7 @@ else
 
         if (_event is { Showtimes: not null })
         {
-            _votedFor = _event.Showtimes.Select(st => new ParticipantVote { ShowtimeId = st.Id, VoteIndex = 0}).ToList(); // a vote for each showtime
+            //_votedFor = _event.Showtimes.Select(st => new ParticipantVote { ShowtimeId = st.Id, VoteIndex = 0}).ToList(); // a vote for each showtime
         }
 
 
@@ -140,7 +138,6 @@ else
             if (_event!.Participants!.Any(p => p.AuthId == _loggedInUserId))
             {
                 _alreadyAnswered = true;
-                _currentParticipant = _event.Participants.First(p => p.AuthId == _loggedInUserId);
             }
         }
         else
@@ -164,15 +161,14 @@ else
     private async Task UpdateJoinEvent()
     {
         _event!.Deadline = _deadline;
-        var upsertJoinEventDto = UpsertJoinEventDto.FromModelToUpsertDto(_event!);
         var httpClient = new HttpClient();
-        var response = await httpClient.PutAsJsonAsync($"{_baseUrl}api/events", upsertJoinEventDto);
+        var response = await httpClient.PutAsJsonAsync($"{_baseUrl}api/events", _event);
         Console.WriteLine(response.IsSuccessStatusCode ? "Updated" : "Failed to update");
     }
 
     private void OnVotesChanged(List<(int showtimeId, int vote)> votes)
     {
-        _votedFor = votes.Select(v => new ParticipantVote { ShowtimeId = v.showtimeId, VoteIndex = v.vote}).ToList();
+        //_votedFor = votes.Select(v => new ParticipantVote { ShowtimeId = v.showtimeId, VoteIndex = v.vote}).ToList();
     }
 
 }

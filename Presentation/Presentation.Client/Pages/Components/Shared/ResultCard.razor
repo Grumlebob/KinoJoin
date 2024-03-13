@@ -54,7 +54,7 @@
                 <button onclick="@ShowVotes" class=" bg-white border-2 border-gray-300 rounded-full flex items-center gap-1 py-1 px-2 hover:bg-gray-300">
                     
                     <p class="whitespace-nowrap">
-                        Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.VoteIndex != 0)))
+                        @*Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.VoteIndex != 0)))*@
                     </p>
                 </button>
             }
@@ -69,7 +69,7 @@
 
 </div>
 @if (!Desktop)
-{
+{ /*
     <dialog id="@($"votesDialog{Showtime.Id}")" class="bg-slates-300  rounded max-w-md w-full fixed p-4 xs:h-dvh">
 
         
@@ -87,7 +87,7 @@
                 <SingleCheckIcon Class="@("stroke-" + Event.SelectOptions[vote].Color)"/>
             </div>
         }
-    </dialog>
+    </dialog>*/
 }
 
 <dialog class="p-5 rounded " id="@("confirmEvent" + Showtime.Id + Desktop)">

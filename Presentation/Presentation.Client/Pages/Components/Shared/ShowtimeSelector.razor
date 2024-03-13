@@ -32,89 +32,92 @@
     return;
 }
 
-<div class="mb-3 w-fit rounded border p-2 shadow">
-    <p class="font-semibold">Klik på spilletider for at vælge:</p>
-    @{ var counter = 0; }
-    <div class="mb-2 w-fit">
+<div class="mb-3 w-fit space-y-1 ">
+    <p class="font-semibold pl-2">Tryk på de tider du kan</p>
+    <div class="mb-2 divide-x-2 flex w-fit">
         @foreach (var option in SelectOptions)
         {
-            <div class="rounded bg-@option.Color ">
-                <p>@(counter++): @option.VoteOption</p>
+            <div class="px-2 ">
+                <div class="rounded px-1 shadow-sm  bg-@option.Color ">
+                    <p>@option.VoteOption</p>
+                </div>
             </div>
         }
     </div>
 </div>
-
-@foreach (var showtimesByMovie in Showtimes.GroupBy(s => s.Movie.Id))
-{
-    var movie = showtimesByMovie.First().Movie;
-    <ShowtimeSelectorHeading Movie="movie">
-        @foreach (var showtimesByCinema in showtimesByMovie.GroupBy(s => s.Cinema.Id))
-        {
-            var cinema = showtimesByCinema.First().Cinema;
-            <div class="mb-2">
-                <!-- CinemaLocation -->
-                <h3 id="@cinema.Id" class="text-2xl font-bold mb-2.5">@cinema.Name</h3>
-            </div>
-            @foreach (var showtimesByVersionTag in showtimesByCinema.GroupBy(s => s.VersionTag.Id))
+<div class="space-y-5 ">
+    @foreach (var showtimesByMovie in Showtimes.GroupBy(s => s.Movie.Id))
+    {
+        var movie = showtimesByMovie.First().Movie;
+        <ShowtimeSelectorHeading Movie="@movie">
+            @foreach (var showtimesByCinema in showtimesByMovie.GroupBy(s => s.Cinema.Id))
             {
-                var versionTag = showtimesByVersionTag.First().VersionTag;
-                <div class="mb-4 max-w-screen-md">
-                    <!-- Version -->
-                    <p class="rounded border bg-gray-200 shadow-sm font-label">@versionTag.Type</p>
-                    <!-- Showtimes -->
-                    <div class="overflow-x-auto">
-                        <table class="border-collapse">
-                            <tr>
-                                @{
-                                    // Determine the start and end dates of the interval
-                                    var startDate = Showtimes.Min(s => s.Playtime.StartTime.ToLocalTime());
-                                    var endDate = Showtimes.Max(s => s.Playtime.StartTime.ToLocalTime());
-
-                                    var latestDateForSpecificCinemaVersion = Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key).Max(s => s.Playtime.StartTime.ToLocalTime().Date);
-
-                                    // Loop through each date in the interval
-                                    for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
-                                    {
-                                        <th class="w-10 overflow-hidden text-ellipsis whitespace-nowrap border-b border-gray-200 p-2 text-left align-top">@date.ToString("dd. MMM")</th>
-                                    }
-                                }
-                            </tr>
-                            <tr>
-                                <!-- Create table data for each showtime within the grouped date -->
-                                @for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
-                                {
-                                    //Check if it exists if not, else
-                                    @if (Showtimes.Any(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
-                                    {
-                                        <td class="p-2 align-top">
-                                            @foreach (var showtime in Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
-                                            {
-                                                var index = VotedFor.IndexOf(VotedFor.First(v => v.showtimeId == showtime.Id));
-                                                <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center cursor-pointer select-none rounded shadow-inset bg-@SelectOptions[VotedFor[index].vote].Color" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(() => HandleShowtimeClick(index, showtime.Id))">
-                                                    <div class="mb-1 text-center text-sm line-clamp-1">@showtime.Room.Name</div>
-                                                    <div class="text-lg font-bold">@showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm")</div> <!-- showtime-time -->
-                                                </div>
-                                            }
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <!-- empty-showtime -->
-                                        <td class="p-2 align-top">
-                                            <div class="mb-1 h-16 max-h-16 w-24 rounded p-1 shadow-inset empty-showtime">
-                                            </div>
-                                        </td>
-                                    }
-                                }
-                            </tr>
-                        </table >
-                    </div >
+                var cinema = showtimesByCinema.First().Cinema;
+                <div class="mb-2">
+                    <!-- CinemaLocation -->
+                    <h3 id="@cinema.Id" class="text-xl font-bold mb-2.5">@cinema.Name</h3>
                 </div>
+                @foreach (var showtimesByVersionTag in showtimesByCinema.GroupBy(s => s.VersionTag.Id))
+                {
+                    var versionTag = showtimesByVersionTag.First().VersionTag;
+                    <div class="mb-4 max-w-screen-md">
+                        <!-- Version -->
+                        <div class="w-fit">
+                            <p class="bg-gray-200 px-2 py-1 font-label">@versionTag.Type</p>
+                        </div>
+                        <!-- Showtimes -->
+                        <div class="overflow-x-auto">
+                            <table class="border-collapse">
+                                <tr>
+                                    @{
+                                        // Determine the start and end dates of the interval
+                                        var startDate = Showtimes.Min(s => s.Playtime.StartTime.ToLocalTime());
+                                        var endDate = Showtimes.Max(s => s.Playtime.StartTime.ToLocalTime());
+
+                                        var latestDateForSpecificCinemaVersion = Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key).Max(s => s.Playtime.StartTime.ToLocalTime().Date);
+
+                                        // Loop through each date in the interval
+                                        for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
+                                        {
+                                            <th class="w-10 overflow-hidden text-ellipsis whitespace-nowrap border-b border-gray-200 p-2 text-left align-top">@date.ToString("dd. MMM")</th>
+                                        }
+                                    }
+                                </tr>
+                                <tr>
+                                    <!-- Create table data for each showtime within the grouped date -->
+                                    @for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
+                                    {
+                                        if (Showtimes.Any(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
+                                        {
+                                            <td class="p-2 align-top">
+                                                @foreach (var showtime in Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
+                                                {
+                                                    var vote = Votes.First(v => v.ShowtimeId == showtime.Id);
+                                                    <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center cursor-pointer select-none rounded shadow-inset bg-@vote.SelectedOption.Color" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(() => HandleShowtimeClick(vote))">
+                                                        <div class="mb-1 text-center text-sm line-clamp-1">@showtime.Room.Name</div>
+                                                        <div class="text-lg font-bold">@showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm")</div> <!-- showtime-time -->
+                                                    </div>
+                                                }
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <!-- empty-showtime -->
+                                            <td class="p-2 align-top">
+                                                <div class="mb-1 h-16 max-h-16 w-24 rounded p-1 shadow-inset empty-showtime">
+                                                </div>
+                                            </td>
+                                        }
+                                    }
+                                </tr>
+                            </table >
+                        </div >
+                    </div>
+                }
             }
-        }
-    </ShowtimeSelectorHeading>
-}
+        </ShowtimeSelectorHeading>
+    }
+</div>
 
 @if (Showtimes.Count > 0)
 {
@@ -141,44 +144,28 @@
 
 @code {
 
-    [Parameter] public List<Showtime> Showtimes { get; set; } = new();
+    [Parameter] public List<Showtime> Showtimes { get; set; } = [];
 
     [Parameter] public List<Movie> MoviesWithOutShowTimes { get; set; } = [];
 
-    [Parameter] public List<(int showtimeId, int vote)> VotedFor { get; set; } = [];
+    [Parameter] public List<ParticipantVote> Votes { get; set; } = [];
 
-    [Parameter] public EventCallback<List<(int ShowtimeId, int Vote)>> VotedForChanged { get; set; }
+    [Parameter] public EventCallback<List<ParticipantVote>> VotesChanged { get; set; }
 
-    [Parameter] public List<SelectOption> SelectOptions { get; set; } = new List<SelectOption>() { new SelectOption() { VoteOption = "Kan ikke", Color = "gray-200" }, new SelectOption() { VoteOption = "Kan godt", Color = "success" } };
+    //Default options for create page
+    [Parameter] public required List<SelectOption> SelectOptions { get; set; }
 
 
     private string? _trailerUrl;
 
-    private async Task ShowMovieTrailer(Movie movie)
+    private async Task HandleShowtimeClick(ParticipantVote voteToIncrement)
     {
-        var client = new HttpClient();
-        var apiString = $"https://api.kino.dk{movie.KinoURL}?region=content&format=json";
-        var json = await client.GetStringAsync(apiString);
-
-        MovieRoot? movieRoot = JsonConvert.DeserializeObject<MovieRoot>(json);
-        if (movieRoot?.Content?.field_trailer?.FieldMediaOembedVideo?.trailerUrl == null) //no video found
-        {
-            await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
-            return;
-        }
-
-        var uri = new Uri(movieRoot.Content.field_trailer.FieldMediaOembedVideo.trailerUrl);
-        var videoId = uri.Segments.Last() == "watch" ? HttpUtility.ParseQueryString(uri.Query)["v"] : uri.Segments.Last();
-
-        if (videoId == null) await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
-        else _trailerUrl = $"https://www.youtube.com/embed/{videoId}";
-    }
-
-    private async Task HandleShowtimeClick(int selectOptionIndex, int showtimeId)
-    {
-        var next = (VotedFor[selectOptionIndex].vote + 1) % SelectOptions.Count;
-        VotedFor[selectOptionIndex] = (showtimeId, next);
-        await VotedForChanged.InvokeAsync(VotedFor);
+        //find index of select option in order to increment it
+        var next = (SelectOptions.FindIndex(s => s.VoteOption == voteToIncrement.SelectedOption.VoteOption) + 1) % SelectOptions.Count;
+        Console.WriteLine("next " + next);
+        voteToIncrement.SelectedOption = SelectOptions[next];
+        
+        await VotesChanged.InvokeAsync(Votes);
     }
 
 }

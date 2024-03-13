@@ -1,3 +1,1 @@
-﻿namespace Presentation.Client;
-
-public class Usings { }
+﻿global using Presentation.Client.NamedHttpClients;

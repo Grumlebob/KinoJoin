@@ -7,29 +7,22 @@ public class Root
     [JsonProperty("content")]
     public ContentLevel1 Content { get; set; }
 }
-
 public class ContentLevel1
 {
     [JsonProperty("content")]
     public ContentLevel2 Content { get; set; }
-}
-
-public class ContentLevel2
-{
-    [JsonProperty("content")]
-    public ContentLevel3 Content { get; set; }
 
     [JsonProperty("facets")]
     public Facets Facets { get; set; }
 }
 
-public class ContentLevel3
+public class ContentLevel2
 {
     [JsonProperty("content")]
-    public List<ContentLevel4> Content { get; set; }
+    public List<ContentLevel3> Content { get; set; }
 }
 
-public class ContentLevel4
+public class ContentLevel3
 {
     [JsonProperty("type")]
     public string Type { get; set; }
@@ -308,13 +301,3 @@ public class VersionOptions
     [JsonProperty("value")]
     public required string Value { get; set; }
 }
-
-public class Footer { }
-
-public class Header { }
-
-public class Initial { }
-
-public class Pager { }
-
-public class Universe { }

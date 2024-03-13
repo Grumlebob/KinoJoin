@@ -15,7 +15,7 @@ public interface IJoinEventService
      *
      * <returns> The id of the upserted join event</returns>
      */
-    Task<int> UpsertJoinEventAsync(JoinEvent joinEvent);
+    Task<int> UpsertJoinEventAsync(JoinEvent updatedJoinEvent);
 
     /**
      * <summary>

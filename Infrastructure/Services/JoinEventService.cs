@@ -2,66 +2,54 @@
 
 public class JoinEventService(KinoContext context) : IJoinEventService
 {
-    public async Task<int> UpsertJoinEventAsync(JoinEvent joinEvent)
+    /*
+     * The overall goal is to save the entire workpage of a JoinEvent, regardless of creating or filling
+     *
+     * Stages:
+     * 1. We need to upsert entities that needs to exist in the database before JoinEvent is added.
+     * 2. Upon program startup, the DB is loaded with Kino's data.
+     * 2.1 We try to upsert the joinEvent using the preloaded data in the database.
+     * 2.2 In unlikely scenario it fails, Kino have updated their database with new data, which will be added.
+     * It is then reattempted to upsert the joinEvent.
+     */
+    public async Task<int> UpsertJoinEventAsync(JoinEvent updatedJoinEvent)
     {
-        var isUpdate = joinEvent.Id != 0;
+        var isUpdate = updatedJoinEvent.Id != 0;
 
         if (isUpdate)
         {
-            var id = context.Participants.Max(s => s.Id) + 1;
-            context.ChangeTracker.Clear();
-            await context.Participants.AddRangeAsync(joinEvent.Participants.Where(p => p.Id == 0).Select(p =>
-                new Participant
-                {
-                    Id = id, AuthId = p.AuthId, Nickname = p.Nickname, VotedFor = p.VotedFor, Note = p.Note,
-                    Email = p.Email, JoinEventId = joinEvent.Id
-                }));
-            context.ChangeTracker.DetectChanges();
-            Console.WriteLine(context.ChangeTracker.DebugView.LongView);
-            await context.SaveChangesAsync();
+            await context.JoinEvents.ExecuteUpdateAsync(
+                setters => setters.SetProperty(b => b.Title, updatedJoinEvent.Title)
+                    .SetProperty(b => b.Description, updatedJoinEvent.Description)
+                    .SetProperty(b => b.ChosenShowtimeId, updatedJoinEvent.ChosenShowtimeId)
+                    .SetProperty(b => b.Deadline, updatedJoinEvent.Deadline));
 
+            await UpdateJoinEventParticipantsAsync(updatedJoinEvent);
 
-            var joinEventEntry = await context.JoinEvents.Include(j => j.Participants)
-                .FirstOrDefaultAsync(j => j.Id == joinEvent.Id);
-            if (joinEventEntry == null) return 0; // add
-
-            joinEventEntry.Title = joinEvent.Title;
-            joinEventEntry.Description = joinEvent.Description;
-            joinEventEntry.ChosenShowtimeId = joinEvent.ChosenShowtimeId;
-            joinEventEntry.Deadline = joinEvent.Deadline;
-            context.ChangeTracker.DetectChanges();
-            Console.WriteLine(context.ChangeTracker.DebugView.LongView);
-            await context.SaveChangesAsync();
-
-            //context.Participants.Add(new ParticipantVote{SelectedOptionId = 2, ShowtimeId = 1, ParticipantId = 1});
-
-            context.ChangeTracker.DetectChanges();
-            Console.WriteLine(context.ChangeTracker.DebugView.LongView);
-            await context.SaveChangesAsync();
-
-            return joinEventEntry.Id;
+            return updatedJoinEvent.Id;
         }
 
         //upsert children
-        await context.Hosts.Upsert(joinEvent.Host).RunAsync();
+        await context.Hosts.Upsert(updatedJoinEvent.Host).RunAsync();
         await context
-            .SelectOptions.UpsertRange(joinEvent.SelectOptions).On(s => new { s.VoteOption, s.Color }).RunAsync();
+            .SelectOptions.UpsertRange(updatedJoinEvent.SelectOptions).On(s => new { s.VoteOption, s.Color })
+            .RunAsync();
 
-        var playTimesToUpsert = joinEvent.Showtimes.Select(st => st.Playtime).DistinctBy(p => p.StartTime);
+        var playTimesToUpsert = updatedJoinEvent.Showtimes.Select(st => st.Playtime).DistinctBy(p => p.StartTime);
         await context.Playtimes.UpsertRange(playTimesToUpsert).On(p => p.StartTime).RunAsync();
 
-        var roomsToUpsert = joinEvent.Showtimes.Select(st => st.Room).DistinctBy(r => r.Id).ToList();
+        var roomsToUpsert = updatedJoinEvent.Showtimes.Select(st => st.Room).DistinctBy(r => r.Id).ToList();
         await context.Rooms.UpsertRange(roomsToUpsert).RunAsync();
 
         //Set navigation properties
-        joinEvent.DefaultSelectOptionId = (await context.SelectOptions.AsNoTracking()
+        updatedJoinEvent.DefaultSelectOptionId = (await context.SelectOptions.AsNoTracking()
             .FirstAsync(s =>
-                s.VoteOption == joinEvent.DefaultSelectOption.VoteOption &&
-                s.Color == joinEvent.DefaultSelectOption.Color)).Id;
-        joinEvent.DefaultSelectOption = null!; //avoid double tracking when adding
+                s.VoteOption == updatedJoinEvent.DefaultSelectOption.VoteOption &&
+                s.Color == updatedJoinEvent.DefaultSelectOption.Color)).Id;
+        updatedJoinEvent.DefaultSelectOption = null!; //avoid double tracking when adding
 
 
-        foreach (var vote in joinEvent.Participants.SelectMany(participant => participant.VotedFor))
+        foreach (var vote in updatedJoinEvent.Participants.SelectMany(participant => participant.VotedFor))
         {
             vote.SelectedOptionId = (await context.SelectOptions.AsNoTracking()
                 .FirstAsync(s =>
@@ -69,7 +57,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             vote.SelectedOption = null!; //avoid double tracking when adding
         }
 
-        foreach (var showtime in joinEvent.Showtimes)
+        foreach (var showtime in updatedJoinEvent.Showtimes)
         {
             showtime.MovieId = showtime.Movie.Id;
             showtime.CinemaId = showtime.Cinema.Id;
@@ -81,26 +69,54 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
         try
         {
-            return await TryInsertJoinEvent(joinEvent);
+            return await TryInsertJoinEvent(updatedJoinEvent);
         }
         catch (Exception)
         {
-            await UpsertMissingEntities(joinEvent);
-            return await TryInsertJoinEvent(joinEvent);
+            await UpsertMissingEntities(updatedJoinEvent);
+            return await TryInsertJoinEvent(updatedJoinEvent);
+        }
+    }
+
+    private async Task UpdateJoinEventParticipantsAsync(JoinEvent updatedJoinEvent)
+    {
+        context.ChangeTracker.Clear();
+        // Fetch existing participants from the database
+        var existingParticipants = await context.Participants
+            .Where(p => p.JoinEventId == updatedJoinEvent.Id)
+            .ToListAsync();
+
+        // Update existing participants
+        foreach (var existingParticipant in existingParticipants)
+        {
+            var updatedParticipant = updatedJoinEvent.Participants
+                .FirstOrDefault(p => p.Id == existingParticipant.Id);
+
+            if (updatedParticipant != null)
+            {
+                context.Entry(existingParticipant).CurrentValues.SetValues(updatedParticipant);
+            }
         }
 
+        // Identify and add new participants
+        var newParticipants = updatedJoinEvent.Participants
+            .Where(p => p.Id == 0)
+            .ToList();
 
-        /*
-         * The overall goal is to save the entire workpage of a JoinEvent, regardless of creating or filling
-         *
-         * Stages:
-         * 1. We need to upsert entities that needs to exist in the database before JoinEvent is added.
-         * 2. Upon program startup, the DB is loaded with Kino's data.
-         * 2.1 We try to upsert the joinEvent using the preloaded data in the database.
-         * 2.2 In unlikely scenario it fails, Kino have updated their database with new data, which will be added.
-         * It is then reattempted to upsert the joinEvent.
-         */
+        if (newParticipants.Any())
+        {
+            foreach (var newParticipant in newParticipants)
+            {
+                newParticipant.JoinEventId = updatedJoinEvent.Id;
+                await context.Participants.AddAsync(newParticipant);
+            }
+
+            await context.Participants.AddRangeAsync(newParticipants);
+        }
+        
+        await context.SaveChangesAsync();
     }
+
 
     private async Task<int> TryInsertJoinEvent(JoinEvent joinEvent)
     {

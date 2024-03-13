@@ -32,7 +32,7 @@ public class JoinEvent
     public string Description { get; set; }
     public List<Showtime> Showtimes { get; set; } = [];
     public int? ChosenShowtimeId { get; set; }
-    public List<Participant> Participants { get; set; } = [];
+    public List<Participant>? Participants { get; set; } = [];
     public List<SelectOption> SelectOptions { get; set; } = [];
     public int DefaultSelectOptionId { get; set; }
 

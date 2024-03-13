@@ -58,7 +58,7 @@ public class DataGenerator
             .RuleFor(s => s.Room, f => f.PickRandom(_roomGenerator.Generate()));
 
         _participantGenerator = new Faker<Participant>()
-            .RuleFor(p => p.Id, (f, p) => f.IndexFaker + 1)
+            //.RuleFor(p => p.Id, (f, p) => f.IndexFaker + 1)
             .RuleFor(p => p.AuthId, f => f.Random.Uuid().ToString())
             .RuleFor(p => p.Nickname, f => f.Internet.UserName())
             .RuleFor(p => p.Email, f => f.Internet.Email())

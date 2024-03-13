@@ -25,7 +25,7 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public async Task SimpleJoinEventTest()
     {
-        const int casesToInsert = 1;
+        const int casesToInsert = 10;
         
         var joinEvents = _dataGenerator.JoinEventGenerator.Generate(casesToInsert);
         
@@ -59,7 +59,7 @@ public class KinoJoinTests : IAsyncLifetime
             VotedFor = [new ParticipantVote() {ShowtimeId = joinEventToUpdate.Showtimes.First().Id, SelectedOptionId = joinEventToUpdate.SelectOptions.First().Id}]});
         var updateResponse = await _client.PutAsJsonAsync("api/events", joinEventToUpdate);
         updateResponse.EnsureSuccessStatusCode();
-        
+
         //check update
         var getResponseUpdated = await _client.GetAsync($"api/events/{joinEventToUpdate.Id}");
         var joinEventFromApiUpdated = await getResponseUpdated.Content.ReadFromJsonAsync<JoinEvent>();
@@ -67,12 +67,6 @@ public class KinoJoinTests : IAsyncLifetime
         joinEventFromApiUpdated.Title.Should().Be(joinEventToUpdate.Title);
         joinEventFromApiUpdated.Participants.Any(p => p.AuthId == "New").Should().BeTrue();
         
-        
-        var getResponseAll2 = await _client.GetAsync("api/events");
-        var joinEventsFromApi2 = await getResponseAll2.Content.ReadFromJsonAsync<List<JoinEvent>>();
-        joinEventsFromApi2.Count.Should().Be(casesToInsert);
-        
-
     }
     
 

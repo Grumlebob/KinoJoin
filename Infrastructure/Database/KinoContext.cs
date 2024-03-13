@@ -46,12 +46,12 @@ public class KinoContext : DbContext
             .HasForeignKey(je => je.DefaultSelectOptionId);
 
         // Many to one relations
-        modelBuilder
-            .Entity<JoinEvent>()
+        modelBuilder.Entity<JoinEvent>()
             .HasMany(je => je.Participants)
             .WithOne()
-            .IsRequired();//.HasForeignKey(p => p.JoinEventId);
-
+            .HasForeignKey(p => p.JoinEventId);
+            //.IsRequired(false); // This indicates that the foreign key is optional
+        
         modelBuilder
             .Entity<Participant>()
             .HasMany(p => p.VotedFor)

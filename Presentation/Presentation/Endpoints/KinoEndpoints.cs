@@ -26,8 +26,8 @@ public class KinoEndpoints : ICarterModule
     {
         try
         {
-            var result = await joinEventService.UpsertJoinEventAsync(joinEvent);
-            return TypedResults.Ok(result);
+          var result = await joinEventService.UpsertJoinEventAsync(joinEvent);
+          return TypedResults.Ok(result);
         }
         catch (Exception e)
         {

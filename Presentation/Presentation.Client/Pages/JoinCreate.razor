@@ -9,7 +9,7 @@
 @* Shouldn't be a component, should stay on this parent component. *@
 @if (_loading)
 {
-    <p>Indlæser...</p>
+    <LoadingTextAndCircle/>
 }
 
 else if (_cinemaIdsToNames.Count > 0 || _movieIdsToNames.Count > 0)
@@ -136,7 +136,7 @@ else if (_cinemaIdsToNames.Count > 0 || _movieIdsToNames.Count > 0)
     
     @* Shouldn't be a component, should stay on this parent component. *@
     @* <button  style="margin-bottom: 5px;width: 200px;height: 50px;bottom: 3rem; right: 3rem; position: fixed; z-index: 1" @onclick="OpenEventDetailsDialog">Opret Event</button> *@
-    <button class="w-14 h-14 shadow-primary md:w-auto md:h-auto  md:px-4 md:py-2 fixed bottom-12 right-12 z-50 shadow-md rounded-full bg-primary flex items-center justify-center" @onclick="OpenEventDetailsDialog">
+    <button class="w-14 h-14  md:w-auto md:h-auto  md:px-4 md:py-2 fixed bottom-12 right-12 z-50 shadow-lg rounded-full bg-primary flex items-center justify-center hover:bg-primary-dark " @onclick="OpenEventDetailsDialog">
         
         <span class="hidden md:block text-white py-1">
             Opret Event

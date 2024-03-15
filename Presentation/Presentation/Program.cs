@@ -18,8 +18,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveWebAssemblyComponents();
-
-builder.Services.AddScoped<IMonkeyService, MonkeyService>();
 builder.Services.AddScoped<IJoinEventService, JoinEventService>();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -40,12 +38,6 @@ builder.Services.AddCors(options =>
     );
 });
 
-builder.Services.AddDbContextFactory<KinoContext>(options =>
-{
-    var secret = builder.Configuration["PostgresConnection"];
-    options.UseNpgsql(secret);
-    options.EnableDetailedErrors();
-});
 
 builder.Services.AddCarter();
 
@@ -72,8 +64,6 @@ app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(_Imports).Assembly);
 
-app.MapMonkeyEndpoints();
-app.MapKinoJoinEndpoints();
 app.MapCarter();
 
 if (GlobalSettings.ShouldPreSeedDatabase)

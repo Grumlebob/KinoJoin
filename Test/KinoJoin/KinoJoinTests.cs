@@ -1,8 +1,6 @@
 ﻿using System.Net.Http.Json;
-using Application.DTO;
 using Domain.Entities;
 using FluentAssertions;
-using SimdLinq;
 
 namespace Test.KinoJoin;
 

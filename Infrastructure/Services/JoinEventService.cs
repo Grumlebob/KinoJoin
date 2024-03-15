@@ -2,7 +2,6 @@
 
 public class JoinEventService(KinoContext context) : IJoinEventService
 {
-    
     public async Task<JoinEvent?> GetAsync(int id)
     {
         var result = await context
@@ -62,6 +61,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
         return joinEvents;
     }
+
     /*
      * The overall goal is to save the entire workpage of a JoinEvent, regardless of creating or filling
      *
@@ -136,11 +136,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                 {
                     foreach (var option in newParticipant.VotedFor)
                     {
-                        if (option.SelectedOption != null)
-                        {
-                            option.SelectedOptionId = option.SelectedOption.Id;
-                        }
-
+                        option.SelectedOptionId = option.SelectedOption.Id;
                         option.SelectedOption = null!; //don't track
                     }
 
@@ -248,44 +244,40 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             await context.SaveChangesAsync();
         }
     }
-    
+
     private async Task HandleMovies(JoinEvent joinEvent)
     {
-        foreach (var _ in joinEvent.Showtimes)
+        foreach (
+            var movieId in joinEvent
+                .Showtimes.Select(_ => joinEvent.Showtimes.Select(st => st.Movie.Id).Distinct())
+                .SelectMany(movieIds => movieIds)
+        )
         {
-            var movieIds = joinEvent.Showtimes.Select(st => st.Movie.Id).Distinct();
-            foreach (var movieId in movieIds)
+            var existingMovie = await context.Movies.FindAsync(movieId);
+            if (existingMovie == null)
             {
-                var existingMovie = await context.Movies.FindAsync(movieId);
-                if (existingMovie == null)
-                {
-                    var movie = joinEvent
-                        .Showtimes.FirstOrDefault(st => st.Movie.Id == movieId)
-                        ?.Movie;
+                var movie = joinEvent.Showtimes.FirstOrDefault(st => st.Movie.Id == movieId)?.Movie;
 
-                    if (movie != null)
-                        context.Movies.Add(
-                            new Movie
-                            {
-                                Id = movieId,
-                                KinoURL = movie.KinoURL,
-                                AgeRating = movie.AgeRating,
-                                Duration = movie.Duration,
-                                ImageUrl = movie.ImageUrl,
-                                Title = movie.Title,
-                                PremiereDate = movie.PremiereDate
-                            }
-                        );
-                }
-                else
+                if (movie != null)
+                    context.Movies.Add(
+                        new Movie
+                        {
+                            Id = movieId,
+                            KinoURL = movie.KinoURL,
+                            AgeRating = movie.AgeRating,
+                            Duration = movie.Duration,
+                            ImageUrl = movie.ImageUrl,
+                            Title = movie.Title,
+                            PremiereDate = movie.PremiereDate
+                        }
+                    );
+            }
+            else
+            {
+                // Attach existing movies to each showtime
+                foreach (var showtime in joinEvent.Showtimes.Where(st => st.Movie.Id == movieId))
                 {
-                    // Attach existing movies to each showtime
-                    foreach (
-                        var showtime in joinEvent.Showtimes.Where(st => st.Movie.Id == movieId)
-                    )
-                    {
-                        showtime.Movie = existingMovie;
-                    }
+                    showtime.Movie = existingMovie;
                 }
             }
         }
@@ -362,6 +354,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
             await context.SaveChangesAsync();
         }
+
         joinEvent.SelectOptions = selectOptionsToAttach;
     }
 
@@ -414,9 +407,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         if (joinEvent.Participants != null)
         {
             foreach (
-                var vote in joinEvent.Participants.SelectMany(participant =>
-                    participant.VotedFor
-                )
+                var vote in joinEvent.Participants.SelectMany(participant => participant.VotedFor)
             )
             {
                 var selectOption = await context.SelectOptions.FirstOrDefaultAsync(so =>
@@ -450,7 +441,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                         })
                         .ToList()
                 };
-                
+
                 await context.Participants.AddAsync(participant);
             }
         }

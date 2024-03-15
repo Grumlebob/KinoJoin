@@ -95,14 +95,15 @@ public class DataGenerator
             {
                 participant.JoinEventId = joinEvent.Id;
                 participant.VotedFor = new List<ParticipantVote>();
-                
-                participant.VotedFor = joinEvent.Showtimes.Select(s => new ParticipantVote
-                {
-                    ParticipantId = participant.Id,
-                    ShowtimeId = s.Id,
-                    SelectedOption = f.PickRandom(joinEvent.SelectOptions)
-                }).ToList();
 
+                participant.VotedFor = joinEvent
+                    .Showtimes.Select(s => new ParticipantVote
+                    {
+                        ParticipantId = participant.Id,
+                        ShowtimeId = s.Id,
+                        SelectedOption = f.PickRandom(joinEvent.SelectOptions)
+                    })
+                    .ToList();
             }
 
             if (joinEvent.Showtimes.Any())

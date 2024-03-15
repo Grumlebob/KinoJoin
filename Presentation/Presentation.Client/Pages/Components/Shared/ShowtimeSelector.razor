@@ -161,9 +161,11 @@
     private async Task HandleShowtimeClick(ParticipantVote voteToIncrement)
     {
         //find index of select option in order to increment it
-        var next = (SelectOptions.FindIndex(s => s.VoteOption == voteToIncrement.SelectedOption.VoteOption) + 1) % SelectOptions.Count;
+        var next = (SelectOptions.FindIndex(
+                       s => (s.VoteOption, s.Color) == (voteToIncrement.SelectedOption.VoteOption, voteToIncrement.SelectedOption.Color)) + 1)
+                   % SelectOptions.Count;
         voteToIncrement.SelectedOption = SelectOptions[next];
-        
+
         await VotesChanged.InvokeAsync(Votes);
     }
 

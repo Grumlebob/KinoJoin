@@ -1,6 +1,6 @@
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
-
+@inject IJoinEventHttpClient JoinEventHttpClient
 @if (AlreadyAnswered)
 {
     <p class="text-xl font-semibold text-green-700">Du har allerede indsendt et svar på dette event</p>
@@ -108,15 +108,11 @@ else if (!_answerSaved)
             }
         }
 
-        var p = new Participant { AuthId = LoggedInUserId, Nickname = Nickname, Email = Email, Note = Note, VotedFor = VotedFor.ToList() };
+        var p = new Participant { AuthId = LoggedInUserId, Nickname = Nickname, Email = Email, Note = Note, VotedFor = VotedFor};
         Event.Participants.Add(p);
         
-        //Fully print the event and all its fields
-        Console.WriteLine(Event);
-        
-        
-        var httpClient = new HttpClient();
-        var response = await httpClient.PutAsJsonAsync($"{NavigationManager.BaseUri}api/events", Event);
+
+        var response = await JoinEventHttpClient.PutJoinEventAsync(Event);
         if (response.IsSuccessStatusCode)
         {
             _infoMessage = "Svar gemt";

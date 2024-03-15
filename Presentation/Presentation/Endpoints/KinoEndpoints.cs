@@ -29,7 +29,7 @@ public class KinoEndpoints : ICarterModule
           var result = await joinEventService.UpsertJoinEventAsync(joinEvent);
           return TypedResults.Ok(result);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return TypedResults.BadRequest(
                 "Sorry, we encountered an unexpected issue while processing your request. Please ensure that the data is correct. We suggest you try again later or contact support if the problem persists."

@@ -1,4 +1,6 @@
-﻿namespace Application.Interfaces;
+﻿using System.Linq.Expressions;
+
+namespace Application.Interfaces;
 
 /**
  * <summary>
@@ -43,5 +45,5 @@ public interface IJoinEventService
      * Non-dtos are returned to include all nested data.
      * </returns>
      */
-    Task<List<JoinEvent>> GetAllAsync(Func<JoinEvent, bool>? filter = null);
+    Task<List<JoinEvent>> GetAllAsync(Expression<Func<JoinEvent, bool>>? filter = null);
 }

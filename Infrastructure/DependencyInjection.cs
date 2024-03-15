@@ -7,9 +7,9 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
-        services.AddDbContextFactory<MonkeyContext>(options =>
+        services.AddDbContextFactory<KinoContext>(options =>
         {
-            var secret = configuration["MonkeyConnection"];
+            var secret = configuration["PostgresConnection"];
             options.UseNpgsql(secret);
             options.EnableDetailedErrors();
         });

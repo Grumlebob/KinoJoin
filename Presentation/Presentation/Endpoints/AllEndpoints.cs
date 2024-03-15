@@ -1,8 +1,5 @@
-﻿using Application.DTO;
-using Application.Interfaces;
-using Domain.Entities;
+﻿using Domain.Entities;
 using Infrastructure.Database;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Presentation.Endpoints;

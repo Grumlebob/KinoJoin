@@ -93,23 +93,17 @@ public class DataGenerator
             // After the event has been created, insert some random participants who have made random votes
             foreach (var participant in joinEvent.Participants)
             {
-                //participant.JoinEventId = JoinEventId;
+                participant.JoinEventId = joinEvent.Id;
                 participant.VotedFor = new List<ParticipantVote>();
-                var numberOfVotes = f.Random.Int(0, joinEvent.Showtimes.Count);
-                var remainingShowtimes = joinEvent.Showtimes.Select(s => s.Id).ToList();
-                for (int i = 0; i < numberOfVotes; i++)
-                {
-                    var chosenShowtime = f.PickRandom(remainingShowtimes);
-                    participant.VotedFor.Add(
-                        new ParticipantVote
-                        {
-                            ParticipantId = participant.Id,
-                            ShowtimeId = chosenShowtime,
-                            SelectedOption = f.PickRandom(joinEvent.SelectOptions)
-                        }
-                    );
-                    remainingShowtimes.Remove(chosenShowtime);
-                }
+
+                participant.VotedFor = joinEvent
+                    .Showtimes.Select(s => new ParticipantVote
+                    {
+                        ParticipantId = participant.Id,
+                        ShowtimeId = s.Id,
+                        SelectedOption = f.PickRandom(joinEvent.SelectOptions)
+                    })
+                    .ToList();
             }
 
             if (joinEvent.Showtimes.Any())

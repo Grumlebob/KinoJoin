@@ -7,14 +7,14 @@
 }
 else if (!_answerSaved)
 {
-    <div class="w-80 space-y-4">
+    <EditForm class="w-80 space-y-4" Model="Event">
         <h3 class="font-bold">Dine oplysninger</h3>
-        <input class="w-full border p-2" placeholder="Indtast dit navn" value="@Nickname" @onchange="@(async v => { await NicknameChanged.InvokeAsync((string)v.Value); })" required/>
-        <input class="w-full border p-2" placeholder="Skriv din email (valgfrit)" type="email" @bind="@Email"/>
+        <InputText class="w-full border p-2" @bind-Value="@Nickname" placeholder="Indtast dit navn" required />
+        <InputText class="w-full border p-2" @bind-Value="@Email" placeholder="Skriv din email (valgfrit)" type="email" />
         <div>
-            <textarea class="h-32 w-full resize-none border p-2" placeholder="Note (valgfrit)" @bind="Note"></textarea>
+            <InputTextArea class="h-32 w-full resize-none border p-2" @bind-Value="@Note" placeholder="Note (valgfrit)" />
         </div>
-        <button class="rounded bg-blue-500 p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(false, false); })">
+        <button class="rounded-full bg-primary hover:bg-primary-dark bg-blue-500 p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(false, false); })" type="submit">
             Send svar
         </button>
         @if (_confirmSubmit)
@@ -23,12 +23,13 @@ else if (!_answerSaved)
                 <h4 class="font-bold">Obs! Du har ikke valgt nogen tider.</h4>
                 <h4 class="font-semibold mb-0.5">Vil du indsende et tomt svar, der viser du ikke kan nogen tider?</h4>
                 <div class="inline-flex space-x-2">
-                    <button class="rounded bg-blue-500 p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(true,false); })">Ja</button>
+                    <button class="rounded bg-blue-500 p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(true, false); })">Ja</button>
                     <button class="rounded bg-red-500 p-2 text-white" @onclick="@(() => { _confirmSubmit = false; })">Nej</button>
                 </div>
             </div>
         }
-    </div>
+    </EditForm>
+
 }
 
 @if (_infoMessage is not null)

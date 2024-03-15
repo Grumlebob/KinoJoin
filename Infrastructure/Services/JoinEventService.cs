@@ -1,4 +1,6 @@
-﻿namespace Infrastructure.Services;
+﻿using System.Linq.Expressions;
+
+namespace Infrastructure.Services;
 
 public class JoinEventService(KinoContext context) : IJoinEventService
 {
@@ -25,16 +27,16 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             .FirstOrDefaultAsync(j => j.Id == id);
         return result;
     }
-
-    public async Task<List<JoinEvent>> GetAllAsync(Func<JoinEvent, bool>? filter = null)
+    
+    public async Task<List<JoinEvent>> GetAllAsync(Expression<Func<JoinEvent, bool>>? filter = null)
     {
-        var query = context.JoinEvents.AsNoTracking();
+        IQueryable<JoinEvent> query = context.JoinEvents.AsNoTracking();
+
         if (filter != null)
         {
-            query = query.AsEnumerable().Where(filter).AsQueryable();
+            query = query.Where(filter);
         }
 
-        //Ensure all nested entities are included
         var joinEvents = await query
             .Include(j => j.Showtimes)
             .ThenInclude(s => s.Movie)
@@ -46,18 +48,13 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             .ThenInclude(s => s.VersionTag)
             .Include(j => j.Showtimes)
             .ThenInclude(s => s.Room)
-            .Include(j => j.Participants)!
+            .Include(j => j.Participants)
             .ThenInclude(p => p.VotedFor)
             .ThenInclude(pv => pv.SelectedOption)
             .Include(j => j.SelectOptions)
             .Include(j => j.DefaultSelectOption)
             .Include(j => j.Host)
             .ToListAsync();
-
-        if (filter != null)
-        {
-            joinEvents = joinEvents.Where(filter).ToList();
-        }
 
         return joinEvents;
     }

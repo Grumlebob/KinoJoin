@@ -192,7 +192,7 @@
 
     List<Showtime> _availableShowtimes = [];
     List<Movie> _moviesWithoutShowtimes = [];
-    List<ParticipantVote> _availableShowtimeVotes = []; //used to keep track of which showtimes are selected and not selected
+    ICollection<ParticipantVote> _availableShowtimeVotes = []; //used to keep track of which showtimes are selected and not selected
 
     readonly List<SelectOption> _createSelectOptions = [new SelectOption { VoteOption = "Kan ikke", Color = "gray-200" }, new SelectOption { VoteOption = "Kan godt", Color = "success" }];
     const int NoVoteIndex = 0; //when you vote no
@@ -607,7 +607,7 @@
         await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventShareDialog");
     }
 
-    private void OnVoteChange(List<ParticipantVote> votes)
+    private void OnVoteChange(ICollection<ParticipantVote> votes)
     {
         _availableShowtimeVotes = votes;
         //Save all show times, where voted yes

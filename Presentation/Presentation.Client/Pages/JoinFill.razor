@@ -89,9 +89,9 @@
     </div>
 </div>
 
-<ShowtimeSelector SelectOptions="@_event.SelectOptions" Showtimes="@_event.Showtimes" Votes="@_votes" VotesChanged="OnVotesChanged"/>
+<ShowtimeSelector SelectOptions="@_event.SelectOptions" Showtimes="@_event.Showtimes" Votes="@_currentParticipant.VotedFor" VotesChanged="OnVotesChanged"/>
 
-<RegisterParticipantVote Event="_event" OnAnswerSaved="@(p => { _currentParticipant = p; StateHasChanged(); })" @bind-Nickname="@_nickname" AlreadyAnswered="_alreadyAnswered" VotedFor="_votes" LoggedInUserId="@_loggedInUserId"/>
+<RegisterParticipantVote Event="_event" OnAnswerSaved="@(p => { _currentParticipant = p; StateHasChanged(); })" @bind-Nickname="@_currentParticipant.Nickname" AlreadyAnswered="_alreadyAnswered" VotedFor="@_currentParticipant.VotedFor" LoggedInUserId="@_currentParticipant.AuthId"/>
 
 <br/>
 <br/>
@@ -104,10 +104,6 @@
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = null!;
 
     private JoinEvent? _event;
-
-    private List<ParticipantVote> _votes = [];
-
-    private string? _nickname;
 
     private bool _loading = true;
 
@@ -122,8 +118,6 @@
     private bool _showFirstLoginDialog;
 
     private DateTime _deadline;
-
-    private string? _loggedInUserId;
 
     private bool _isLoggedIn;
 
@@ -141,7 +135,7 @@
 
         if (_event is { Showtimes: not null })
         {
-            _votes = _event.Showtimes.Select(st =>
+            _currentParticipant.VotedFor = _event.Showtimes.Select(st =>
                 new ParticipantVote
                 {
                     ShowtimeId = st.Id, SelectedOptionId = _event.DefaultSelectOptionId, SelectedOption = _event.DefaultSelectOption
@@ -156,13 +150,13 @@
         if (_isLoggedIn)
         {
             var username = user.Identity.Name;
-            _loggedInUserId = user.FindFirst(c => c.Type == "sub")?.Value;
-            _isHost = _event?.Host?.AuthId == _loggedInUserId;
-            _nickname = username;
-            if (_event!.Participants!.Any(p => p.AuthId == _loggedInUserId))
+            _currentParticipant.AuthId = user.FindFirst(c => c.Type == "sub")?.Value;
+            _isHost = _event?.Host?.AuthId == _currentParticipant.AuthId;
+            _currentParticipant.Nickname = username;
+            if (_event!.Participants!.Any(p => p.AuthId == _currentParticipant.AuthId))
             {
                 _alreadyAnswered = true;
-                _currentParticipant = _event.Participants.First(p => p.AuthId == _loggedInUserId);
+                _currentParticipant = _event.Participants.First(p => p.AuthId == _currentParticipant.AuthId);
             }
         }
         else
@@ -191,9 +185,9 @@
         Console.WriteLine(response.IsSuccessStatusCode ? "Updated" : "Failed to update");
     }
 
-    private void OnVotesChanged(List<ParticipantVote> votes)
+    private void OnVotesChanged(ICollection<ParticipantVote> votes)
     {
-        _votes = votes;
+        _currentParticipant.VotedFor = votes;
     }
 
 }

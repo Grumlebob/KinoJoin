@@ -148,9 +148,9 @@
 
     [Parameter] public List<Movie> MoviesWithOutShowTimes { get; set; } = [];
 
-    [Parameter] public List<ParticipantVote> Votes { get; set; } = [];
+    [Parameter] public ICollection<ParticipantVote> Votes { get; set; } = [];
 
-    [Parameter] public EventCallback<List<ParticipantVote>> VotesChanged { get; set; }
+    [Parameter] public EventCallback<ICollection<ParticipantVote>> VotesChanged { get; set; }
 
     //Default options for create page
     [Parameter] public required List<SelectOption> SelectOptions { get; set; }
@@ -165,6 +165,7 @@
                        s => (s.VoteOption, s.Color) == (voteToIncrement.SelectedOption.VoteOption, voteToIncrement.SelectedOption.Color)) + 1)
                    % SelectOptions.Count;
         voteToIncrement.SelectedOption = SelectOptions[next];
+        voteToIncrement.SelectedOptionId = SelectOptions[next].Id;
 
         await VotesChanged.InvokeAsync(Votes);
     }

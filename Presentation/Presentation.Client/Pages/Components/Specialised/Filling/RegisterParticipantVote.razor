@@ -57,7 +57,7 @@ else if (!_answerSaved)
 
     [Parameter] public EventCallback<string?> NicknameChanged { get; set; }
 
-    [Parameter] public List<ParticipantVote> VotedFor { get; set; } = [];
+    [Parameter] public ICollection<ParticipantVote> VotedFor { get; set; } = [];
 
     [Parameter] public string LoggedInUserId { get; set; }
 
@@ -72,7 +72,6 @@ else if (!_answerSaved)
 
     private async Task SaveParticipantAnswer(bool confirmed, bool sameNameConfirmed)
     {
-        Console.WriteLine("GIK IND HER");
         if (!confirmed)
         {
             _infoMessage = "";

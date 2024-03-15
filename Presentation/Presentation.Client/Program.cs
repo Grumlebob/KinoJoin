@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Presentation.Client.NamedHttpClients;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddHttpClient<IJoinEventHttpClient, JoinEventHttpClient>(client =>
+builder.Services.AddHttpClient<KinoJoinHttpClient>(client =>
 {
     client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
 });

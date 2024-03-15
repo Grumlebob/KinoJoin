@@ -1,6 +1,6 @@
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
-@inject IJoinEventHttpClient JoinEventHttpClient
+@inject KinoJoinHttpClient KinoJoinHttpClient
 @if (AlreadyAnswered)
 {
     <p class="text-xl font-semibold text-green-700">Du har allerede indsendt et svar på dette event</p>
@@ -111,7 +111,7 @@ else if (!_answerSaved)
         Event.Participants.Add(p);
         
 
-        var response = await JoinEventHttpClient.PutJoinEventAsync(Event);
+        var response = await KinoJoinHttpClient.Client.PutAsJsonAsync("/api/events", Event);
         if (response.IsSuccessStatusCode)
         {
             _infoMessage = "Svar gemt";

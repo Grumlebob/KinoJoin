@@ -1,6 +1,7 @@
 ﻿@inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
-@inject IJoinEventHttpClient JoinEventHttpClient
+@inject KinoJoinHttpClient KinoJoinHttpClient
+@inject IKinoDkService KinoDkService
 
 @page "/JoinCreate/{filterString}"
 
@@ -597,7 +598,7 @@
             });
         }
 
-        var response = await JoinEventHttpClient.PutJoinEventAsync(_joinEvent);
+        var response = await KinoJoinHttpClient.Client.PutAsJsonAsync("/api/events", _joinEvent);
         var id = await response.Content.ReadAsStringAsync();
 
         _joinEvent.Id = int.Parse(id);

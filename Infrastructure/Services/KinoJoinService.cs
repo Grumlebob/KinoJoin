@@ -1,6 +1,6 @@
 ﻿namespace Infrastructure.Services;
 
-public class KinoDataService(KinoContext context) : IKinoDataService
+public class KinoJoinService(KinoContext context) : IKinoJoinService
 {
 
     public async Task<ICollection<Cinema>> GetAllCinemas(Func<Cinema, bool>? filter = null)

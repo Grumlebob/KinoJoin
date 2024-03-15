@@ -3,11 +3,11 @@ using Domain.Entities;
 
 namespace Presentation.Client.NamedHttpClients;
 
-public class JoinEventHttpClient : IJoinEventHttpClient
+public class KinoJoinHttpClient : HttpClient
 {
     private readonly HttpClient _httpClient;
 
-    public JoinEventHttpClient(HttpClient httpClient)
+    public KinoJoinHttpClient(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }
@@ -16,9 +16,4 @@ public class JoinEventHttpClient : IJoinEventHttpClient
     {
         return await _httpClient.PutAsJsonAsync("/api/events", joinEvent);
     }
-}
-
-public interface IJoinEventHttpClient
-{
-    Task<HttpResponseMessage> PutJoinEventAsync(JoinEvent joinEvent);
 }

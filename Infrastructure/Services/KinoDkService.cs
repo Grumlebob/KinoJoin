@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Infrastructure.Services;
 
-public class KinoExternalService : IKinoExternalService
+public class KinoDkService : IKinoDkService
 {
     private readonly HttpClient _httpClient = new();
     private const string BaseUrl = "https://api.kino.dk/ticketflow/showtimes?region=content&format=json";

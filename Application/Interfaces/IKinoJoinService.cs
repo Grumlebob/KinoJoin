@@ -1,6 +1,6 @@
-﻿namespace Infrastructure.Services;
+﻿namespace Application.Interfaces;
 
-public interface IKinoDataService
+public interface IKinoJoinService
 {
     Task<ICollection<Cinema>> GetAllCinemas(Func<Cinema, bool>? filter = null);
     Task<ICollection<Movie>> GetAllMovies(Func<Movie, bool>? filter = null);

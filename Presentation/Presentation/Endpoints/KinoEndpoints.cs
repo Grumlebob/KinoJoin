@@ -82,11 +82,11 @@ public class KinoEndpoints : ICarterModule
     }
     
     private static async Task<Results<Ok<ICollection<Cinema>>, NotFound, BadRequest<string>>> GetCinemas(
-        [FromServices] IKinoDataService kinoDataService)
+        [FromServices] IKinoJoinService kinoJoinService)
     {
         try
         {
-            var cinemas = await kinoDataService.GetAllCinemas();
+            var cinemas = await kinoJoinService.GetAllCinemas();
             return cinemas.Any() ? TypedResults.Ok(cinemas) : TypedResults.NotFound();
         }
         catch (Exception)
@@ -98,11 +98,11 @@ public class KinoEndpoints : ICarterModule
     }
     
     private static async Task<Results<Ok<ICollection<Movie>>, NotFound, BadRequest<string>>> GetMovies(
-        [FromServices] IKinoDataService kinoDataService)
+        [FromServices] IKinoJoinService kinoJoinService)
     {
         try
         {
-            var movies = await kinoDataService.GetAllMovies();
+            var movies = await kinoJoinService.GetAllMovies();
             return movies.Any() ? TypedResults.Ok(movies) : TypedResults.NotFound();
         }
         catch (Exception)
@@ -114,11 +114,11 @@ public class KinoEndpoints : ICarterModule
     }
     
     private static async Task<Results<Ok<ICollection<Genre>>, NotFound, BadRequest<string>>> GetGenres(
-        [FromServices] IKinoDataService kinoDataService)
+        [FromServices] IKinoJoinService kinoJoinService)
     {
         try
         {
-            var genres = await kinoDataService.GetAllGenres();
+            var genres = await kinoJoinService.GetAllGenres();
             return genres.Any() ? TypedResults.Ok(genres) : TypedResults.NotFound();
         }
         catch (Exception)

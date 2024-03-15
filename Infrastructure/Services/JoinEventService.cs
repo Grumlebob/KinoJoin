@@ -72,6 +72,14 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             {
                 foreach (var newParticipant in newParticipants)
                 {
+                    foreach (var option in newParticipant.VotedFor)
+                    {
+                        if (option.SelectedOption != null)
+                        {
+                            option.SelectedOptionId = option.SelectedOption.Id;
+                        }
+                        option.SelectedOption = null!; //don't track
+                    }
                     newParticipant.JoinEventId = updatedJoinEvent.Id;
                     await context.Participants.AddAsync(newParticipant);
                 }

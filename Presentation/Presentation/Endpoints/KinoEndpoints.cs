@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces;
 using Carter;
 using Domain.Entities;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,16 +9,21 @@ namespace Presentation.Endpoints;
 
 public class KinoEndpoints : ICarterModule
 {
+    private const string DefaultErrorMessage =
+        "Sorry, we encountered an unexpected issue while processing your request. Please ensure that the data is correct. We suggest you try again later or contact support if the problem persists.";
+    
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         var eventGroup = app.MapGroup("api/events");
-
         eventGroup.MapPut("", UpsertJoinEvent);
-
         eventGroup.MapGet("", GetJoinEvents);
         eventGroup.MapGet("{id}", GetJoinEvent);
 
         var kinoDataGroup = app.MapGroup("api/kino-data");
+        kinoDataGroup.MapGet("cinemas", GetCinemas);
+        kinoDataGroup.MapGet("movies", GetMovies);
+        kinoDataGroup.MapGet("genres", GetGenres);
+
     }
 
     //Result<> is a union type, that can be all the different responses we can return, so it is easier to test.
@@ -34,7 +40,7 @@ public class KinoEndpoints : ICarterModule
         catch (Exception)
         {
             return TypedResults.BadRequest(
-                "Sorry, we encountered an unexpected issue while processing your request. Please ensure that the data is correct. We suggest you try again later or contact support if the problem persists."
+                DefaultErrorMessage
             );
         }
     }
@@ -52,7 +58,7 @@ public class KinoEndpoints : ICarterModule
         catch (Exception)
         {
             return TypedResults.BadRequest(
-                "Sorry, we encountered an unexpected issue while processing your request. We suggest you try again later or contact support if the problem persists."
+                DefaultErrorMessage
             );
         }
     }
@@ -70,7 +76,55 @@ public class KinoEndpoints : ICarterModule
         catch (Exception)
         {
             return TypedResults.BadRequest(
-                "Sorry, we encountered an unexpected issue while processing your request. We suggest you try again later or contact support if the problem persists."
+                DefaultErrorMessage
+            );
+        }
+    }
+    
+    private static async Task<Results<Ok<ICollection<Cinema>>, NotFound, BadRequest<string>>> GetCinemas(
+        [FromServices] IKinoDataService kinoDataService)
+    {
+        try
+        {
+            var cinemas = await kinoDataService.GetAllCinemas();
+            return cinemas.Any() ? TypedResults.Ok(cinemas) : TypedResults.NotFound();
+        }
+        catch (Exception)
+        {
+            return TypedResults.BadRequest(
+                DefaultErrorMessage
+            );
+        }
+    }
+    
+    private static async Task<Results<Ok<ICollection<Movie>>, NotFound, BadRequest<string>>> GetMovies(
+        [FromServices] IKinoDataService kinoDataService)
+    {
+        try
+        {
+            var movies = await kinoDataService.GetAllMovies();
+            return movies.Any() ? TypedResults.Ok(movies) : TypedResults.NotFound();
+        }
+        catch (Exception)
+        {
+            return TypedResults.BadRequest(
+                DefaultErrorMessage
+            );
+        }
+    }
+    
+    private static async Task<Results<Ok<ICollection<Genre>>, NotFound, BadRequest<string>>> GetGenres(
+        [FromServices] IKinoDataService kinoDataService)
+    {
+        try
+        {
+            var genres = await kinoDataService.GetAllGenres();
+            return genres.Any() ? TypedResults.Ok(genres) : TypedResults.NotFound();
+        }
+        catch (Exception)
+        {
+            return TypedResults.BadRequest(
+                DefaultErrorMessage
             );
         }
     }

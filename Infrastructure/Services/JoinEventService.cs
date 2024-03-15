@@ -446,12 +446,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             .Include(j => j.DefaultSelectOption)
             .Include(j => j.Host)
             .ToListAsync();
-
-        if (filter != null)
-        {
-            joinEvents = joinEvents.Where(filter).ToList();
-        }
-
+        
         return joinEvents;
     }
 }

@@ -30,28 +30,24 @@ public class KinoContext : DbContext
             .HasKey(pv => new { pv.ParticipantId, pv.ShowtimeId });
 
         //Many to Many relations
-        modelBuilder
-            .Entity<JoinEvent>()
-            .HasMany(je => je.Showtimes)
-            .WithMany();
+        modelBuilder.Entity<JoinEvent>().HasMany(je => je.Showtimes).WithMany();
+
+        modelBuilder.Entity<JoinEvent>().HasMany(je => je.SelectOptions).WithMany();
 
         modelBuilder
             .Entity<JoinEvent>()
-            .HasMany(je => je.SelectOptions)
-            .WithMany();
-
-        modelBuilder.Entity<JoinEvent>()
             .HasOne(je => je.DefaultSelectOption)
             .WithMany()
             .HasForeignKey(je => je.DefaultSelectOptionId);
 
         // Many to one relations
-        modelBuilder.Entity<JoinEvent>()
+        modelBuilder
+            .Entity<JoinEvent>()
             .HasMany(je => je.Participants)
             .WithOne()
             .HasForeignKey(p => p.JoinEventId);
-            //.IsRequired(false); // This indicates that the foreign key is optional
-        
+        //.IsRequired(false); // This indicates that the foreign key is optional
+
         modelBuilder
             .Entity<Participant>()
             .HasMany(p => p.VotedFor)
@@ -64,7 +60,6 @@ public class KinoContext : DbContext
             .WithOne()
             .HasForeignKey(v => v.ShowtimeId);
 
-
         // Call the base method to ensure any configuration from the base class is applied
         base.OnModelCreating(modelBuilder);
     }
@@ -73,5 +68,5 @@ public class KinoContext : DbContext
     {
         optionsBuilder.EnableSensitiveDataLogging();
         optionsBuilder.EnableDetailedErrors();
-    } 
+    }
 }

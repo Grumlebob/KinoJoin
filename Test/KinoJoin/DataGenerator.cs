@@ -19,11 +19,12 @@ public class DataGenerator
 
     public DataGenerator()
     {
-        _playtimeGenerator = new Faker<Playtime>()
-            .RuleFor(p => p.StartTime, f => f.Date.Future().ToUniversalTime());
+        _playtimeGenerator = new Faker<Playtime>().RuleFor(
+            p => p.StartTime,
+            f => f.Date.Future().ToUniversalTime()
+        );
 
-        _versionTagGenerator = new Faker<VersionTag>()
-            .RuleFor(v => v.Type, f => f.Lorem.Word());
+        _versionTagGenerator = new Faker<VersionTag>().RuleFor(v => v.Type, f => f.Lorem.Word());
 
         _roomGenerator = new Faker<Room>()
             .RuleFor(r => r.Id, (f, r) => f.IndexFaker + 1)
@@ -80,7 +81,7 @@ public class DataGenerator
                 Deadline = f.Date.Future(),
                 Host = _hostGenerator.Generate(),
             };
-            
+
             joinEvent.DefaultSelectOptionId = joinEvent.SelectOptions.First().Id;
             joinEvent.DefaultSelectOption = joinEvent.SelectOptions.First();
 
@@ -115,7 +116,7 @@ public class DataGenerator
             {
                 joinEvent.ChosenShowtimeId = f.PickRandom(joinEvent.Showtimes).Id;
             }
-            
+
             if (joinEvent.Showtimes.Where(j => j.Movie == null).Any())
             {
                 throw new ArgumentException("There are no movies");

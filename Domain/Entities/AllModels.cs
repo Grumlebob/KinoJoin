@@ -45,7 +45,7 @@ public class JoinEvent
 
     [ForeignKey("HostId")]
     public Host Host { get; set; }
-    
+
     [ForeignKey("DefaultSelectOptionId")]
     public SelectOption DefaultSelectOption { get; set; }
 }
@@ -95,6 +95,7 @@ public class ParticipantVote
     public int ParticipantId { get; set; }
     public int ShowtimeId { get; set; }
     public int SelectedOptionId { get; set; }
+
     [ForeignKey("SelectedOptionId")]
     public SelectOption SelectedOption { get; set; }
 }

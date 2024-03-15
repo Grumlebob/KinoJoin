@@ -26,8 +26,8 @@ public class KinoEndpoints : ICarterModule
     {
         try
         {
-          var result = await joinEventService.UpsertJoinEventAsync(joinEvent);
-          return TypedResults.Ok(result);
+            var result = await joinEventService.UpsertJoinEventAsync(joinEvent);
+            return TypedResults.Ok(result);
         }
         catch (Exception)
         {
@@ -37,9 +37,9 @@ public class KinoEndpoints : ICarterModule
         }
     }
 
-    private static async Task<Results<Ok<List<JoinEvent>>, NotFound, BadRequest<string>>> GetJoinEvents(
-        [FromServices] IJoinEventService joinEventService
-    )
+    private static async Task<
+        Results<Ok<List<JoinEvent>>, NotFound, BadRequest<string>>
+    > GetJoinEvents([FromServices] IJoinEventService joinEventService)
     {
         try
         {
@@ -50,9 +50,10 @@ public class KinoEndpoints : ICarterModule
         }
         catch (Exception e)
         {
-            return TypedResults.BadRequest("Sorry, we encountered an unexpected issue while processing your request. We suggest you try again later or contact support if the problem persists.");
+            return TypedResults.BadRequest(
+                "Sorry, we encountered an unexpected issue while processing your request. We suggest you try again later or contact support if the problem persists."
+            );
         }
-       
     }
 
     private static async Task<Results<NotFound, Ok<JoinEvent>, BadRequest<string>>> GetJoinEvent(
@@ -67,7 +68,9 @@ public class KinoEndpoints : ICarterModule
         }
         catch (Exception e)
         {
-            return TypedResults.BadRequest("Sorry, we encountered an unexpected issue while processing your request. We suggest you try again later or contact support if the problem persists.");
+            return TypedResults.BadRequest(
+                "Sorry, we encountered an unexpected issue while processing your request. We suggest you try again later or contact support if the problem persists."
+            );
         }
     }
 }

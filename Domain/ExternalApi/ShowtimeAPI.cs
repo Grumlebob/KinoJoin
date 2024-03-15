@@ -7,6 +7,7 @@ public class Root
     [JsonProperty("content")]
     public ContentLevel1 Content { get; set; }
 }
+
 public class ContentLevel1
 {
     [JsonProperty("content")]

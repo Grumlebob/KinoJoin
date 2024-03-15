@@ -43,7 +43,7 @@ public class KinoJoinTests : IAsyncLifetime
             joinEventFromApi.Should().NotBeNull();
             joinEventFromApi.Title.Should().Be(joinEvent.Title);
         }
-        
+
         //check count
         joinEvents.Count.Should().Be(casesToInsert);
         var getResponseAll = await _client.GetAsync("api/events");
@@ -61,7 +61,7 @@ public class KinoJoinTests : IAsyncLifetime
         joinEventToCheck.Deadline.Should().BeAfter(DateTime.Now);
         joinEventToCheck.Id.Should().BeGreaterThan(0);
         joinEventToCheck.Title.Should().NotBeNullOrEmpty();
-        
+
         //These properties are not always present
         if (joinEventToCheck.Participants is { Count: > 0 })
         {
@@ -72,7 +72,7 @@ public class KinoJoinTests : IAsyncLifetime
         {
             joinEventToCheck.ChosenShowtimeId.Should().BeGreaterThan(0);
         }
-        
+
         //update JoinEvent properties
         var joinEventToUpdate = joinEventsFromApi[casesToInsert - 1];
         joinEventToUpdate.Title = "Updated";
@@ -81,37 +81,69 @@ public class KinoJoinTests : IAsyncLifetime
 
         //check updated JoinEvent
         var getResponseUpdated = await _client.GetAsync($"api/events/{joinEventToUpdate.Id}");
-        var joinEventFromApiUpdated = await getResponseUpdated.Content.ReadFromJsonAsync<JoinEvent>();
+        var joinEventFromApiUpdated =
+            await getResponseUpdated.Content.ReadFromJsonAsync<JoinEvent>();
         joinEventFromApiUpdated.Should().NotBeNull();
         joinEventFromApiUpdated.Title.Should().Be(joinEventToUpdate.Title);
-        
+
         //Add nested participant in JoinEvent
-        var joinEventToUpdateParticipant = await _client.GetAsync($"api/events/{casesToInsert-1}");
-        var joinEventToUpdateParticipantFromApi = await joinEventToUpdateParticipant.Content.ReadFromJsonAsync<JoinEvent>();
-        joinEventToUpdateParticipantFromApi.Participants.Add(new Participant { AuthId = "New", Email = "New", Nickname = "New", 
-            VotedFor = [new ParticipantVote() {ShowtimeId = joinEventToUpdate.Showtimes.First().Id, SelectedOptionId = joinEventToUpdate.SelectOptions.First().Id, SelectedOption = joinEventToUpdate.SelectOptions.First()} ]});
-        var updateResponseParticipant = await _client.PutAsJsonAsync("api/events", joinEventToUpdateParticipantFromApi);
+        var joinEventToUpdateParticipant = await _client.GetAsync(
+            $"api/events/{casesToInsert - 1}"
+        );
+        var joinEventToUpdateParticipantFromApi =
+            await joinEventToUpdateParticipant.Content.ReadFromJsonAsync<JoinEvent>();
+        joinEventToUpdateParticipantFromApi.Participants.Add(
+            new Participant
+            {
+                AuthId = "New",
+                Email = "New",
+                Nickname = "New",
+                VotedFor =
+                [
+                    new ParticipantVote()
+                    {
+                        ShowtimeId = joinEventToUpdate.Showtimes.First().Id,
+                        SelectedOptionId = joinEventToUpdate.SelectOptions.First().Id,
+                        SelectedOption = joinEventToUpdate.SelectOptions.First()
+                    }
+                ]
+            }
+        );
+        var updateResponseParticipant = await _client.PutAsJsonAsync(
+            "api/events",
+            joinEventToUpdateParticipantFromApi
+        );
         updateResponseParticipant.EnsureSuccessStatusCode();
-        
+
         //check particpant got added
-        var getResponseUpdatedParticipant = await _client.GetAsync($"api/events/{casesToInsert-1}");
-        var joinEventFromApiUpdatedParticipant = await getResponseUpdatedParticipant.Content.ReadFromJsonAsync<JoinEvent>();
+        var getResponseUpdatedParticipant = await _client.GetAsync(
+            $"api/events/{casesToInsert - 1}"
+        );
+        var joinEventFromApiUpdatedParticipant =
+            await getResponseUpdatedParticipant.Content.ReadFromJsonAsync<JoinEvent>();
         joinEventFromApiUpdatedParticipant.Should().NotBeNull();
-        joinEventFromApiUpdatedParticipant.Participants.Any(p => p.AuthId == "New").Should().BeTrue();
-        
+        joinEventFromApiUpdatedParticipant
+            .Participants.Any(p => p.AuthId == "New")
+            .Should()
+            .BeTrue();
+
         //Update the participant we just added to a new name
         joinEventFromApiUpdatedParticipant.Participants.First().Nickname = "Updated";
-        var updateResponseParticipantName = await _client.PutAsJsonAsync("api/events", joinEventFromApiUpdatedParticipant);
+        var updateResponseParticipantName = await _client.PutAsJsonAsync(
+            "api/events",
+            joinEventFromApiUpdatedParticipant
+        );
         updateResponseParticipantName.EnsureSuccessStatusCode();
-        
+
         //check participant got updated
-        var getResponseUpdatedParticipantName = await _client.GetAsync($"api/events/{casesToInsert-1}");
-        var joinEventFromApiUpdatedParticipantName = await getResponseUpdatedParticipantName.Content.ReadFromJsonAsync<JoinEvent>();
+        var getResponseUpdatedParticipantName = await _client.GetAsync(
+            $"api/events/{casesToInsert - 1}"
+        );
+        var joinEventFromApiUpdatedParticipantName =
+            await getResponseUpdatedParticipantName.Content.ReadFromJsonAsync<JoinEvent>();
         joinEventFromApiUpdatedParticipantName.Should().NotBeNull();
         joinEventFromApiUpdatedParticipantName.Participants.First().Nickname.Should().Be("Updated");
-        
     }
-
 
     //We don't care about the InitializeAsync method, but needed to implement the IAsyncLifetime interface
     public Task InitializeAsync() => Task.CompletedTask;

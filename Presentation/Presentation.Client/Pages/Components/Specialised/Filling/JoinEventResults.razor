@@ -15,7 +15,7 @@
     <label>
         <div class="rounded border p-3 w-fit">
             Sortér efter:
-            <select onchange="@((ChangeEventArgs e) => { Console.WriteLine(e); SetSortOption(e.Value.ToString()); })">
+            <select onchange="@((ChangeEventArgs e) => { SetSortOption(e.Value.ToString()); })">
                 <option value="@VotesString">@VotesString</option>
                 <option value="@TimeString">@TimeString</option>
             </select>

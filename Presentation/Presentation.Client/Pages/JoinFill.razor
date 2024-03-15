@@ -169,8 +169,6 @@
 
         _deadline = _event!.Deadline.ToLocalTime();
         _loading = false;
-
-        Console.WriteLine("selectOptions: " + _event?.SelectOptions.Count);
     }
 
     private async Task ScrollToBottom()
@@ -184,7 +182,6 @@
         _event!.Deadline = _deadline;
         var httpClient = new HttpClient();
         var response = await httpClient.PutAsJsonAsync($"{_baseUrl}api/events", _event);
-        Console.WriteLine(response.IsSuccessStatusCode ? "Updated" : "Failed to update");
     }
 
     private void OnVotesChanged(ICollection<ParticipantVote> votes)

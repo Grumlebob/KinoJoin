@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using Application;
 using Application.Interfaces;
 using Carter;
@@ -21,7 +20,6 @@ builder.Services.AddRazorComponents().AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddScoped<IMonkeyService, MonkeyService>();
 builder.Services.AddScoped<IJoinEventService, JoinEventService>();
-builder.Services.AddScoped<IKinoDkService, KinoDkService>();
 builder.Services.AddScoped<IKinoJoinService, KinoJoinService>();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);

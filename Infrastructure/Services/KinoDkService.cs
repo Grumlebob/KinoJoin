@@ -11,8 +11,8 @@ public class KinoDkService : IKinoDkService
     private const string BaseUrl = "https://api.kino.dk/ticketflow/showtimes?region=content&format=json";
 
     public async Task<(List<Showtime> showtimes, List<Movie> moviesWithoutShowtimes)> GetShowtimesFromFilters(
-        List<int>? cinemaIds = null, List<int>? movieIds = null,
-        List<int>? genreIds = null, DateTime? fromDate = null, DateTime? toDate = null)
+        ICollection<int>? cinemaIds = null, ICollection<int>? movieIds = null,
+        ICollection<int>? genreIds = null, DateTime? fromDate = null, DateTime? toDate = null)
     {
         cinemaIds ??= [];
         movieIds ??= [];
@@ -21,20 +21,22 @@ public class KinoDkService : IKinoDkService
         toDate ??= DateTime.Now.AddDays(30);
 
         var filterStringBuilder = new StringBuilder("&sort=most_purchased");
-
+        var cinemaList = cinemaIds.ToList();
         for (var i = 0; i < cinemaIds.Count; i++)
         {
-            filterStringBuilder.Append($"&cinemas[{i}]={cinemaIds[i]}");
+            filterStringBuilder.Append($"&cinemas[{i}]={cinemaList[i]}");
         }
 
+        var movieList = movieIds.ToList();
         for (var i = 0; i < movieIds.Count; i++)
         {
-            filterStringBuilder.Append($"&movies[{i}]={movieIds[i]}");
+            filterStringBuilder.Append($"&movies[{i}]={movieList[i]}");
         }
 
+        var genreList = genreIds.ToList();
         for (var i = 0; i < genreIds.Count; i++)
         {
-            filterStringBuilder.Append($"&genres[{i}]={genreIds[i]}");
+            filterStringBuilder.Append($"&genres[{i}]={genreList[i]}");
         }
 
         filterStringBuilder.Append($"&date={fromDate}");
@@ -156,6 +158,7 @@ public class KinoDkService : IKinoDkService
                 }
             }
         }
+        Console.WriteLine("shows " + showtimes.Count);
 
         //include movies that had no show times
         var filterString = new StringBuilder("&sort=most_purchased");
@@ -190,7 +193,6 @@ public class KinoDkService : IKinoDkService
             };
             missingMovies.Add(movieObject);
         }
-        
         return (showtimes, missingMovies);
     }
 }

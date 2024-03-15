@@ -69,9 +69,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             && joinEvent.Participants.Exists(eP => eP.Id == participantId)
         )
         {
-            joinEvent.Participants.Remove(
-                joinEvent.Participants.First(p => p.Id == participantId)
-            );
+            joinEvent.Participants.Remove(joinEvent.Participants.First(p => p.Id == participantId));
         }
         await context.SaveChangesAsync();
     }

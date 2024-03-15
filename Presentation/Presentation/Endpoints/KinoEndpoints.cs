@@ -16,7 +16,7 @@ public class KinoEndpoints : ICarterModule
 
         group.MapGet("", GetJoinEvents);
         group.MapGet("{id}", GetJoinEvent);
-        
+
         group.MapDelete("{eventId}/participants/{participantId}", DeleteParticipant);
     }
 
@@ -75,7 +75,7 @@ public class KinoEndpoints : ICarterModule
             );
         }
     }
-    
+
     //Delete participant
     public static async Task<Results<Ok, NotFound>> DeleteParticipant(
         [FromRoute] int eventId,

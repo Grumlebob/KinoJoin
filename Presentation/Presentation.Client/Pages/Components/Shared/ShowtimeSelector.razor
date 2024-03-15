@@ -2,16 +2,6 @@
 
 <style>
 
-.empty-showtime {
-    background-image: repeating-linear-gradient(
-        +45deg,
-        #ffffff, /* Lighter shade of gray for the streak */
-        #ffffff 10px,
-        #d5d5d5 10px, /* Darker shade of gray for the space between streaks */
-        #d5d5d5 20px
-    );
-}
-
 </style>
 
 @if (Showtimes.Count == 0)
@@ -40,7 +30,7 @@
             @foreach (var showtimesByCinema in showtimesByMovie.GroupBy(s => s.Cinema.Id))
             {
                 var cinema = showtimesByCinema.First().Cinema;
-                <CinemaShowtimes Showtimes="Showtimes" VotedFor="VotedFor" SelectOptions="SelectOptions" Cinema="cinema" VotedForChanged="VotedForChanged" ShowtimesByCinema="showtimesByCinema" ShowtimesByMovie="showtimesByMovie"/>
+                <CinemaShowtimes Showtimes="Showtimes" Votes="Votes" SelectOptions="SelectOptions" Cinema="cinema" VotesChanged="VotesChanged" ShowtimesByCinema="showtimesByCinema" ShowtimesByMovie="showtimesByMovie"/>
             }
         </ShowtimeSelectorHeading>
     }
@@ -62,22 +52,15 @@
 
 @code {
 
-    [Parameter] public List<Showtime> Showtimes { get; set; } = new();
+    [Parameter] public List<Showtime> Showtimes { get; set; } = [];
 
     [Parameter] public List<Movie> MoviesWithOutShowTimes { get; set; } = [];
 
-    [Parameter] public List<(int showtimeId, int vote)> VotedFor { get; set; } = [];
+    [Parameter] public ICollection<ParticipantVote> Votes { get; set; } = [];
 
-    [Parameter] public EventCallback<List<(int ShowtimeId, int Vote)>> VotedForChanged { get; set; }
+    [Parameter] public EventCallback<ICollection<ParticipantVote>> VotesChanged { get; set; }
 
-    //Disse selectoptions er sat til create siden....
-    [Parameter] public List<SelectOption> SelectOptions { get; set; } = new List<SelectOption>() { new SelectOption() { VoteOption = "Kan ikke", Color = "gray-200" }, new SelectOption() { VoteOption = "Kan godt", Color = "success" } };
-
-    private async Task HandleShowtimeClick(int selectOptionIndex, int showtimeId)
-    {
-        var next = (VotedFor[selectOptionIndex].vote + 1) % SelectOptions.Count;
-        VotedFor[selectOptionIndex] = (showtimeId, next);
-        await VotedForChanged.InvokeAsync(VotedFor);
-    }
+    //Default options for create page
+    [Parameter] public required List<SelectOption> SelectOptions { get; set; }
 
 }

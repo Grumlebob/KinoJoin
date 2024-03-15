@@ -4,7 +4,7 @@
 <div class="flex flex-col gap-2">
     <div class="flex justify-between">
         <h2 class="text-2xl text-bold">Andres svar</h2>
-        <button class="rounded-full bg-secondary text-white font-bold p-3 md:hidden flex" onclick="@ShowParticipantDialog">
+        <button class="rounded-full bg-secondary text-white font-bold p-3 md:hidden flex" @onclick="ShowParticipantDialog">
             <div class="flex gap-1">
                 <ParticipantsIcon Class="fill-white"/>
                 <p>Deltagere</p>
@@ -100,7 +100,7 @@
 
 @code {
 
-    [Parameter] public JoinEvent Event { get; set; }
+    [Parameter] public required JoinEvent Event { get; set; }
 
     [Parameter] public bool IsHost { get; set; }
 
@@ -158,16 +158,15 @@
 
     private void SetSortOption(string option)
     {
-        Console.WriteLine("Set sort option " + option);
         if (option == VotesString)
         {
             _orderedShowtimes = Event.Showtimes.OrderByDescending(showtime =>
                     Event.Participants?
-                        .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)) ?? 0)
+                        .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)) ?? 0)
                 .ThenBy(showtime =>
                     Event.Participants?
-                        .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.VoteIndex != 0)
-                            .Sum(v => v.VoteIndex)) ?? 0)
+                        .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)
+                            .Sum(v => Event.SelectOptions.FindIndex(s => s.Id == v.SelectedOptionId))))
                 .ThenBy(s => s.Playtime.StartTime.ToLocalTime()).ToList();
         }
         else

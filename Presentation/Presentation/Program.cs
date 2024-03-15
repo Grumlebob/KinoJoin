@@ -88,7 +88,7 @@ if (GlobalSettings.ShouldPreSeedDatabase)
         for (int i = lowestCinemaId; i <= highestCinemaId; i++)
         {
             var apiString =
-                $"https://api.kino.dk/ticketflow/showtimes?sort=most_purchased&cinemas={i}?region=content&format=json";
+                $"https://api.kino.dk/ticketflow/showtimes?sort=most_purchased&cinemas={i}&region=content&format=json";
 
             var client = new HttpClient();
             var json = await client.GetStringAsync(apiString);
@@ -97,7 +97,7 @@ if (GlobalSettings.ShouldPreSeedDatabase)
             {
                 var apiResultObject = JsonConvert.DeserializeObject<Root>(json);
 
-                var facets = apiResultObject!.Content.Content.Facets;
+                var facets = apiResultObject!.Content.Facets;
 
                 // Cinemas
                 foreach (var cinemaOption in facets.Cinemas.Options)
@@ -151,12 +151,12 @@ if (GlobalSettings.ShouldPreSeedDatabase)
                 //several cinemas may pose the same movie. No need to create the movie object every time
                 Dictionary<int, string> _movieIdsToNames = new();
                 var existingMovies = new Dictionary<int, Movie>();
-                foreach (var movieOption in apiResultObject.Content.Content.Facets.Movies.Options)
+                foreach (var movieOption in apiResultObject.Content.Facets.Movies.Options)
                 {
                     _movieIdsToNames.Add(movieOption.Key, movieOption.Value);
                 }
 
-                foreach (var jsonCinema in apiResultObject.Content.Content.Content.Content)
+                foreach (var jsonCinema in apiResultObject.Content.Content.Content)
                 {
                     foreach (
                         var jsonMovie in jsonCinema.Movies.Where(jsonMovie =>

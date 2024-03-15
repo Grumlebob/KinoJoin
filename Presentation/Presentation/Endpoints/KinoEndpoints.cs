@@ -1,5 +1,4 @@
-﻿using Application.DTO;
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using Carter;
 using Domain.Entities;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -11,35 +10,50 @@ public class KinoEndpoints : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("api/events"); //Tilføj prefix til alle endpoints såsom /.../Events/
+        var group = app.MapGroup("api/events");
 
         group.MapPut("", UpsertJoinEvent);
-        group.MapGet("{id}", GetJoinEvent);
+
         group.MapGet("", GetJoinEvents);
+        group.MapGet("{id}", GetJoinEvent);
     }
 
     //Result<> is a union type, that can be all the different responses we can return, so it is easier to test.
     private static async Task<Results<Ok<int>, BadRequest<string>>> UpsertJoinEvent(
-        [FromBody] UpsertJoinEventDto upsertJoinEventDto,
+        [FromBody] JoinEvent joinEvent,
         [FromServices] IJoinEventService joinEventService
     )
     {
         try
         {
-            var result = await joinEventService.PutAsync(upsertJoinEventDto);
+            var result = await joinEventService.UpsertJoinEventAsync(joinEvent);
             return TypedResults.Ok(result);
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            return TypedResults.BadRequest(e.Message);
+            return TypedResults.BadRequest(
+                "Sorry, we encountered an unexpected issue while processing your request. Please ensure that the data is correct. We suggest you try again later or contact support if the problem persists."
+            );
         }
     }
 
-    private static async Task<Results<Ok<List<JoinEvent>>, NotFound>> GetJoinEvents(
-        [FromServices] IJoinEventService joinEventService
-    )
+    private static async Task<
+        Results<Ok<List<JoinEvent>>, NotFound, BadRequest<string>>
+    > GetJoinEvents([FromServices] IJoinEventService joinEventService)
     {
-        return TypedResults.Ok(new List<JoinEvent>());
+        try
+        {
+            var joinEvents = await joinEventService.GetAllAsync();
+            if (joinEvents.Count == 0)
+                return TypedResults.NotFound();
+            return TypedResults.Ok(joinEvents);
+        }
+        catch (Exception e)
+        {
+            return TypedResults.BadRequest(
+                "Sorry, we encountered an unexpected issue while processing your request. We suggest you try again later or contact support if the problem persists."
+            );
+        }
     }
 
     private static async Task<Results<NotFound, Ok<JoinEvent>, BadRequest<string>>> GetJoinEvent(
@@ -54,7 +68,9 @@ public class KinoEndpoints : ICarterModule
         }
         catch (Exception e)
         {
-            return TypedResults.BadRequest(e.Message);
+            return TypedResults.BadRequest(
+                "Sorry, we encountered an unexpected issue while processing your request. We suggest you try again later or contact support if the problem persists."
+            );
         }
     }
 }

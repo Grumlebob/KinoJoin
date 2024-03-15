@@ -38,8 +38,8 @@
                             <td class="p-2 align-top">
                                 @foreach (var showtime in Showtimes.Where(s => s.Movie.Id == ShowtimesByMovie.Key && s.Cinema.Id == ShowtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
                                 {
-                                    var index = VotedFor.IndexOf(VotedFor.First(v => v.showtimeId == showtime.Id));
-                                    <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center cursor-pointer select-none rounded shadow-inset bg-@SelectOptions[VotedFor[index].vote].Color" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(() => HandleShowtimeClick(index, showtime.Id))">
+                                    var vote = Votes.First(v => v.ShowtimeId == showtime.Id);
+                                    <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center cursor-pointer select-none rounded shadow-inset bg-@vote.SelectedOption.Color" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(() => HandleShowtimeClick(vote))">
                                         <div class="mb-1 text-center text-sm line-clamp-1">@showtime.Room.Name</div>
                                         <div class="text-lg font-bold">@showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm")</div> <!-- showtime-time -->
                                     </div>
@@ -71,31 +71,32 @@
 
     [Parameter] public IGrouping<int, Showtime> ShowtimesByMovie { get; set; }
 
-    [Parameter] public List<(int showtimeId, int vote)> VotedFor { get; set; } = [];
+    [Parameter] public ICollection<ParticipantVote> Votes { get; set; } = [];
 
-    [Parameter] public List<SelectOption> SelectOptions { get; set; } = new List<SelectOption>() { new SelectOption() { VoteOption = "Kan ikke", Color = "gray-200" }, new SelectOption() { VoteOption = "Kan godt", Color = "success" } };
+    [Parameter] public List<SelectOption> SelectOptions { get; set; } = [new SelectOption() { VoteOption = "Kan ikke", Color = "gray-200" }, new SelectOption() { VoteOption = "Kan godt", Color = "success" }];
 
-    [Parameter] public EventCallback<List<(int ShowtimeId, int Vote)>> VotedForChanged { get; set; }
+    [Parameter] public EventCallback<ICollection<ParticipantVote>> VotesChanged { get; set; }
 
     private bool _hasChanged = false;
 
-    private async Task HandleShowtimeClick(int selectOptionIndex, int showtimeId)
+    private async Task HandleShowtimeClick(ParticipantVote voteToIncrement)
     {
-        var next = (VotedFor[selectOptionIndex].vote + 1) % SelectOptions.Count;
-        VotedFor[selectOptionIndex] = (showtimeId, next);
-        await VotedForChanged.InvokeAsync(VotedFor);
+        //find index of select option in order to increment it
+        var next = (SelectOptions.FindIndex(
+                       s => (s.VoteOption, s.Color) == (voteToIncrement.SelectedOption.VoteOption, voteToIncrement.SelectedOption.Color)) + 1)
+                   % SelectOptions.Count;
+        voteToIncrement.SelectedOption = SelectOptions[next];
+        voteToIncrement.SelectedOptionId = SelectOptions[next].Id;
+
+        await VotesChanged.InvokeAsync(Votes);
         _hasChanged = true;
     }
 
     protected override bool ShouldRender()
     {
-        if (_hasChanged)
-        {
-            _hasChanged = false;
-            return true;
-        }
-
-        return false;
+        if (!_hasChanged) return false;
+        _hasChanged = false;
+        return true;
     }
 
 }

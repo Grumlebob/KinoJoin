@@ -6,10 +6,8 @@ public class Host
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public string AuthId { get; set; }
-
     public string Username { get; set; }
     public string? Email { get; set; }
-    public List<JoinEvent> JoinEvents { get; set; } = [];
 }
 
 public class Participant
@@ -31,15 +29,14 @@ public class JoinEvent
     public int Id { get; set; }
     public string HostId { get; set; }
     public string Title { get; set; }
-    public string Description { get; set; }
+    public string Description { get; set; } = string.Empty;
     public List<Showtime> Showtimes { get; set; } = [];
     public int? ChosenShowtimeId { get; set; }
-    public List<Participant> Participants { get; set; } = [];
-
-    public List<SelectOption> SelectOptions { get; set; } = [];
+    public List<Participant>? Participants { get; set; } = [];
+    public List<SelectOption>? SelectOptions { get; set; } = [];
+    public int DefaultSelectOptionId { get; set; }
 
     private DateTime _deadline;
-
     public DateTime Deadline
     {
         get => _deadline;
@@ -48,6 +45,9 @@ public class JoinEvent
 
     [ForeignKey("HostId")]
     public Host Host { get; set; }
+
+    [ForeignKey("DefaultSelectOptionId")]
+    public SelectOption DefaultSelectOption { get; set; }
 }
 
 public class Movie
@@ -73,9 +73,6 @@ public class Showtime
     public int VersionTagId { get; set; }
     public int RoomId { get; set; }
 
-    //Many to many to JoinEvent
-    public List<JoinEvent> JoinEvents { get; set; }
-
     //Foreign Keys
     [ForeignKey("VersionTagId")]
     public VersionTag VersionTag { get; set; }
@@ -97,7 +94,10 @@ public class ParticipantVote
 {
     public int ParticipantId { get; set; }
     public int ShowtimeId { get; set; }
-    public int VoteIndex { get; set; }
+    public int SelectedOptionId { get; set; }
+
+    [ForeignKey("SelectedOptionId")]
+    public SelectOption SelectedOption { get; set; }
 }
 
 [Index(nameof(VoteOption), nameof(Color), IsUnique = true)]
@@ -112,9 +112,6 @@ public class SelectOption
     /// For example, if the color is primary, and you want to use it as a background, the class bg-primary must be used somewhere in the project. Add the class to the dummy component "GenerateCustomTailwindColorsBeforeRunTime.razor" to use it, if it is not used anywhere else.
     /// </summary>
     public string Color { get; set; }
-
-    //navigation property
-    public List<JoinEvent> JoinEvents { get; set; }
 }
 
 [Index(nameof(StartTime), IsUnique = true)]

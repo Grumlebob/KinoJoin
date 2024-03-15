@@ -24,7 +24,7 @@
     <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
         <div class="bg-white mx-4 p-6 rounded-lg shadow-xl mb-40">
             <div class="flex justify-center flex-col space-y-2">
-                <h4 class="font-bold">@_event?.Host?.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h4>
+                <h4 class="font-bold">@_event.Host.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h4>
                 <div class=" flex md:justify-end md:items-end">
                     <div class="w-full md:w-fit flex flex-col md:flex-row gap-2">
                         <button class="rounded-full border border-black shadow px-3 py-2 duration-300 transition font-label bg-primary text-white hover:bg-neutral-950 hover:text-white" onclick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + _event?.Id }); })">Anvend dit kino login</button>
@@ -41,11 +41,11 @@
         <div class="flex flex-row">
             @if (_isEditing)
             {
-                <input type="text" @bind="_event.Title" style="margin-right: 5px"/>
+                <input type="text" @bind="_event!.Title" style="margin-right: 5px"/>
             }
             else
             {
-                <h1 class="font-label text-2xl">@_event.Title</h1>
+                <h1 class="font-label text-2xl">@_event!.Title</h1>
             }
 
             @if (_isHost)
@@ -63,37 +63,37 @@
         }
         else
         {
-            if (  _event.Description != "")
+            if (_event.Description != "")
             {
-            <p>@_event.Description</p>
-            <br/>
+                <p>@_event.Description</p>
+                <br/>
             }
         }
 
         <div class="flex space-x-1">
-            <span class="font-medium">Svarfrist</span> 
+            <span class="font-medium">Svarfrist</span>
             @if (_isEditing)
             {
-                <input style="margin-bottom: 5px; width: 300px" type="date" placeholder="Deadline" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")" max="@_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("yyyy-MM-dd")" @bind="@_deadline"/>
+                <input style="margin-bottom: 5px; width: 300px" type="date" placeholder="Deadline" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")" max="@_event!.Showtimes.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("yyyy-MM-dd")" @bind="@_deadline"/>
             }
             else
             {
                 <span>
-                @_deadline.ToString("dd. MMM")
+                    @_deadline.ToString("dd. MMM")
                 </span>
             }
         </div>
 
-        <span class="underline">Tidsinterval</span> 
-        <span> @_event?.Showtimes?.Min(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM") - @_event?.Showtimes?.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM")</span>
+        <span class="underline">Tidsinterval</span>
+        <span> @_event.Showtimes.Min(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM") - @_event.Showtimes.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM")</span>
         <br/>
-        <button class=" rounded-full border border-black shadow duration-300 transition px-1 py-0.5 transition duration-100 font-label hover:bg-neutral-950 hover:text-white"  @onclick="ScrollToBottom">Gå til resultater</button>
+        <button class=" rounded-full border border-black shadow duration-300 transition px-1 py-0.5 transition duration-100 font-label hover:bg-neutral-950 hover:text-white" @onclick="ScrollToBottom">Gå til resultater</button>
     </div>
 </div>
 
-<ShowtimeSelector SelectOptions="_event.SelectOptions" Showtimes="_event.Showtimes" VotedFor="@(_votedFor.Select(v => (v.ShowtimeId, v.VoteIndex)).ToList())" VotedForChanged="OnVotesChanged"/>
+<ShowtimeSelector SelectOptions="@_event.SelectOptions" Showtimes="@_event.Showtimes" Votes="@_currentParticipant.VotedFor" VotesChanged="OnVotesChanged"/>
 
-<RegisterParticipantVote Event="_event" OnAnswerSaved="@(p => { _currentParticipant = p; StateHasChanged(); })" @bind-Nickname="@_nickname" AlreadyAnswered="_alreadyAnswered" VotedFor="_votedFor" LoggedInUserId="@_loggedInUserId"/>
+<RegisterParticipantVote Event="_event" OnAnswerSaved="@(p => { _currentParticipant = p; StateHasChanged(); })" @bind-Nickname="@_currentParticipant.Nickname" AlreadyAnswered="_alreadyAnswered" VotedFor="@_currentParticipant.VotedFor" LoggedInUserId="@_currentParticipant.AuthId"/>
 
 <br/>
 <br/>
@@ -106,10 +106,6 @@
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = null!;
 
     private JoinEvent? _event;
-
-    private List<ParticipantVote> _votedFor = [];
-
-    private string? _nickname;
 
     private bool _loading = true;
 
@@ -125,11 +121,9 @@
 
     private DateTime _deadline;
 
-    private string? _loggedInUserId;
-
     private bool _isLoggedIn;
 
-    private Participant _currentParticipant;
+    private Participant _currentParticipant = new () {VotedFor = []};
 
     protected override async Task OnInitializedAsync()
     {
@@ -143,7 +137,11 @@
 
         if (_event is { Showtimes: not null })
         {
-            _votedFor = _event.Showtimes.Select(st => new ParticipantVote { ShowtimeId = st.Id, VoteIndex = 0 }).ToList(); // a vote for each showtime
+            _currentParticipant.VotedFor = _event.Showtimes.Select(st =>
+                new ParticipantVote
+                {
+                    ShowtimeId = st.Id, SelectedOptionId = _event.DefaultSelectOptionId, SelectedOption = _event.DefaultSelectOption
+                }).ToList(); // a default vote for each showtime
         }
 
 
@@ -154,13 +152,13 @@
         if (_isLoggedIn)
         {
             var username = user.Identity.Name;
-            _loggedInUserId = user.FindFirst(c => c.Type == "sub")?.Value;
-            _isHost = _event?.Host?.AuthId == _loggedInUserId;
-            _nickname = username;
-            if (_event!.Participants!.Any(p => p.AuthId == _loggedInUserId))
+            _currentParticipant.AuthId = user.FindFirst(c => c.Type == "sub")?.Value;
+            _isHost = _event?.Host?.AuthId == _currentParticipant.AuthId;
+            _currentParticipant.Nickname = username;
+            if (_event!.Participants!.Any(p => p.AuthId == _currentParticipant.AuthId))
             {
                 _alreadyAnswered = true;
-                _currentParticipant = _event.Participants.First(p => p.AuthId == _loggedInUserId);
+                _currentParticipant = _event.Participants.First(p => p.AuthId == _currentParticipant.AuthId);
             }
         }
         else
@@ -184,15 +182,14 @@
     private async Task UpdateJoinEvent()
     {
         _event!.Deadline = _deadline;
-        var upsertJoinEventDto = UpsertJoinEventDto.FromModelToUpsertDto(_event!);
         var httpClient = new HttpClient();
-        var response = await httpClient.PutAsJsonAsync($"{_baseUrl}api/events", upsertJoinEventDto);
+        var response = await httpClient.PutAsJsonAsync($"{_baseUrl}api/events", _event);
         Console.WriteLine(response.IsSuccessStatusCode ? "Updated" : "Failed to update");
     }
 
-    private void OnVotesChanged(List<(int showtimeId, int vote)> votes)
+    private void OnVotesChanged(ICollection<ParticipantVote> votes)
     {
-        _votedFor = votes.Select(v => new ParticipantVote { ShowtimeId = v.showtimeId, VoteIndex = v.vote }).ToList();
+        _currentParticipant.VotedFor = votes;
     }
 
 }

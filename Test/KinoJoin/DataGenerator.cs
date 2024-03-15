@@ -19,13 +19,12 @@ public class DataGenerator
 
     public DataGenerator()
     {
-        _playtimeGenerator = new Faker<Playtime>()
-            .RuleFor(p => p.Id, (f, p) => f.IndexFaker + 1)
-            .RuleFor(p => p.StartTime, f => f.Date.Future().ToUniversalTime());
+        _playtimeGenerator = new Faker<Playtime>().RuleFor(
+            p => p.StartTime,
+            f => f.Date.Future().ToUniversalTime()
+        );
 
-        _versionTagGenerator = new Faker<VersionTag>()
-            .RuleFor(v => v.Id, (f, v) => f.IndexFaker + 1)
-            .RuleFor(v => v.Type, f => f.Lorem.Word());
+        _versionTagGenerator = new Faker<VersionTag>().RuleFor(v => v.Type, f => f.Lorem.Word());
 
         _roomGenerator = new Faker<Room>()
             .RuleFor(r => r.Id, (f, r) => f.IndexFaker + 1)
@@ -51,42 +50,40 @@ public class DataGenerator
 
         _showtimeGenerator = new Faker<Showtime>()
             .RuleFor(s => s.Id, (f, s) => f.IndexFaker + 1)
-            .RuleFor(s => s.Movie, f => f.PickRandom(_movieGenerator.Generate()))
-            .RuleFor(s => s.Cinema, f => f.PickRandom(_cinemaGenerator.Generate()))
-            .RuleFor(s => s.Playtime, f => f.PickRandom(_playtimeGenerator.Generate()))
-            .RuleFor(s => s.VersionTag, f => f.PickRandom(_versionTagGenerator.Generate()))
-            .RuleFor(s => s.Room, f => f.PickRandom(_roomGenerator.Generate()));
+            .RuleFor(s => s.Movie, f => f.PickRandom(_movieGenerator.Generate(5)))
+            .RuleFor(s => s.Cinema, f => f.PickRandom(_cinemaGenerator.Generate(5)))
+            .RuleFor(s => s.Playtime, f => f.PickRandom(_playtimeGenerator.Generate(5)))
+            .RuleFor(s => s.VersionTag, f => f.PickRandom(_versionTagGenerator.Generate(5)))
+            .RuleFor(s => s.Room, f => f.PickRandom(_roomGenerator.Generate(5)));
 
         _participantGenerator = new Faker<Participant>()
-            .RuleFor(p => p.Id, (f, p) => f.IndexFaker + 1)
             .RuleFor(p => p.AuthId, f => f.Random.Uuid().ToString())
             .RuleFor(p => p.Nickname, f => f.Internet.UserName())
             .RuleFor(p => p.Email, f => f.Internet.Email())
             .RuleFor(p => p.Note, f => f.Lorem.Sentence());
 
         _selectOptionGenerator = new Faker<SelectOption>()
-            .RuleFor(o => o.Id, (f, o) => f.IndexFaker + 1)
             .RuleFor(o => o.VoteOption, f => f.Lorem.Word())
             .RuleFor(o => o.Color, f => f.Commerce.Color());
 
         JoinEventGenerator = new Faker<JoinEvent>().CustomInstantiator(f =>
         {
-            //var JoinEventId = f.IndexFaker + 1;
-
             var participants = _participantGenerator.Generate(f.Random.Int(0, 5));
 
             var joinEvent = new JoinEvent
             {
-                //Id = JoinEventId,
                 HostId = f.Random.Uuid().ToString(),
                 Title = f.Lorem.Sentence(),
                 Description = f.Lorem.Paragraph(),
-                Showtimes = _showtimeGenerator.Generate(f.Random.Int(1, 5)),
+                Showtimes = _showtimeGenerator.Generate(f.Random.Int(5, 5)),
                 Participants = participants,
-                SelectOptions = _selectOptionGenerator.Generate(f.Random.Int(1, 5)),
+                SelectOptions = _selectOptionGenerator.Generate(f.Random.Int(2, 5)),
                 Deadline = f.Date.Future(),
                 Host = _hostGenerator.Generate(),
             };
+
+            joinEvent.DefaultSelectOptionId = joinEvent.SelectOptions.First().Id;
+            joinEvent.DefaultSelectOption = joinEvent.SelectOptions.First();
 
             if (joinEvent.Showtimes.Any())
             {
@@ -108,7 +105,7 @@ public class DataGenerator
                         {
                             ParticipantId = participant.Id,
                             ShowtimeId = chosenShowtime,
-                            VoteIndex = f.Random.Int(0, joinEvent.Showtimes.Count - 1)
+                            SelectedOption = f.PickRandom(joinEvent.SelectOptions)
                         }
                     );
                     remainingShowtimes.Remove(chosenShowtime);
@@ -118,6 +115,11 @@ public class DataGenerator
             if (joinEvent.Showtimes.Any())
             {
                 joinEvent.ChosenShowtimeId = f.PickRandom(joinEvent.Showtimes).Id;
+            }
+
+            if (joinEvent.Showtimes.Where(j => j.Movie == null).Any())
+            {
+                throw new ArgumentException("There are no movies");
             }
 
             return joinEvent;

@@ -18,6 +18,7 @@ public class KinoEndpoints : ICarterModule
         eventGroup.MapPut("", UpsertJoinEvent);
         eventGroup.MapGet("", GetJoinEvents);
         eventGroup.MapGet("{id}", GetJoinEvent);
+        group.MapDelete("{eventId}/participants/{participantId}", DeleteParticipant);
 
         var kinoDataGroup = app.MapGroup("api/kino-data");
         kinoDataGroup.MapGet("cinemas", GetCinemas);
@@ -126,6 +127,24 @@ public class KinoEndpoints : ICarterModule
             return TypedResults.BadRequest(
                 DefaultErrorMessage
             );
+        }
+    }
+
+    //Delete participant
+    public static async Task<Results<Ok, NotFound>> DeleteParticipant(
+        [FromRoute] int eventId,
+        [FromRoute] int participantId,
+        [FromServices] IJoinEventService joinEventService
+    )
+    {
+        try
+        {
+            await joinEventService.DeleteParticipantAsync(eventId, participantId);
+            return TypedResults.Ok();
+        }
+        catch (Exception e)
+        {
+            return TypedResults.NotFound();
         }
     }
 }

@@ -59,6 +59,21 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         return joinEvents;
     }
 
+    public async Task DeleteParticipantAsync(int eventId, int participantId)
+    {
+        var joinEvent = await context
+            .JoinEvents.Include(e => e.Participants)
+            .FirstOrDefaultAsync(e => e.Id == eventId);
+        if (
+            joinEvent is { Participants: not null }
+            && joinEvent.Participants.Exists(eP => eP.Id == participantId)
+        )
+        {
+            joinEvent.Participants.Remove(joinEvent.Participants.First(p => p.Id == participantId));
+        }
+        await context.SaveChangesAsync();
+    }
+
     /*
      * The overall goal is to save the entire workpage of a JoinEvent, regardless of creating or filling
      *

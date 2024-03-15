@@ -38,7 +38,6 @@ builder.Services.AddCors(options =>
     );
 });
 
-
 builder.Services.AddCarter();
 
 var app = builder.Build();

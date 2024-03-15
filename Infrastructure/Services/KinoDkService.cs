@@ -8,13 +8,14 @@ namespace Infrastructure.Services;
 public class KinoDkService : IKinoDkService
 {
     private readonly HttpClient _httpClient = new();
+
     private const string BaseUrl =
         "https://api.kino.dk/ticketflow/showtimes?region=content&format=json";
 
     public async Task<(
         List<Showtime> showtimes,
         List<Movie> moviesWithoutShowtimes
-    )> GetShowtimesFromFilters(
+        )> GetShowtimesFromFilters(
         ICollection<int>? cinemaIds = null,
         ICollection<int>? movieIds = null,
         ICollection<int>? genreIds = null,
@@ -26,7 +27,7 @@ public class KinoDkService : IKinoDkService
         movieIds ??= [];
         genreIds ??= [];
         fromDate ??= DateTime.Now;
-        toDate ??= DateTime.Now.AddDays(30);
+        toDate ??= DateTime.Now.AddMinutes(1);
 
         var filterStringBuilder = new StringBuilder("&sort=most_purchased");
         var cinemaList = cinemaIds.ToList();
@@ -47,8 +48,8 @@ public class KinoDkService : IKinoDkService
             filterStringBuilder.Append($"&genres[{i}]={genreList[i]}");
         }
 
-        filterStringBuilder.Append($"&date={fromDate}");
-        filterStringBuilder.Append($"&date={toDate}");
+        filterStringBuilder.Append($"&date={fromDate.Value.ToString("O")}");
+        filterStringBuilder.Append($"&date={toDate.Value.ToString("O")}");
 
         var apiString = BaseUrl + filterStringBuilder;
 
@@ -68,7 +69,8 @@ public class KinoDkService : IKinoDkService
         );
 
         var showtimes = new List<Showtime>();
-        var existingMovies = new Dictionary<int, Movie>(); //several cinemas may show the same movie. No need to create the movie object every time
+        var existingMovies =
+            new Dictionary<int, Movie>(); //several cinemas may show the same movie. No need to create the movie object every time
 
         foreach (var jsonCinema in apiResultObject.Content.Content.Content)
         {
@@ -86,7 +88,8 @@ public class KinoDkService : IKinoDkService
             {
                 if (!int.TryParse(jsonMovie.Content.FieldPlayingTime, out var duration))
                     duration = 0;
-                if (!existingMovies.TryGetValue(jsonMovie.Id, out var movieObject)) //use existing movie object or create new
+                if (!existingMovies.TryGetValue(jsonMovie.Id,
+                        out var movieObject)) //use existing movie object or create new
                 {
                     movieObject = new Movie
                     {
@@ -100,7 +103,7 @@ public class KinoDkService : IKinoDkService
                             .FieldPoster
                             .FieldMediaImage
                             ?.Sources
-                            ?[0]
+                                ?[0]
                             .Srcset,
                         Duration = duration,
                     };
@@ -114,10 +117,8 @@ public class KinoDkService : IKinoDkService
                             "lukket forestilling",
                             StringComparison.CurrentCultureIgnoreCase
                         )
-                    )
-                    {
-                        continue;
-                    }
+                    ) continue;
+
 
                     var versionObject = new VersionTag { Type = jsonVersion.Label };
 
@@ -148,23 +149,19 @@ public class KinoDkService : IKinoDkService
                                     dateTimeFormat,
                                     CultureInfo.InvariantCulture,
                                     DateTimeStyles.None,
-                                    out var dateTime
+                                    out var parsedDate
                                 )
                             )
                             {
                                 //Couldn't get the api to filter on date. Do it manually
-                                if (fromDate != DateTime.MinValue && dateTime < toDate)
-                                {
+                                if (fromDate != DateTime.MinValue && parsedDate < fromDate)
                                     continue;
-                                }
 
-                                if (fromDate != DateTime.MinValue && dateTime > toDate)
-                                {
+                                if (toDate != DateTime.MinValue && parsedDate > toDate)
                                     continue;
-                                }
                             }
 
-                            var playtimeObject = new Playtime { StartTime = dateTime };
+                            var playtimeObject = new Playtime { StartTime = parsedDate };
 
                             var showtimeObject = new Showtime
                             {
@@ -181,19 +178,17 @@ public class KinoDkService : IKinoDkService
                 }
             }
         }
-        Console.WriteLine("shows " + showtimes.Count);
 
         //include movies that had no show times
         var filterString = new StringBuilder("&sort=most_purchased");
+        var notIncludedMovieIds = movieIds.Where(movieId => showtimes.All(f => f.Movie.Id != movieId)).ToList();
         var index = 0;
-        foreach (
-            var movieId in movieIds.Where(movieId => showtimes.All(f => f.Movie.Id != movieId))
-        )
+        foreach (var movieId in notIncludedMovieIds)
         {
             filterString.Append($"&movies[{index++}]={movieId}");
         }
 
-        if (filterString.Length == 0)
+        if (notIncludedMovieIds.Count == 0)
             return (showtimes, []); //all movies had showtimes
 
         var movieApiString = BaseUrl + filterString;
@@ -224,6 +219,7 @@ public class KinoDkService : IKinoDkService
             };
             missingMovies.Add(movieObject);
         }
+
         return (showtimes, missingMovies);
     }
 }

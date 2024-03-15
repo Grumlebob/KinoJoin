@@ -133,7 +133,17 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _showNote = Event.Participants.ToDictionary(p => p, p => false);
+        //make sure each participant has a vote for each showtime
+        foreach (var participant in Event.Participants)
+        {
+            var showtimeIdsWithoutVotes = Event.Showtimes.Select(s => s.Id).Except(participant.VotedFor.Select(v => v.ShowtimeId));
+            foreach (var showtimeId in showtimeIdsWithoutVotes)
+            {
+                participant.VotedFor.Add(new ParticipantVote { ParticipantId = participant.Id, ShowtimeId = showtimeId, SelectedOption = Event.DefaultSelectOption, SelectedOptionId = Event.DefaultSelectOptionId });
+            }
+        }
+
+        _showNote = Event.Participants.ToDictionary(p => p, _ => false);
         SetSortOption(VotesString);
     }
 

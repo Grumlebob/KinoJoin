@@ -107,7 +107,7 @@ else if (!_answerSaved)
             }
         }
 
-        var p = new Participant { AuthId = LoggedInUserId, Nickname = Nickname, Email = Email, Note = Note, VotedFor = VotedFor};
+        var p = new Participant { AuthId = LoggedInUserId, Nickname = Nickname, Email = Email, Note = Note, VotedFor = VotedFor.Where(v => v.SelectedOptionId != Event.DefaultSelectOptionId).ToList()};
         Event.Participants.Add(p);
         
 

@@ -12,19 +12,6 @@
     );
 }
 
-#trailerPopUp {
-    height: 100vh;
-    width: 100vw;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: rgba(0, 0, 0, 0.3);
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 </style>
 
 @if (Showtimes.Count == 0)
@@ -49,71 +36,11 @@
     @foreach (var showtimesByMovie in Showtimes.GroupBy(s => s.Movie.Id))
     {
         var movie = showtimesByMovie.First().Movie;
-        <ShowtimeSelectorHeading Movie="@movie">
+        <ShowtimeSelectorHeading Movie="movie">
             @foreach (var showtimesByCinema in showtimesByMovie.GroupBy(s => s.Cinema.Id))
             {
                 var cinema = showtimesByCinema.First().Cinema;
-                <div class="mb-2">
-                    <!-- CinemaLocation -->
-                    <h3 id="@cinema.Id" class="text-xl font-bold mb-2.5">@cinema.Name</h3>
-                </div>
-                @foreach (var showtimesByVersionTag in showtimesByCinema.GroupBy(s => s.VersionTag.Id))
-                {
-                    var versionTag = showtimesByVersionTag.First().VersionTag;
-                    <div class="mb-4 max-w-screen-md">
-                        <!-- Version -->
-                        <div class="w-fit">
-                            <p class="bg-gray-200 px-2 py-1 font-label">@versionTag.Type</p>
-                        </div>
-                        <!-- Showtimes -->
-                        <div class="overflow-x-auto">
-                            <table class="border-collapse">
-                                <tr>
-                                    @{
-                                        // Determine the start and end dates of the interval
-                                        var startDate = Showtimes.Min(s => s.Playtime.StartTime.ToLocalTime());
-                                        var endDate = Showtimes.Max(s => s.Playtime.StartTime.ToLocalTime());
-
-                                        var latestDateForSpecificCinemaVersion = Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key).Max(s => s.Playtime.StartTime.ToLocalTime().Date);
-
-                                        // Loop through each date in the interval
-                                        for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
-                                        {
-                                            <th class="w-10 overflow-hidden text-ellipsis whitespace-nowrap border-b border-gray-200 p-2 text-left align-top">@date.ToString("dd. MMM")</th>
-                                        }
-                                    }
-                                </tr>
-                                <tr>
-                                    <!-- Create table data for each showtime within the grouped date -->
-                                    @for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
-                                    {
-                                        if (Showtimes.Any(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
-                                        {
-                                            <td class="p-2 align-top">
-                                                @foreach (var showtime in Showtimes.Where(s => s.Movie.Id == showtimesByMovie.Key && s.Cinema.Id == showtimesByCinema.Key && s.VersionTag.Id == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == date))
-                                                {
-                                                    var vote = Votes.First(v => v.ShowtimeId == showtime.Id);
-                                                    <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center cursor-pointer select-none rounded shadow-inset bg-@vote.SelectedOption.Color" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(() => HandleShowtimeClick(vote))">
-                                                        <div class="mb-1 text-center text-sm line-clamp-1">@showtime.Room.Name</div>
-                                                        <div class="text-lg font-bold">@showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm")</div> <!-- showtime-time -->
-                                                    </div>
-                                                }
-                                            </td>
-                                        }
-                                        else
-                                        {
-                                            <!-- empty-showtime -->
-                                            <td class="p-2 align-top">
-                                                <div class="mb-1 h-16 max-h-16 w-24 rounded p-1 shadow-inset empty-showtime">
-                                                </div>
-                                            </td>
-                                        }
-                                    }
-                                </tr>
-                            </table >
-                        </div >
-                    </div>
-                }
+                <CinemaShowtimes Showtimes="Showtimes" VotedFor="VotedFor" SelectOptions="SelectOptions" Cinema="cinema" VotedForChanged="VotedForChanged" ShowtimesByCinema="showtimesByCinema" ShowtimesByMovie="showtimesByMovie"/>
             }
         </ShowtimeSelectorHeading>
     }
@@ -132,15 +59,6 @@
 }
 
 
-@if (_trailerUrl != null)
-{
-    <div id="trailerPopUp">
-        <iframe src="@_trailerUrl" width="60%" height="60%" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
-        </iframe>
-        <button onclick="@(() => { _trailerUrl = null; })">Luk</button>
-    </div>
-}
-
 
 @code {
 
@@ -154,9 +72,7 @@
 
     //Default options for create page
     [Parameter] public required List<SelectOption> SelectOptions { get; set; }
-
-
-    private string? _trailerUrl;
+    
 
     private async Task HandleShowtimeClick(ParticipantVote voteToIncrement)
     {

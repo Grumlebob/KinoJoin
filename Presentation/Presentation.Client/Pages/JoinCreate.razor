@@ -7,7 +7,7 @@
 
 @if (_loadingPage)
 {
-    <p>Indlæser...</p>
+    <LoadingTextAndCircle/>
     return;
 }
 
@@ -148,7 +148,7 @@
 
 <ShowtimeSelector Showtimes="@_availableShowtimes" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_availableShowtimeVotes" VotesChanged="OnVoteChange" SelectOptions="_createSelectOptions"/>
 
-<button class="w-14 h-14 shadow-primary md:w-auto md:h-auto  md:px-4 md:py-2 fixed bottom-12 right-12 z-50 shadow-md rounded-full bg-primary flex items-center justify-center" @onclick="OpenEventDetailsDialog">
+<button class="w-14 h-14  md:w-auto md:h-auto  md:px-4 md:py-2 fixed bottom-12 right-12 z-50 shadow-lg rounded-full bg-primary flex items-center justify-center hover:bg-primary-dark" @onclick="OpenEventDetailsDialog">
     <span class="hidden md:block text-white py-1">
         Opret Event
     </span>

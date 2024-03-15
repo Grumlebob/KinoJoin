@@ -1,19 +1,18 @@
 ﻿@inherits LayoutComponentBase
 @using Presentation.Client.Pages
-
-<div class="page">
+<div class="page  ">
     @* <div class="sidebar"> *@
     @*     <NavMenu /> *@
     @* </div> *@
 
-    <main>
-        <div class="top-row d-flex justify-content-between">
+    <main >
+        <div class="top-row d-flex justify-content-between mb-2" style="background-color: #fdfdfd" >
                 <a class="navbar-brand text-decoration-none text-black" href="">Kino MVP</a>
 
             <AccessControl/>
         </div>
 
-        <article class="container mx-auto px-4">
+        <article class="container mx-auto p-4 mb-2 rounded shadow-md bg-white max-w-6xl">
             @Body
         </article>
     </main>

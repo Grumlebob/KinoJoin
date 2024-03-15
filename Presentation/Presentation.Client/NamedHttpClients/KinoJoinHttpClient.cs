@@ -9,9 +9,9 @@ public interface IKinoJoinHttpClient
     Task<JoinEvent?> GetJoinEventAsync(int id);
     Task<HttpResponseMessage> PutJoinEventAsync(JoinEvent joinEvent);
     Task<HttpResponseMessage> DeleteParticipantAsync(int eventId, int participantId);
-    Task<ICollection<Cinema>?> GetCinemas();
+    Task<ICollection<Cinema>?> GetCinemasAsync();
     Task<ICollection<Movie>?> GetMoviesAsync();
-    Task<ICollection<Genre>?> GetGenres();
+    Task<ICollection<Genre>?> GetGenresAsync();
 }
 
 public class KinoJoinHttpClient : IKinoJoinHttpClient
@@ -46,7 +46,7 @@ public class KinoJoinHttpClient : IKinoJoinHttpClient
         return await _httpClient.DeleteAsync($"/api/events/{eventId}/participants/{participantId}");
     }
 
-    public async Task<ICollection<Cinema>?> GetCinemas()
+    public async Task<ICollection<Cinema>?> GetCinemasAsync()
     {
         return await _httpClient.GetFromJsonAsync<ICollection<Cinema>>("api/kino-data/cinemas");
     }
@@ -56,7 +56,7 @@ public class KinoJoinHttpClient : IKinoJoinHttpClient
         return await _httpClient.GetFromJsonAsync<ICollection<Movie>>("api/kino-data/movies");
     }
     
-    public async Task<ICollection<Genre>?> GetGenres()
+    public async Task<ICollection<Genre>?> GetGenresAsync()
     {
         return await _httpClient.GetFromJsonAsync<ICollection<Genre>>("api/kino-data/genres");
     }

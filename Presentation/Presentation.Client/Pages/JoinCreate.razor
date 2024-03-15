@@ -229,19 +229,27 @@
         SetFiltersFromFilterString(FilterString);
 
         //get data for filter checklists
-        var availableCinemas = await KinoJoinHttpClient.GetCinemas();
+        var cinemasTask = KinoJoinHttpClient.GetCinemasAsync();
+        var moviesTask = KinoJoinHttpClient.GetMoviesAsync();
+        var genresTask = KinoJoinHttpClient.GetGenresAsync();
+
+        await Task.WhenAll(cinemasTask, moviesTask, genresTask); //run in parallel
+
+        var availableCinemas = await cinemasTask;
+        var availableMovies = await moviesTask;
+        var availableGenres = await genresTask;
+        
         _cinemaIdsToNames = availableCinemas == null ? [] : availableCinemas.Select(c => (c.Id, c.Name)).ToDictionary();
         _selectedCinemas = _selectedCinemas.Intersect(_cinemaIdsToNames.Keys).ToHashSet(); //cannot select cinemas not in list
 
-        var availableMovies = await KinoJoinHttpClient.GetMoviesAsync();
         _movieIdsToNames = availableMovies == null ? [] : availableMovies.Select(c => (c.Id, c.Title)).ToDictionary();
         _selectedMovies = _selectedMovies.Intersect(_movieIdsToNames.Keys).ToHashSet();
 
-        var availableGenres = await KinoJoinHttpClient.GetGenres();
         _genreIdsToNames = availableGenres == null ? [] : availableGenres.Select(c => (c.Id, c.Name)).ToDictionary();
         _selectedGenres = _selectedGenres.Intersect(_genreIdsToNames.Keys).ToHashSet();
         
         _loadingPage = false;
+        StateHasChanged();
         
         if (_selectedCinemas.Count == 0 && _selectedMovies.Count == 0)
         {
@@ -251,7 +259,7 @@
         //load all show times from filter
         (_availableShowtimes, _moviesWithoutShowtimes) = await KinoDkService.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
         _availableShowtimeVotes = _availableShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _hostSelectOptions[NoVoteIndex] }).ToList();
-        
+
         _loadingShowtimes = false;
     }
 

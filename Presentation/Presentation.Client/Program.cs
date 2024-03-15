@@ -6,7 +6,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddScoped<IKinoDkService, KinoDkService>();
 
-builder.Services.AddHttpClient<KinoJoinHttpClient>(client =>
+builder.Services.AddHttpClient<IKinoJoinHttpClient, KinoJoinHttpClient>(client =>
 {
     client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
 });

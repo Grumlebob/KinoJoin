@@ -9,13 +9,13 @@
     return;
 }
 
-<div class="mb-3 w-fit space-y-1 ">
+<div class="mb-3 w-fit space-y-1  mt-10 ">
     <p class="font-semibold pl-2">Tryk på de tider du kan</p>
     <div class="mb-2 divide-x-2 flex w-fit">
         @foreach (var option in SelectOptions)
         {
             <div class="px-2 ">
-                <div class="rounded px-1 shadow-sm  bg-@option.Color ">
+                <div class="rounded px-1 shadow-md  bg-@option.Color ">
                     <p>@option.VoteOption</p>
                 </div>
             </div>

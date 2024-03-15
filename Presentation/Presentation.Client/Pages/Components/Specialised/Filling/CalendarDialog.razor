@@ -7,9 +7,9 @@
    
     <div class="flex items-center gap-1">
 
-        <button class="bg-primary rounded-full p-3 py-0.5  text-white hover:bg-primary-dark" onclick="@(async () => await OpenGoogleCalendar())">Tilføj til google kalender</button>
-        <button class="bg-primary rounded-full p-3 py-0.5  text-white hover:bg-primary-dark" onclick="@(async () => await DownloadCalendarFile())">Download til andre kalendre</button>
-        <button class="bg-error rounded-full p-3 py-0.5  text-white hover:bg-error-dark" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog"+Desktop); })" >Luk</button>
+        <button class="border border-secondary px-3 py-1 shadow duration-300 transition transition duration-100  rounded-full hover:bg-secondary hover:text-white" onclick="@(async () => await OpenGoogleCalendar())">Tilføj til google kalender</button>
+        <button class="border border-secondary px-3 py-1 shadow duration-300 transition transition duration-100  rounded-full hover:bg-secondary hover:text-white" onclick="@(async () => await DownloadCalendarFile())">Download til andre kalendre</button>
+        <button class="bg-error rounded-full px-3 py-1  text-white hover:bg-error-dark" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog"+Desktop); })" >Luk</button>
     </div>
     </div>
 

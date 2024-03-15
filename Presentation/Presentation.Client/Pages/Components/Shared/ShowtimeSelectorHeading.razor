@@ -9,11 +9,11 @@
                 <img src="@Movie.ImageUrl" alt="Movie Poster" class="w-full max-h-full rounded-sm shadow"/>
             </a>
             <!--Læs mere og trailer-->
-            <div class="hidden flex-col items-center md:flex space-y-1">
+            <div class="hidden flex-col items-center md:flex space-y-1 px-3">
 
-                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="rounded-full border border-black shadow duration-300 transition px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
+                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="rounded-full border text-center border-black shadow duration-300 transition px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white w-full">Læs mere</a>
 
-                <button class="rounded-full border border-black shadow duration-300 transition px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white" @onclick="async () => { await ShowMovieTrailer(Movie); }">Se trailer</button>
+                <button class="rounded-full border border-black shadow duration-300 transition px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white w-full" @onclick="async () => { await ShowMovieTrailer(Movie); }">Se trailer</button>
             </div>
         </div>
         <!-- MovieHeader -->
@@ -39,10 +39,10 @@
                 </div>
                 <div class="block md:hidden">
                     <!--Læs mere og trailer mobile-->
-                    <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="inline-block rounded-full border border-black px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
+                    <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="inline-block rounded-full border border-black px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white w-32 text-center">Læs mere</a>
                 </div>
                 <div class="block md:hidden">
-                    <button @onclick="async () => { await ShowMovieTrailer(Movie); }" class="inline-block rounded-full border border-black px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Se trailer</button>
+                    <button @onclick="async () => { await ShowMovieTrailer(Movie); }" class="inline-block rounded-full border border-black px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white w-32">Se trailer</button>
                 </div>
             </div>
         </div>

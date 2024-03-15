@@ -6,11 +6,18 @@
     @* </div> *@
 
     <main >
-        <div class="top-row d-flex justify-content-between mb-2" style="background-color: #fdfdfd" >
-                <a class="navbar-brand text-decoration-none text-black" href="">Kino MVP</a>
-
-            <AccessControl/>
+        <div class="top-row flex justify-between items-center bg-gray-50 mb-2">
+          <div class="w-1/3"> <!-- Empty div for spacing --></div>
+          
+            <div class="w-1/3 flex justify-center">
+              <a class="navbar-brand text-decoration-none text-black" href=""><KinoLogo/></a>
+            </div>
+          
+            <div class="w-1/3 flex justify-end">
+              <AccessControl/>
+            </div>
         </div>
+
 
         <article class="container mx-auto p-4 mb-2 rounded shadow-md bg-white max-w-6xl">
             @Body

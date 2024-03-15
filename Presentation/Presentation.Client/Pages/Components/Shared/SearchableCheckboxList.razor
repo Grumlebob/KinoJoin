@@ -21,7 +21,7 @@
             {
                 var checkBoxId = $"{_uniqueId.ToString()}-{id}";
                 <div class="flex items-center whitespace-nowrap overflow-hidden mb-2">
-                    <input type="checkbox" id="@checkBoxId" value="@id" @onchange="@(e => HandleCheckboxChange(e, id))" checked="@(SelectedItems.Contains(id))" class="mr-2 h-5 w-5"/>
+                    <input type="checkbox" id="@checkBoxId" value="@id" @onchange="@(e => HandleCheckboxChange(e, id))" checked="@(SelectedItems.Contains(id))" class="mr-2 h-5 w-5 accent-gray-700 "/>
                     <label for="@checkBoxId" class="flex-grow truncate ml-1">@label</label>
                 </div>
             }
@@ -32,9 +32,9 @@
     <div class="mt-0.5 flex flex-wrap">
         @foreach (var id in SelectedItems)
         {
-            <span class="chip inline-flex items-center bg-gray-100 text-black text-sm font-medium px-2.5 py-0.5 rounded-full mr-2 mb-2">
+            <span class="chip inline-flex items-center bg-gray-100 border text-black text-sm font-medium px-2.5 py-0.5 rounded-full mr-2 mb-2">
                 @IdsToLabels[id]
-                <button @onclick="() => SelectedItems.Remove(id)" class="ml-1.5 text-red-500 rounded-full text-sm p-0.5 hover:bg-red-200 focus:outline-none focus:bg-red-300">X</button>
+                <button @onclick="() => SelectedItems.Remove(id)" class="ml-1.5  rounded-full text-sm p-0.5 hover:bg-gray-200 focus:outline-none "><CrossIcon/></button>
             </span>
         }
     </div>

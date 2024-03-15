@@ -38,7 +38,7 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test --filter FullyQualifiedName!~Test.Monkey
+        run: dotnet test
       
       - name: Validate Formatting
         run: dotnet csharpier --check .

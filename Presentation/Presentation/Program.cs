@@ -21,6 +21,7 @@ builder.Services.AddRazorComponents().AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddScoped<IMonkeyService, MonkeyService>();
 builder.Services.AddScoped<IJoinEventService, JoinEventService>();
+builder.Services.AddScoped<IKinoExternalService, KinoExternalService>();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 

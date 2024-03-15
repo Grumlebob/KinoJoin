@@ -10,12 +10,14 @@ public class KinoEndpoints : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("api/events");
+        var eventGroup = app.MapGroup("api/events");
 
-        group.MapPut("", UpsertJoinEvent);
+        eventGroup.MapPut("", UpsertJoinEvent);
 
-        group.MapGet("", GetJoinEvents);
-        group.MapGet("{id}", GetJoinEvent);
+        eventGroup.MapGet("", GetJoinEvents);
+        eventGroup.MapGet("{id}", GetJoinEvent);
+
+        var kinoDataGroup = app.MapGroup("api/kino-data");
     }
 
     //Result<> is a union type, that can be all the different responses we can return, so it is easier to test.
@@ -37,9 +39,8 @@ public class KinoEndpoints : ICarterModule
         }
     }
 
-    private static async Task<
-        Results<Ok<List<JoinEvent>>, NotFound, BadRequest<string>>
-    > GetJoinEvents([FromServices] IJoinEventService joinEventService)
+    private static async Task<Results<Ok<List<JoinEvent>>, NotFound, BadRequest<string>>> GetJoinEvents(
+        [FromServices] IJoinEventService joinEventService)
     {
         try
         {
@@ -48,7 +49,7 @@ public class KinoEndpoints : ICarterModule
                 return TypedResults.NotFound();
             return TypedResults.Ok(joinEvents);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return TypedResults.BadRequest(
                 "Sorry, we encountered an unexpected issue while processing your request. We suggest you try again later or contact support if the problem persists."
@@ -66,7 +67,7 @@ public class KinoEndpoints : ICarterModule
             var joinEvent = await joinEventService.GetAsync(id);
             return joinEvent == null ? TypedResults.NotFound() : TypedResults.Ok(joinEvent);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return TypedResults.BadRequest(
                 "Sorry, we encountered an unexpected issue while processing your request. We suggest you try again later or contact support if the problem persists."

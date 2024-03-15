@@ -46,8 +46,4 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Remove="wwwroot\app.min.css" />
-  </ItemGroup>
-
 </Project>

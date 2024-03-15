@@ -1,6 +1,6 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
-@inject IJoinEventHttpClient JoinEventHttpClient
+@inject IKinoJoinHttpClient KinoJoinHttpClient
 
 
 <div class="flex flex-col gap-2">
@@ -123,7 +123,7 @@
 
     private async Task DeleteParticipant(int participantId)
     {
-        var response = await JoinEventHttpClient.DeleteParticipantAsync(Event.Id, participantId);
+        var response = await KinoJoinHttpClient.DeleteParticipantAsync(Event.Id, participantId);
         if (response.IsSuccessStatusCode)
         {
             Event.Participants.RemoveAll(p => p.Id == participantId);

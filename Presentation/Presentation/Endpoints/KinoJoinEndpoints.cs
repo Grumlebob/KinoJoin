@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Endpoints;
 
-public class KinoEndpoints : ICarterModule
+public class KinoJoinEndpoints : ICarterModule
 {
     private const string DefaultErrorMessage =
         "Sorry, we encountered an unexpected issue while processing your request. Please ensure that the data is correct. We suggest you try again later or contact support if the problem persists.";
@@ -49,8 +49,6 @@ public class KinoEndpoints : ICarterModule
         try
         {
             var joinEvents = await joinEventService.GetAllAsync();
-            if (joinEvents.Count == 0)
-                return TypedResults.NotFound();
             return TypedResults.Ok(joinEvents);
         }
         catch (Exception)
@@ -82,7 +80,7 @@ public class KinoEndpoints : ICarterModule
         try
         {
             var cinemas = await kinoJoinService.GetAllCinemas();
-            return cinemas.Any() ? TypedResults.Ok(cinemas) : TypedResults.NotFound();
+            return TypedResults.Ok(cinemas);
         }
         catch (Exception)
         {
@@ -97,7 +95,7 @@ public class KinoEndpoints : ICarterModule
         try
         {
             var movies = await kinoJoinService.GetAllMovies();
-            return movies.Any() ? TypedResults.Ok(movies) : TypedResults.NotFound();
+            return TypedResults.Ok(movies);
         }
         catch (Exception)
         {
@@ -112,7 +110,7 @@ public class KinoEndpoints : ICarterModule
         try
         {
             var genres = await kinoJoinService.GetAllGenres();
-            return genres.Any() ? TypedResults.Ok(genres) : TypedResults.NotFound();
+            return TypedResults.Ok(genres);
         }
         catch (Exception)
         {
@@ -121,7 +119,7 @@ public class KinoEndpoints : ICarterModule
     }
 
     //Delete participant
-    public static async Task<Results<Ok, NotFound>> DeleteParticipant(
+    private static async Task<Results<Ok, NotFound>> DeleteParticipant(
         [FromRoute] int eventId,
         [FromRoute] int participantId,
         [FromServices] IJoinEventService joinEventService
@@ -132,7 +130,7 @@ public class KinoEndpoints : ICarterModule
             await joinEventService.DeleteParticipantAsync(eventId, participantId);
             return TypedResults.Ok();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             return TypedResults.NotFound();
         }

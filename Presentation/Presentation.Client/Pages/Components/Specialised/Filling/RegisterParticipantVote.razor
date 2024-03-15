@@ -112,7 +112,7 @@ else if (!_answerSaved)
         Event.Participants.Add(p);
         
 
-        var response = await KinoJoinHttpClient.Client.PutAsJsonAsync("/api/events", Event);
+        var response = await KinoJoinHttpClient.PutJoinEventAsync(Event);
         if (response.IsSuccessStatusCode)
         {
             _infoMessage = "Svar gemt";

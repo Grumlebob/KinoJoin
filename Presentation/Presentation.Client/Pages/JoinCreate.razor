@@ -1,7 +1,7 @@
 ﻿@page "/JoinCreate/{filterString}"
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
-@inject KinoJoinHttpClient KinoJoinHttpClient
+@inject IKinoJoinHttpClient KinoJoinHttpClient
 @inject IKinoDkService KinoDkService
 
 
@@ -229,18 +229,15 @@
         SetFiltersFromFilterString(FilterString);
 
         //get data for filter checklists
-        var cinemasJson = await KinoJoinHttpClient.Client.GetStringAsync("api/kino-data/cinemas");
-        var availableCinemas = JsonConvert.DeserializeObject<List<Cinema>>(cinemasJson);
+        var availableCinemas = await KinoJoinHttpClient.GetCinemas();
         _cinemaIdsToNames = availableCinemas == null ? [] : availableCinemas.Select(c => (c.Id, c.Name)).ToDictionary();
         _selectedCinemas = _selectedCinemas.Intersect(_cinemaIdsToNames.Keys).ToHashSet(); //cannot select cinemas not in list
 
-        var moviesJson = await KinoJoinHttpClient.Client.GetStringAsync("api/kino-data/movies");
-        var availableMovies = JsonConvert.DeserializeObject<List<Movie>>(moviesJson);
+        var availableMovies = await KinoJoinHttpClient.GetMoviesAsync();
         _movieIdsToNames = availableMovies == null ? [] : availableMovies.Select(c => (c.Id, c.Title)).ToDictionary();
         _selectedMovies = _selectedMovies.Intersect(_movieIdsToNames.Keys).ToHashSet();
 
-        var genresJson = await KinoJoinHttpClient.Client.GetStringAsync("api/kino-data/genres");
-        var availableGenres = JsonConvert.DeserializeObject<List<Genre>>(genresJson);
+        var availableGenres = await KinoJoinHttpClient.GetGenres();
         _genreIdsToNames = availableGenres == null ? [] : availableGenres.Select(c => (c.Id, c.Name)).ToDictionary();
         _selectedGenres = _selectedGenres.Intersect(_genreIdsToNames.Keys).ToHashSet();
         
@@ -454,7 +451,7 @@
             });
         }
 
-        var response = await KinoJoinHttpClient.Client.PutAsJsonAsync("/api/events", _joinEvent);
+        var response = await KinoJoinHttpClient.PutJoinEventAsync(_joinEvent);
         var id = await response.Content.ReadAsStringAsync();
 
         _joinEvent.Id = int.Parse(id);

@@ -1,7 +1,7 @@
 ﻿@page "/filling/{JoinEventId}"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
-@inject IJoinEventHttpClient JoinEventHttpClient
+@inject IKinoJoinHttpClient KinoJoinHttpClient
 
 <PageTitle>JoinEvent</PageTitle>
 
@@ -139,7 +139,7 @@
     {
         _baseUrl = NavigationManager.BaseUri;
         int id = int.Parse(JoinEventId);
-        var response = await JoinEventHttpClient.GetJoinEventAsync(id);
+        var response = await KinoJoinHttpClient.GetJoinEventAsync(id);
         if (response != null)
         {
             _event = response;
@@ -190,7 +190,7 @@
     private async Task UpdateJoinEvent()
     {
         _event!.Deadline = _deadline;
-        var response = await JoinEventHttpClient.PutJoinEventAsync(_event);
+        var response = await KinoJoinHttpClient.PutJoinEventAsync(_event);
     }
 
     private void OnVotesChanged(ICollection<ParticipantVote> votes)

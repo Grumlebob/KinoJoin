@@ -24,11 +24,11 @@
     <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
         <div class="bg-white mx-4 p-6 rounded-lg shadow-xl mb-40">
             <div class="flex justify-center flex-col space-y-2">
-                <h4 class="font-bold">@_event.Host.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h4>
+                <h2 class="text-xl font-bold">@_event.Host.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h2>
                 <div class=" flex md:justify-end md:items-end">
                     <div class="w-full md:w-fit flex flex-col md:flex-row gap-2">
-                        <button class="rounded-full border border-black shadow px-3 py-2 duration-300 transition font-label bg-primary text-white hover:bg-neutral-950 hover:text-white" onclick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + _event?.Id }); })">Anvend dit kino login</button>
-                        <button class="rounded-full border border-black shadow px-3 py-2 duration-300 transition font-label hover:bg-neutral-950 hover:text-white" onclick="@(() => { _showFirstLoginDialog = false; })">Uden login</button>
+                        <button class="rounded-full border border-secondary shadow px-3 py-2 duration-300 transition font-label hover:bg-neutral-950 hover:text-white" onclick="@(() => { _showFirstLoginDialog = false; })">Uden login</button>
+                        <button class="rounded-full shadow px-3 py-2 font-label bg-primary text-white hover:bg-primary-dark" onclick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + _event?.Id }); })">Anvend dit kino login</button>
                     </div>
                 </div>
             </div>

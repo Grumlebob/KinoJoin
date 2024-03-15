@@ -2,16 +2,6 @@
 
 <style>
 
-.empty-showtime {
-    background-image: repeating-linear-gradient(
-        +45deg,
-        #ffffff, /* Lighter shade of gray for the streak */
-        #ffffff 10px,
-        #d5d5d5 10px, /* Darker shade of gray for the space between streaks */
-        #d5d5d5 20px
-    );
-}
-
 </style>
 
 @if (Showtimes.Count == 0)
@@ -40,7 +30,7 @@
             @foreach (var showtimesByCinema in showtimesByMovie.GroupBy(s => s.Cinema.Id))
             {
                 var cinema = showtimesByCinema.First().Cinema;
-                <CinemaShowtimes Showtimes="Showtimes" VotedFor="VotedFor" SelectOptions="SelectOptions" Cinema="cinema" VotedForChanged="VotedForChanged" ShowtimesByCinema="showtimesByCinema" ShowtimesByMovie="showtimesByMovie"/>
+                <CinemaShowtimes Showtimes="Showtimes" Votes="Votes" SelectOptions="SelectOptions" Cinema="cinema" VotesChanged="VotesChanged" ShowtimesByCinema="showtimesByCinema" ShowtimesByMovie="showtimesByMovie"/>
             }
         </ShowtimeSelectorHeading>
     }
@@ -72,18 +62,5 @@
 
     //Default options for create page
     [Parameter] public required List<SelectOption> SelectOptions { get; set; }
-    
-
-    private async Task HandleShowtimeClick(ParticipantVote voteToIncrement)
-    {
-        //find index of select option in order to increment it
-        var next = (SelectOptions.FindIndex(
-                       s => (s.VoteOption, s.Color) == (voteToIncrement.SelectedOption.VoteOption, voteToIncrement.SelectedOption.Color)) + 1)
-                   % SelectOptions.Count;
-        voteToIncrement.SelectedOption = SelectOptions[next];
-        voteToIncrement.SelectedOptionId = SelectOptions[next].Id;
-
-        await VotesChanged.InvokeAsync(Votes);
-    }
 
 }

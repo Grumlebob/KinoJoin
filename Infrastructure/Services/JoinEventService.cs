@@ -27,7 +27,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             .FirstOrDefaultAsync(j => j.Id == id);
         return result;
     }
-    
+
     public async Task<List<JoinEvent>> GetAllAsync(Expression<Func<JoinEvent, bool>>? filter = null)
     {
         IQueryable<JoinEvent> query = context.JoinEvents.AsNoTracking();
@@ -48,7 +48,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             .ThenInclude(s => s.VersionTag)
             .Include(j => j.Showtimes)
             .ThenInclude(s => s.Room)
-            .Include(j => j.Participants)
+            .Include(j => j.Participants)!
             .ThenInclude(p => p.VotedFor)
             .ThenInclude(pv => pv.SelectedOption)
             .Include(j => j.SelectOptions)
@@ -87,7 +87,16 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         catch (Exception)
         {
             //Add missing entities and try again.
-            await UpsertMissingEntities(updatedJoinEvent);
+            var movies = updatedJoinEvent.Showtimes.Select(st => st.Movie).DistinctBy(m => m.Id);
+            await context.Movies.UpsertRange(movies).RunAsync();
+
+            var cinemas = updatedJoinEvent.Showtimes.Select(st => st.Cinema).DistinctBy(c => c.Id);
+            await context.Cinemas.UpsertRange(cinemas).RunAsync();
+
+            var versions = updatedJoinEvent
+                .Showtimes.Select(st => st.VersionTag)
+                .DistinctBy(v => v.Type);
+            await context.Versions.UpsertRange(versions).On(v => v.Type).RunAsync();
             var newId = await InsertJoinEventAsync(updatedJoinEvent);
             return newId;
         }
@@ -444,17 +453,5 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         }
 
         await context.SaveChangesAsync();
-    }
-
-    private async Task UpsertMissingEntities(JoinEvent joinEvent)
-    {
-        var movies = joinEvent.Showtimes.Select(st => st.Movie).DistinctBy(m => m.Id);
-        await context.Movies.UpsertRange(movies).RunAsync();
-
-        var cinemas = joinEvent.Showtimes.Select(st => st.Cinema).DistinctBy(c => c.Id);
-        await context.Cinemas.UpsertRange(cinemas).RunAsync();
-
-        var versions = joinEvent.Showtimes.Select(st => st.VersionTag).DistinctBy(v => v.Type);
-        await context.Versions.UpsertRange(versions).On(v => v.Type).RunAsync();
     }
 }

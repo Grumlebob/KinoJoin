@@ -16,6 +16,8 @@ public class KinoEndpoints : ICarterModule
 
         group.MapGet("", GetJoinEvents);
         group.MapGet("{id}", GetJoinEvent);
+        
+        group.MapDelete("{eventId}/participants/{participantId}", DeleteParticipant);
     }
 
     //Result<> is a union type, that can be all the different responses we can return, so it is easier to test.
@@ -71,6 +73,24 @@ public class KinoEndpoints : ICarterModule
             return TypedResults.BadRequest(
                 "Sorry, we encountered an unexpected issue while processing your request. We suggest you try again later or contact support if the problem persists."
             );
+        }
+    }
+    
+    //Delete participant
+    public static async Task<Results<Ok, NotFound>> DeleteParticipant(
+        [FromRoute] int eventId,
+        [FromRoute] int participantId,
+        [FromServices] IJoinEventService joinEventService
+    )
+    {
+        try
+        {
+            await joinEventService.DeleteParticipantAsync(eventId, participantId);
+            return TypedResults.Ok();
+        }
+        catch (Exception e)
+        {
+            return TypedResults.NotFound();
         }
     }
 }

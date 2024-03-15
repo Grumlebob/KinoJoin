@@ -1,6 +1,7 @@
 ﻿@page "/filling/{JoinEventId}"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
+@inject IJoinEventHttpClient JoinEventHttpClient
 
 <PageTitle>JoinEvent</PageTitle>
 
@@ -128,11 +129,11 @@
     protected override async Task OnInitializedAsync()
     {
         _baseUrl = NavigationManager.BaseUri;
-        var httpClient = new HttpClient();
-        var response = await httpClient.GetAsync($"{_baseUrl}api/events/{JoinEventId}");
-        if (response.IsSuccessStatusCode)
+        int id = int.Parse(JoinEventId);
+        var response = await JoinEventHttpClient.GetJoinEventAsync(id);
+        if (response != null)
         {
-            _event = await response.Content.ReadFromJsonAsync<JoinEvent>();
+            _event = response;
         }
 
         if (_event is { Showtimes: not null })
@@ -182,8 +183,7 @@
     private async Task UpdateJoinEvent()
     {
         _event!.Deadline = _deadline;
-        var httpClient = new HttpClient();
-        var response = await httpClient.PutAsJsonAsync($"{_baseUrl}api/events", _event);
+        var response = await JoinEventHttpClient.PutJoinEventAsync(_event);
         Console.WriteLine(response.IsSuccessStatusCode ? "Updated" : "Failed to update");
     }
 

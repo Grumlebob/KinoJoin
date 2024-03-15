@@ -2,7 +2,6 @@
 
 public class KinoJoinService(KinoContext context) : IKinoJoinService
 {
-
     public async Task<ICollection<Cinema>> GetAllCinemas(Func<Cinema, bool>? filter = null)
     {
         var query = context.Cinemas.AsNoTracking();
@@ -24,7 +23,7 @@ public class KinoJoinService(KinoContext context) : IKinoJoinService
 
         return await query.ToListAsync();
     }
-    
+
     public async Task<ICollection<Genre>> GetAllGenres(Func<Genre, bool>? filter = null)
     {
         var query = context.Genres.AsNoTracking();
@@ -35,5 +34,4 @@ public class KinoJoinService(KinoContext context) : IKinoJoinService
 
         return await query.ToListAsync();
     }
-    
 }

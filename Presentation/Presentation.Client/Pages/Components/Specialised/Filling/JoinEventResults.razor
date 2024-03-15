@@ -1,5 +1,7 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
+@inject IJoinEventHttpClient JoinEventHttpClient
+
 
 <div class="flex flex-col gap-2">
     <div class="flex justify-between">
@@ -119,11 +121,9 @@
 
     private Dictionary<Participant, bool> _showNote = new();
 
-    //Delete participant
     private async Task DeleteParticipant(int participantId)
     {
-        var httpClient = new HttpClient();
-        var response = await httpClient.DeleteAsync($"{NavigationManager.BaseUri}deleteParticipant/{Event.Id}/{participantId}");
+        var response = await JoinEventHttpClient.DeleteParticipantAsync(Event.Id, participantId);
         if (response.IsSuccessStatusCode)
         {
             Event.Participants.RemoveAll(p => p.Id == participantId);

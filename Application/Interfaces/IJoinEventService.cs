@@ -46,4 +46,7 @@ public interface IJoinEventService
      * </returns>
      */
     Task<List<JoinEvent>> GetAllAsync(Expression<Func<JoinEvent, bool>>? filter = null);
+    
+    //Delete participant
+    Task DeleteParticipantAsync(int joinEventId, int participantId);
 }

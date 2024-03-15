@@ -19,17 +19,18 @@
             <tr>
                 <td>
                     <div class="flex rounded w-50 shadow-md gap-1  p-5">
+                        <div class="flex">
                         @if (IsHost && participant.Id != 0)
                         {
                             <button onclick="@(async () => { await OnDeleteParticipant.InvokeAsync(participant); })">
-                                <DeleteIcon Class="stroke-error hover:stroke-error-dark"/>
+                                <DeleteIcon Class="stroke-error p-1 rounded-full hover:bg-error hover:bg-opacity-25 " Size="28"/>
                             </button>
                         }
                         @if (!string.IsNullOrEmpty(participant.Note))
                         {
-                            
+
                             <div class="relative flex items-center">
-                                <NoteIcon Class="stroke-black peer" />
+                                <NoteIcon Class="stroke-black peer" Size="22"/>
                                 <div class="absolute invisible z-5 bg-light-gray transform -translate-y-20 translate-x-8 shadow-md min-w-40 max-w-80 rounded text-wrap  bg-white border p-3 opacity-0 peer-hover:visible peer-hover:opacity-100">
                                     <p class="font-bold ">@participant.Nickname's note</p>
                                     @if (!string.IsNullOrEmpty(participant.Note))
@@ -40,10 +41,11 @@
                             </div>
 
                         }
+                        </div>
                         <p class="truncate ...">
                             @participant.Nickname
                         </p>
-                        
+
                     </div>
 
                 </td>

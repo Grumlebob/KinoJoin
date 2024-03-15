@@ -89,7 +89,7 @@ public class KinoJoinTests : IAsyncLifetime
         var joinEventToUpdateParticipant = await _client.GetAsync($"api/events/{casesToInsert-1}");
         var joinEventToUpdateParticipantFromApi = await joinEventToUpdateParticipant.Content.ReadFromJsonAsync<JoinEvent>();
         joinEventToUpdateParticipantFromApi.Participants.Add(new Participant { AuthId = "New", Email = "New", Nickname = "New", 
-            VotedFor = [new ParticipantVote() {ShowtimeId = joinEventToUpdate.Showtimes.First().Id, SelectedOptionId = joinEventToUpdate.SelectOptions.First().Id}]});
+            VotedFor = [new ParticipantVote() {ShowtimeId = joinEventToUpdate.Showtimes.First().Id, SelectedOptionId = joinEventToUpdate.SelectOptions.First().Id, SelectedOption = joinEventToUpdate.SelectOptions.First()} ]});
         var updateResponseParticipant = await _client.PutAsJsonAsync("api/events", joinEventToUpdateParticipantFromApi);
         updateResponseParticipant.EnsureSuccessStatusCode();
         

@@ -88,13 +88,13 @@
 <div id="ShowAllFilters" class="@(_showAllFilters ? "" : "hidden lg:block")">
     <div class="flex flex-col lg:space-x-4 lg:flex-row">
         <div class="mt-4 lg:mt-0 lg:w-1/3">
-            <SearchableCheckboxList IconPath="/Icons/CinemaFilterIcon.svg" FilterTitle="Vælg biografer" SelectedItems="_selectedCinemas" IdsToLabels="@_cinemaIdsToNames"/>
+            <SearchableCheckboxList @ref="cinemaCheckBoxList" IconPath="/Icons/CinemaFilterIcon.svg" FilterTitle="Vælg biografer" SelectedItems="_selectedCinemas" IdsToLabels="@_cinemaIdsToNames"/>
         </div>
         <div class="lg:w-1/3">
-            <SearchableCheckboxList IconPath="Icons/MovieFilterIcon.svg" FilterTitle="Vælg film" SelectedItems="_selectedMovies" IdsToLabels="@_movieIdsToNames"/>
+            <SearchableCheckboxList @ref="movieCheckBoxList" IconPath="Icons/MovieFilterIcon.svg" FilterTitle="Vælg film" SelectedItems="_selectedMovies" IdsToLabels="@_movieIdsToNames"/>
         </div>
         <div class="lg:mt-0 lg:w-1/3">
-            <SearchableCheckboxList IconPath="Icons/GenreFilterIcon.svg" FilterTitle="Vælg genrer" SelectedItems="_selectedGenres" IdsToLabels="@_genreIdsToNames"/>
+            <SearchableCheckboxList @ref="genreCheckBoxList" IconPath="Icons/GenreFilterIcon.svg" FilterTitle="Vælg genrer" SelectedItems="_selectedGenres" IdsToLabels="@_genreIdsToNames"/>
         </div>
     </div>
 
@@ -149,7 +149,7 @@
     }
 }
 
-<ShowtimeSelector Showtimes="@_availableShowtimes" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_availableShowtimeVotes" VotesChanged="OnVoteChange" SelectOptions="_hostSelectOptions"/>
+<ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de tider du vil have med i dit event" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_availableShowtimeVotes" VotesChanged="OnVoteChange" SelectOptions="_hostSelectOptions"/>
 
 <button class="w-14 h-14  md:w-auto md:h-auto  md:px-4 md:py-2 fixed bottom-12 right-12 z-50 shadow-lg rounded-full bg-primary flex items-center justify-center hover:bg-primary-dark gap-1" @onclick="OpenEventDetailsDialog">
     <CreateIcon Class="stroke-white fill-white"/>
@@ -195,11 +195,15 @@
     List<Movie> _moviesWithoutShowtimes = [];
     ICollection<ParticipantVote> _availableShowtimeVotes = []; //used to keep track of which showtimes are selected and not selected
 
-    readonly List<SelectOption> _hostSelectOptions = [new SelectOption { VoteOption = "Kan ikke", Color = "gray-200" }, new SelectOption { VoteOption = "Kan godt", Color = "success" }];
+    readonly List<SelectOption> _hostSelectOptions = [new SelectOption { VoteOption = "Ikke valgt", Color = "gray-200" }, new SelectOption { VoteOption = "Valgt", Color = "success" }];
     const int NoVoteIndex = 0; //when you vote no
     const int YesVoteIndex = 1;
 
     //used for filters
+    SearchableCheckboxList cinemaCheckBoxList;
+    SearchableCheckboxList movieCheckBoxList;
+    SearchableCheckboxList genreCheckBoxList;
+    
     Dictionary<int, string> _movieIdsToNames = new();
     Dictionary<int, string> _cinemaIdsToNames = new();
     Dictionary<int, string> _genreIdsToNames = new();
@@ -318,6 +322,9 @@
      */
     private async Task HandleShowtimeFiltersChanged()
     {
+        cinemaCheckBoxList.CloseAccordion();
+        movieCheckBoxList.CloseAccordion();
+        genreCheckBoxList.CloseAccordion();
         _loadingShowtimes = true;
         StateHasChanged();
         var movieIds = _selectedMovies.ToList();

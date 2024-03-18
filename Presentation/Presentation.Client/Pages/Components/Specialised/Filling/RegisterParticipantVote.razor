@@ -120,7 +120,7 @@ else if (!_answerSaved)
         }
         
         _participant.AuthId = LoggedInUserId;
-        _participant.VotedFor = VotedFor;
+        _participant.VotedFor = VotedFor.Where(v => v.SelectedOptionId != Event.DefaultSelectOptionId).ToList();
         
         Event.Participants.Add(_participant);
 

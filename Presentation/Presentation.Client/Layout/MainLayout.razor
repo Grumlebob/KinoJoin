@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @using Presentation.Client.Pages
+@inject NavigationManager NavigationManager
 <div class="page  ">
     @* <div class="sidebar"> *@
     @*     <NavMenu /> *@
@@ -10,7 +11,7 @@
           <div class="w-1/3"> <!-- Empty div for spacing --></div>
           
             <div class="w-1/3 flex justify-center">
-              <a class="navbar-brand text-decoration-none text-black" href=""><KinoLogo/></a>
+                <a class="navbar-brand text-decoration-none text-black" href="/" onclick="@(() => { NavigationManager.NavigateTo("/", true); })"><KinoLogo/></a>
             </div>
           
             <div class="w-1/3 flex justify-end">

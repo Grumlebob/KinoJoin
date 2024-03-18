@@ -103,12 +103,12 @@
 
 <ShowtimeSelector SelectOptions="@_event.SelectOptions" Showtimes="@_event.Showtimes" Votes="@_currentParticipant.VotedFor" VotesChanged="OnVotesChanged"/>
 
-<RegisterParticipantVote Event="_event" OnAnswerSaved="@(p => { _currentParticipant = p; StateHasChanged(); })" @bind-Nickname="@_currentParticipant.Nickname" AlreadyAnswered="_alreadyAnswered" VotedFor="@_currentParticipant.VotedFor" LoggedInUserId="@_currentParticipant.AuthId"/>
+<RegisterParticipantVote Event="_event" OnAnswerSaved="OnAnswerSaved" @bind-Nickname="@_currentParticipant.Nickname" AlreadyAnswered="_alreadyAnswered" VotedFor="@_currentParticipant.VotedFor" LoggedInUserId="@_currentParticipant.AuthId"/>
 
 <br/>
 <br/>
 
-<JoinEventResults CurrentParticipant="_currentParticipant" Event="_event" IsHost="_isHost"/>
+<JoinEventResults @ref="_joinEventResults"CurrentParticipant="_currentParticipant" Event="_event" IsHost="_isHost"/>
 
 @code {
     [Parameter] public required string JoinEventId { get; set; }
@@ -134,6 +134,8 @@
     private bool _isLoggedIn;
 
     private Participant _currentParticipant = new () {VotedFor = []};
+    
+    private JoinEventResults _joinEventResults;
 
     protected override async Task OnInitializedAsync()
     {
@@ -199,6 +201,13 @@
     private void OnVotesChanged(ICollection<ParticipantVote> votes)
     {
         _currentParticipant.VotedFor = votes;
+    }
+    
+    private void OnAnswerSaved(Participant p)
+    {
+        _currentParticipant = p;
+        _alreadyAnswered = true;
+        _joinEventResults.UpdateSorting();
     }
 
 }

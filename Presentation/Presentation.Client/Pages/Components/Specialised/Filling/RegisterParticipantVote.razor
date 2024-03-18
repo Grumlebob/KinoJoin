@@ -19,17 +19,6 @@ else if (!_answerSaved)
         <button class="rounded-full bg-primary hover:bg-primary-dark  p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(false, false); })" type="submit">
             Send svar
         </button>
-        @if (_confirmSubmit)
-        {
-            <div class="mt-4">
-                <h4 class="font-bold">Obs! Du har ikke valgt nogen tider.</h4>
-                <h4 class="font-semibold mb-0.5">Vil du indsende et tomt svar, der viser du ikke kan nogen tider?</h4>
-                <div class="inline-flex space-x-2">
-                    <button class="rounded-full bg-success p-2 text-white hover:bg-success" @onclick="@(async () => { await SaveParticipantAnswer(true, false); })">Ja</button>
-                    <button class="rounded-full bg-error p-2 text-white hover:bg-error" @onclick="@(() => { _confirmSubmit = false; })">Nej</button>
-                </div>
-            </div>
-        }
     </EditForm>
 }
 
@@ -44,6 +33,17 @@ else if (!_answerSaved)
         <p class="text-red-700 text-4xl">@_infoMessage</p>
     }
 }
+
+<dialog class="p-5 rounded " id="NoShowtimesDialog">
+    <div class="flex flex-col gap-4 items-end text-center">
+         <h4 class="text-xl font-bold w-full">Obs! Du har ikke valgt nogen tider</h4>
+         <h4 class=" font-bold">Vil du indsende et tomt svar, der viser du ikke kan nogen tider?</h4>
+        <div class="flex  gap-1">
+            <button class="bg-error rounded-full p-3 py-0.5 w-16 text-white hover:bg-error-dark font-label" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog");})">Nej</button>
+            <button class="bg-success rounded-full p-3 py-0.5 w-16 text-white hover:bg-success-dark font-label" @onclick="@(async () => {await SaveParticipantAnswer(true, false); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"); })">Ja</button>
+        </div>
+    </div>
+</dialog>
 
 <dialog id="same-name-dialog" class="rounded p-4">
     <h4 class="font-bold">Der er allerede en deltager med dette navn</h4>
@@ -97,8 +97,8 @@ else if (!_answerSaved)
 
             if (VotedFor.All(v => v.SelectedOptionId == Event.DefaultSelectOptionId))
             {
-                _confirmSubmit = true;
-                return;
+               await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "NoShowtimesDialog");
+               return;
             }
         }
 

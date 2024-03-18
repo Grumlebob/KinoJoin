@@ -1,6 +1,6 @@
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
-@inject IJoinEventHttpClient JoinEventHttpClient
+@inject IKinoJoinHttpClient KinoJoinHttpClient
 @if (AlreadyAnswered)
 {
     <p class="text-xl font-semibold text-green-700">Du har allerede indsendt et svar på dette event</p>
@@ -115,11 +115,11 @@ else if (!_answerSaved)
             }
         }
 
-        var p = new Participant { AuthId = LoggedInUserId, Nickname = Nickname, Email = Email, Note = Note, VotedFor = VotedFor };
+        var p = new Participant { AuthId = LoggedInUserId, Nickname = Nickname, Email = Email, Note = Note, VotedFor = VotedFor.Where(v => v.SelectedOptionId != Event.DefaultSelectOptionId).ToList()};
         Event.Participants.Add(p);
 
 
-        var response = await JoinEventHttpClient.PutJoinEventAsync(Event);
+        var response = await KinoJoinHttpClient.PutJoinEventAsync(Event);
         if (response.IsSuccessStatusCode)
         {
             _infoMessage = "Dit svar er registreret";

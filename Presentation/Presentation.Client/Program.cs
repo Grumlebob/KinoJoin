@@ -1,9 +1,12 @@
+using Application.Interfaces;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Presentation.Client.NamedHttpClients;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddHttpClient<IJoinEventHttpClient, JoinEventHttpClient>(client =>
+builder.Services.AddScoped<IKinoDkService, KinoDkService>();
+
+builder.Services.AddHttpClient<IKinoJoinHttpClient, KinoJoinHttpClient>(client =>
 {
     client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
 });

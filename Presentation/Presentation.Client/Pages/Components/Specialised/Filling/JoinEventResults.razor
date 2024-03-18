@@ -1,6 +1,6 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
-@inject IJoinEventHttpClient JoinEventHttpClient
+@inject IKinoJoinHttpClient KinoJoinHttpClient
 
 
 <div class="flex flex-col gap-2">
@@ -17,7 +17,7 @@
     <label>
         <div class="rounded border p-3 w-fit">
             Sortér efter:
-            <select onchange="@((ChangeEventArgs e) => { Console.WriteLine(e); SetSortOption(e.Value.ToString()); })">
+            <select onchange="@((ChangeEventArgs e) => { SetSortOption(e.Value.ToString()); })">
                 <option value="@VotesString">@VotesString</option>
                 <option value="@TimeString">@TimeString</option>
             </select>
@@ -123,7 +123,7 @@
 
     private async Task DeleteParticipant(int participantId)
     {
-        var response = await JoinEventHttpClient.DeleteParticipantAsync(Event.Id, participantId);
+        var response = await KinoJoinHttpClient.DeleteParticipantAsync(Event.Id, participantId);
         if (response.IsSuccessStatusCode)
         {
             Event.Participants.RemoveAll(p => p.Id == participantId);
@@ -131,9 +131,9 @@
         }
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        _showNote = Event.Participants.ToDictionary(p => p, p => false);
+        _showNote = Event.Participants.ToDictionary(p => p, _ => false);
         SetSortOption(VotesString);
     }
 

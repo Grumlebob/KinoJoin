@@ -50,15 +50,14 @@ public class KinoJoinHttpClient : IKinoJoinHttpClient
     {
         return await _httpClient.GetFromJsonAsync<ICollection<Cinema>>("api/kino-data/cinemas");
     }
-    
+
     public async Task<ICollection<Movie>?> GetMoviesAsync()
     {
         return await _httpClient.GetFromJsonAsync<ICollection<Movie>>("api/kino-data/movies");
     }
-    
+
     public async Task<ICollection<Genre>?> GetGenresAsync()
     {
         return await _httpClient.GetFromJsonAsync<ICollection<Genre>>("api/kino-data/genres");
     }
 }
-

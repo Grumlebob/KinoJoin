@@ -88,13 +88,13 @@
 <div id="ShowAllFilters" class="@(_showAllFilters ? "" : "hidden lg:block")">
     <div class="flex flex-col lg:space-x-4 lg:flex-row">
         <div class="mt-4 lg:mt-0 lg:w-1/3">
-            <SearchableCheckboxList @ref="cinemaCheckBoxList" IconPath="/Icons/CinemaFilterIcon.svg" FilterTitle="Vælg biografer" SelectedItems="_selectedCinemas" IdsToLabels="@_cinemaIdsToNames"/>
+            <SearchableCheckboxList @ref="_cinemaCheckBoxList" IconPath="/Icons/CinemaFilterIcon.svg" FilterTitle="Vælg biografer" SelectedItems="_selectedCinemas" IdsToLabels="@_cinemaIdsToNames"/>
         </div>
         <div class="lg:w-1/3">
-            <SearchableCheckboxList @ref="movieCheckBoxList" IconPath="Icons/MovieFilterIcon.svg" FilterTitle="Vælg film" SelectedItems="_selectedMovies" IdsToLabels="@_movieIdsToNames"/>
+            <SearchableCheckboxList @ref="_movieCheckBoxList" IconPath="Icons/MovieFilterIcon.svg" FilterTitle="Vælg film" SelectedItems="_selectedMovies" IdsToLabels="@_movieIdsToNames"/>
         </div>
         <div class="lg:mt-0 lg:w-1/3">
-            <SearchableCheckboxList @ref="genreCheckBoxList" IconPath="Icons/GenreFilterIcon.svg" FilterTitle="Vælg genrer" SelectedItems="_selectedGenres" IdsToLabels="@_genreIdsToNames"/>
+            <SearchableCheckboxList @ref="_genreCheckBoxList" IconPath="Icons/GenreFilterIcon.svg" FilterTitle="Vælg genrer" SelectedItems="_selectedGenres" IdsToLabels="@_genreIdsToNames"/>
         </div>
     </div>
 
@@ -200,9 +200,9 @@
     const int YesVoteIndex = 1;
 
     //used for filters
-    SearchableCheckboxList cinemaCheckBoxList;
-    SearchableCheckboxList movieCheckBoxList;
-    SearchableCheckboxList genreCheckBoxList;
+    SearchableCheckboxList _cinemaCheckBoxList = new();
+    SearchableCheckboxList _movieCheckBoxList = new();
+    SearchableCheckboxList _genreCheckBoxList = new();
     
     Dictionary<int, string> _movieIdsToNames = new();
     Dictionary<int, string> _cinemaIdsToNames = new();
@@ -229,10 +229,6 @@
         _baseUrl = NavigationManager.BaseUri;
         _joinEvent.DefaultSelectOption = _joinEvent.SelectOptions[NoVoteIndex];
 
-        _cinemaIdsToNames = new Dictionary<int, string>();
-        _movieIdsToNames = new Dictionary<int, string>();
-        _genreIdsToNames = new Dictionary<int, string>();
-
         SetFiltersFromFilterString(FilterString);
 
         //get data for filter checklists
@@ -246,13 +242,13 @@
         var availableMovies = await moviesTask;
         var availableGenres = await genresTask;
 
-        _cinemaIdsToNames = availableCinemas == null ? [] : availableCinemas.Select(c => (c.Id, c.Name)).ToDictionary();
+        _cinemaIdsToNames = availableCinemas == null ? [] : availableCinemas.Select(c => (c.Id, c.Name)).OrderBy(t => t.Name).ToDictionary();
         _selectedCinemas = _selectedCinemas.Intersect(_cinemaIdsToNames.Keys).ToHashSet(); //cannot select cinemas not in list
 
-        _movieIdsToNames = availableMovies == null ? [] : availableMovies.Select(c => (c.Id, c.Title)).ToDictionary();
+        _movieIdsToNames = availableMovies == null ? [] : availableMovies.Select(c => (c.Id, c.Title)).OrderBy(t => t.Title).ToDictionary();
         _selectedMovies = _selectedMovies.Intersect(_movieIdsToNames.Keys).ToHashSet();
 
-        _genreIdsToNames = availableGenres == null ? [] : availableGenres.Select(c => (c.Id, c.Name)).ToDictionary();
+        _genreIdsToNames = availableGenres == null ? [] : availableGenres.Select(c => (c.Id, c.Name)).OrderBy(t => t.Name).ToDictionary();
         _selectedGenres = _selectedGenres.Intersect(_genreIdsToNames.Keys).ToHashSet();
 
         _loadingPage = false;
@@ -322,9 +318,9 @@
      */
     private async Task HandleShowtimeFiltersChanged()
     {
-        cinemaCheckBoxList.CloseAccordion();
-        movieCheckBoxList.CloseAccordion();
-        genreCheckBoxList.CloseAccordion();
+        _cinemaCheckBoxList.CloseAccordion();
+        _movieCheckBoxList.CloseAccordion();
+        _genreCheckBoxList.CloseAccordion();
         _loadingShowtimes = true;
         StateHasChanged();
         var movieIds = _selectedMovies.ToList();

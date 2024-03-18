@@ -11,9 +11,9 @@
             <!--Læs mere og trailer-->
             <div class="hidden flex-col items-center md:flex space-y-1 px-3">
 
-                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="rounded-full border text-center border-black shadow duration-300 transition px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white w-full">Læs mere</a>
+                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="rounded-full border text-center border-black shadow duration-300 transition px-3 py-2 font-label hover:bg-neutral-950 hover:text-white w-full">Læs mere</a>
 
-                <button class="rounded-full border border-black shadow duration-300 transition px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white w-full" @onclick="async () => { await ShowMovieTrailer(Movie); }">Se trailer</button>
+                <button class="rounded-full border border-black shadow duration-300 transition px-3 py-2 font-label hover:bg-neutral-950 hover:text-white w-full" @onclick="async () => { await ShowMovieTrailer(Movie); }">Se trailer</button>
             </div>
         </div>
         <!-- MovieHeader -->

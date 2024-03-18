@@ -99,7 +99,7 @@
     </div>
 </div>
 
-<ShowtimeSelector SelectOptions="@_event.SelectOptions" Showtimes="@_event.Showtimes" Votes="@_currentParticipant.VotedFor" VotesChanged="OnVotesChanged"/>
+<ShowtimeSelector SelectOptions="@_event.SelectOptions" Showtimes="@_event.Showtimes" LegendTitle="Tryk på de tider du kan" Votes="@_currentParticipant.VotedFor" VotesChanged="OnVotesChanged"/>
 
 <RegisterParticipantVote Event="_event" OnAnswerSaved="OnAnswerSaved" @bind-Nickname="@_currentParticipant.Nickname" AlreadyAnswered="_alreadyAnswered" VotedFor="@_currentParticipant.VotedFor" LoggedInUserId="@_currentParticipant.AuthId"/>
 

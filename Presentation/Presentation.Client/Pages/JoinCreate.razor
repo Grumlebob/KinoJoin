@@ -1,4 +1,5 @@
-﻿@page "/JoinCreate/{filterString}"
+﻿@page "/"
+@page "/create-event/{FilterString?}"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
@@ -348,7 +349,7 @@
         filterStringBuilder.Append($"&date={fromDate}");
         filterStringBuilder.Append($"&date={toDate}");
 
-        var newUrl = _baseUrl + "JoinCreate/" + filterStringBuilder;
+        var newUrl = _baseUrl + "create-event/" +  filterStringBuilder;
         NavigationManager.NavigateTo(newUrl); //change url so a page reload will save the filters
 
         (_availableShowtimes, _moviesWithoutShowtimes) = await KinoDkService.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate.AddHours(23).AddMinutes(59));

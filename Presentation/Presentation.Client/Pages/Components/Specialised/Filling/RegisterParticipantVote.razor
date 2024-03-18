@@ -1,18 +1,20 @@
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
 @inject IJoinEventHttpClient JoinEventHttpClient
+
+
 @if (AlreadyAnswered)
 {
     <p class="text-xl font-semibold text-green-700">Du har allerede indsendt et svar på dette event</p>
 }
 else if (!_answerSaved)
 {
-    <EditForm class="w-full md:w-80 space-y-4" Model="Event">
+    <EditForm class="w-full md:w-80 space-y-4" Model="@_participant" >
         <h3 class="font-bold">Dine oplysninger</h3>
-        <InputText class="w-full border p-2 rounded-md" @bind-Value="@Nickname" placeholder="Indtast dit navn" required/>
-        <InputText class="w-full border p-2 rounded-md" @bind-Value="@Email" placeholder="Skriv din email (valgfrit)" type="email"/>
+        <InputText class="w-full border p-2 rounded-md" @bind-Value="@_participant.Nickname"  placeholder="Indtast dit navn" required />
+        <InputText class="w-full border p-2 rounded-md" @bind-Value="@_participant.Email" placeholder="Skriv din email (valgfrit)" type="email"/>
         <div>
-            <InputTextArea class="h-32 w-full resize-none border p-2 rounded-md" @bind-Value="@Note" placeholder="Note (valgfrit)"/>
+            <InputTextArea class="h-32 w-full resize-none border p-2 rounded-md" @bind-Value="@_participant.Note" placeholder="Note (valgfrit)"/>
         </div>
         <button class="rounded-full bg-primary hover:bg-primary-dark  p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(false, false); })" type="submit">
             Send svar
@@ -23,8 +25,8 @@ else if (!_answerSaved)
                 <h4 class="font-bold">Obs! Du har ikke valgt nogen tider.</h4>
                 <h4 class="font-semibold mb-0.5">Vil du indsende et tomt svar, der viser du ikke kan nogen tider?</h4>
                 <div class="inline-flex space-x-2">
-                    <button class="rounded bg-blue-500 p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(true, false); })">Ja</button>
-                    <button class="rounded bg-red-500 p-2 text-white" @onclick="@(() => { _confirmSubmit = false; })">Nej</button>
+                    <button class="rounded-full bg-success p-2 text-white hover:bg-success" @onclick="@(async () => { await SaveParticipantAnswer(true, false); })">Ja</button>
+                    <button class="rounded-full bg-error p-2 text-white hover:bg-error" @onclick="@(() => { _confirmSubmit = false; })">Nej</button>
                 </div>
             </div>
         }
@@ -47,8 +49,8 @@ else if (!_answerSaved)
     <h4 class="font-bold">Der er allerede en deltager med dette navn</h4>
     <h4 class="font-bold">Ønsker du at sende et nyt svar i samme navn?</h4>
     <div class="inline-flex space-x-2">
-        <button class="rounded bg-blue-500 p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(true, true); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Ja</button>
-        <button class="rounded bg-red-500 p-2 text-white" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Nej</button>
+        <button class="rounded-full bg-success p-2 text-white hover:bg-success" @onclick="@(async () => { await SaveParticipantAnswer(true, true); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Ja</button>
+        <button class="rounded-full bg-error p-2 text-white hover:bg-error" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Nej</button>
     </div>
 </dialog>
 
@@ -69,20 +71,25 @@ else if (!_answerSaved)
     [Parameter] public string LoggedInUserId { get; set; }
 
     [Parameter] public EventCallback<Participant> OnAnswerSaved { get; set; }
+    
 
-    private string? Email { get; set; }
-    private string? Note { get; set; }
+    private Participant _participant = new Participant();
 
     private string? _infoMessage;
 
     private bool _confirmSubmit;
+
+    protected override void OnInitialized()
+    {
+        _participant.Nickname = Nickname;
+    }
 
     private async Task SaveParticipantAnswer(bool confirmed, bool sameNameConfirmed)
     {
         if (!confirmed)
         {
             _infoMessage = "";
-            if (Nickname is null or "")
+            if (_participant.Nickname is null or "")
             {
                 _infoMessage = "Indtast venligst et navn";
                 return;
@@ -97,7 +104,7 @@ else if (!_answerSaved)
 
         if (!sameNameConfirmed)
         {
-            if (Event.Participants is not null && Event.Participants.Any(p => p.Nickname == Nickname))
+            if (Event.Participants is not null && Event.Participants.Any(p => p.Nickname == _participant.Nickname))
             {
                 await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "same-name-dialog");
                 return;
@@ -105,18 +112,20 @@ else if (!_answerSaved)
         }
 
 
-        if (Email?.Trim() == "") Email = null;
-        if (Email != null)
+        if (_participant.Email?.Trim() == "") _participant.Email = null;
+        if (_participant.Email != null)
         {
-            if (Event.Participants is not null && Event.Participants.Any(p => p.Email == Email))
+            if (Event.Participants is not null && Event.Participants.Any(p => p.Email == _participant.Email))
             {
                 _infoMessage = "Du har allerede svaret";
                 return;
             }
         }
-
-        var p = new Participant { AuthId = LoggedInUserId, Nickname = Nickname, Email = Email, Note = Note, VotedFor = VotedFor };
-        Event.Participants.Add(p);
+        
+        _participant.AuthId = LoggedInUserId;
+        _participant.VotedFor = VotedFor;
+        
+        Event.Participants.Add(_participant);
 
 
         var response = await JoinEventHttpClient.PutJoinEventAsync(Event);
@@ -124,8 +133,8 @@ else if (!_answerSaved)
         {
             _infoMessage = "Dit svar er registreret";
             _answerSaved = true;
-            p.Id = int.Parse(await response.Content.ReadAsStringAsync());
-            await OnAnswerSaved.InvokeAsync(p);
+            _participant.Id = int.Parse(await response.Content.ReadAsStringAsync());
+            await OnAnswerSaved.InvokeAsync(_participant);
 
             StateHasChanged();
         }

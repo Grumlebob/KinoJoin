@@ -11,13 +11,6 @@
     return;
 }
 
-@if (_cinemaIdsToNames.Count == 0 && _movieIdsToNames.Count == 0)
-{
-    <p>Du skal vælge mindst en film eller biograf som filter</p>
-    <button onclick="@(async () => { await JsRuntime.InvokeVoidAsync("history.back"); })">Gå Tilbage</button>
-    return;
-}
-
 
 <h1 class="mb-6 text-2xl font-bold leading-tight text-gray-800 md:text-2xl lg:text-3xl">
     Velkommen til KinoJoin - Planlæg dit biograf event her
@@ -125,11 +118,18 @@
     </div>
 </div>
 
+
 @if (_loadingShowtimes)
 {
     <div class="mt-5">
     <LoadingTextAndCircle Text="Indlæser spilletider"/>
     </div>
+    return;
+}
+
+@if (_selectedCinemas.Count == 0 && _selectedMovies.Count == 0)
+{
+    <p>Du skal vælge mindst en film eller biograf med filtrerne for at se spilletider.</p>
     return;
 }
 
@@ -253,6 +253,7 @@
         
         if (_selectedCinemas.Count == 0 && _selectedMovies.Count == 0)
         {
+            _loadingShowtimes = false;
             return;
         }
 
@@ -320,6 +321,12 @@
         var genreIds = _selectedGenres.ToList();
         var fromDate = _startDate.ToString("O");
         var toDate = _endDate.ToString("O");
+
+        if (movieIds.Count == 0 && cinemaIds.Count == 0)
+        {
+            _loadingShowtimes = false;
+            return;
+        }
 
         var filterStringBuilder = new StringBuilder("sort=most_purchased");
 

@@ -9,10 +9,10 @@ else if (!_answerSaved)
 {
     <EditForm class="w-full md:w-80 space-y-4" Model="Event">
         <h3 class="font-bold">Dine oplysninger</h3>
-        <InputText class="w-full border p-2 rounded-md" @bind-Value="@Nickname" placeholder="Indtast dit navn" required />
-        <InputText class="w-full border p-2 rounded-md" @bind-Value="@Email" placeholder="Skriv din email (valgfrit)" type="email" />
+        <InputText class="w-full border p-2 rounded-md" @bind-Value="@Nickname" placeholder="Indtast dit navn" required/>
+        <InputText class="w-full border p-2 rounded-md" @bind-Value="@Email" placeholder="Skriv din email (valgfrit)" type="email"/>
         <div>
-            <InputTextArea class="h-32 w-full resize-none border p-2 rounded-md" @bind-Value="@Note" placeholder="Note (valgfrit)" />
+            <InputTextArea class="h-32 w-full resize-none border p-2 rounded-md" @bind-Value="@Note" placeholder="Note (valgfrit)"/>
         </div>
         <button class="rounded-full bg-primary hover:bg-primary-dark  p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(false, false); })" type="submit">
             Send svar
@@ -29,19 +29,25 @@ else if (!_answerSaved)
             </div>
         }
     </EditForm>
-
 }
 
 @if (_infoMessage is not null)
 {
-    <p class="text-gray-700">@_infoMessage</p>
+    if (_answerSaved)
+    {
+        <p class="text-green-700 text-4xl">@_infoMessage</p>
+    }
+    else
+    {
+        <p class="text-red-700 text-4xl">@_infoMessage</p>
+    }
 }
 
 <dialog id="same-name-dialog" class="rounded p-4">
     <h4 class="font-bold">Der er allerede en deltager med dette navn</h4>
     <h4 class="font-bold">Ønsker du at sende et nyt svar i samme navn?</h4>
     <div class="inline-flex space-x-2">
-        <button class="rounded bg-blue-500 p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(true,true); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Ja</button>
+        <button class="rounded bg-blue-500 p-2 text-white" @onclick="@(async () => { await SaveParticipantAnswer(true, true); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Ja</button>
         <button class="rounded bg-red-500 p-2 text-white" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Nej</button>
     </div>
 </dialog>
@@ -88,6 +94,7 @@ else if (!_answerSaved)
                 return;
             }
         }
+
         if (!sameNameConfirmed)
         {
             if (Event.Participants is not null && Event.Participants.Any(p => p.Nickname == Nickname))
@@ -96,7 +103,7 @@ else if (!_answerSaved)
                 return;
             }
         }
-        
+
 
         if (Email?.Trim() == "") Email = null;
         if (Email != null)
@@ -110,12 +117,12 @@ else if (!_answerSaved)
 
         var p = new Participant { AuthId = LoggedInUserId, Nickname = Nickname, Email = Email, Note = Note, VotedFor = VotedFor.Where(v => v.SelectedOptionId != Event.DefaultSelectOptionId).ToList()};
         Event.Participants.Add(p);
-        
+
 
         var response = await KinoJoinHttpClient.PutJoinEventAsync(Event);
         if (response.IsSuccessStatusCode)
         {
-            _infoMessage = "Svar gemt";
+            _infoMessage = "Dit svar er registreret";
             _answerSaved = true;
             p.Id = int.Parse(await response.Content.ReadAsStringAsync());
             await OnAnswerSaved.InvokeAsync(p);

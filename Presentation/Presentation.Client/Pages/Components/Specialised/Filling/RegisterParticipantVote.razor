@@ -1,13 +1,9 @@
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
 @inject IKinoJoinHttpClient KinoJoinHttpClient
-@if (AlreadyAnswered)
+@if (!_answerSaved && !AlreadyAnswered)
 {
-    <p class="text-xl font-semibold text-green-700">Du har allerede indsendt et svar på dette event</p>
-}
-else if (!_answerSaved)
-{
-    <EditForm class="w-full md:w-80 space-y-4" Model="@_participant">
+    <EditForm class="w-full md:w-80 space-y-4 md:mt-7" Model="@_participant">
         <h3 class="font-bold">Dine oplysninger</h3>
         <InputText class="w-full border p-2 rounded-md" @bind-Value="@_participant.Nickname" placeholder="Indtast dit navn" required/>
         <InputText class="w-full border p-2 rounded-md" @bind-Value="@_participant.Email" placeholder="Skriv din email (valgfrit)" type="email"/>
@@ -24,7 +20,7 @@ else if (!_answerSaved)
 {
     if (_answerSaved)
     {
-        <p class="text-green-700 text-4xl">@_infoMessage</p>
+        <p class="text-success-darkest font-semibold text-2xl md:mt-7">@_infoMessage</p>
     }
     else
     {

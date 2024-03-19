@@ -18,6 +18,7 @@
 </h1>
 
 
+
 @* Dialog where user enters title and other event details *@
 <dialog id="eventDetailsDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
     <form @onsubmit="ValidateAndOpenConfirmationDialog">
@@ -513,7 +514,9 @@
 
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog");
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog");
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventShareDialog");
+        
+        NavigationManager.NavigateTo("filling/" + _joinEvent.Id);
+        //await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventShareDialog");
     }
 
     private void OnVoteChange(ICollection<ParticipantVote> votes)

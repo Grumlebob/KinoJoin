@@ -70,7 +70,7 @@ if (GlobalSettings.ShouldPreSeedDatabase)
     var context = scope.ServiceProvider.GetRequiredService<KinoContext>();
 
     var lowestCinemaId = 1; //Hardcoded from kino.dk
-    var highestCinemaId = 71;//71; //Hardcoded from kino.dk
+    var highestCinemaId = 71; //71; //Hardcoded from kino.dk
 
     for (int i = lowestCinemaId; i <= highestCinemaId; i++)
     {
@@ -110,9 +110,7 @@ if (GlobalSettings.ShouldPreSeedDatabase)
                     .FirstOrDefaultAsync();
                 if (version == null)
                 {
-                    await context.Versions.AddAsync(
-                        new VersionTag { Type = versionOption.Value }
-                    );
+                    await context.Versions.AddAsync(new VersionTag { Type = versionOption.Value });
                 }
 
                 await context.SaveChangesAsync();
@@ -174,8 +172,13 @@ if (GlobalSettings.ShouldPreSeedDatabase)
                             Title = _movieIdsToNames[jsonMovie.Id],
                             PremiereDate = jsonMovie.Content.FieldPremiere,
                             KinoURL = jsonMovie.Content.URL,
-                            AgeRating = jsonMovie.Content.FieldCensorshipIcon == null ? null :
-                                new AgeRating { Censorship = jsonMovie.Content.FieldCensorshipIcon },
+                            AgeRating =
+                                jsonMovie.Content.FieldCensorshipIcon == null
+                                    ? null
+                                    : new AgeRating
+                                    {
+                                        Censorship = jsonMovie.Content.FieldCensorshipIcon
+                                    },
                             ImageUrl = imageUrl,
                             Duration = duration,
                         };
@@ -194,11 +197,12 @@ if (GlobalSettings.ShouldPreSeedDatabase)
                 {
                     Console.WriteLine("AgeRating is not null for movie: " + movie.Title);
                 }
-                
+
                 var existingMovie = await context.Movies.FindAsync(movie.Id);
-                var existingAgeRating =
-                    await context.AgeRatings.FirstOrDefaultAsync(m => movie.AgeRating != null && m.Censorship == movie.AgeRating.Censorship);
-                
+                var existingAgeRating = await context.AgeRatings.FirstOrDefaultAsync(m =>
+                    movie.AgeRating != null && m.Censorship == movie.AgeRating.Censorship
+                );
+
                 if (existingMovie == null)
                 {
                     movie.AgeRating = existingAgeRating ?? movie.AgeRating ?? null;
@@ -229,6 +233,4 @@ if (GlobalSettings.ShouldPreSeedDatabase)
 app.Run();
 
 //A hacky solution to use Testcontainers with WebApplication.CreateBuilder for integration tests
-public partial class Program
-{
-}
+public partial class Program { }

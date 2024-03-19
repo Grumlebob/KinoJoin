@@ -35,9 +35,11 @@ public class DataGenerator
             .RuleFor(c => c.Id, (f, c) => f.IndexFaker + 1)
             .RuleFor(c => c.Name, f => f.Company.CompanyName());
 
-        _ageRatingGenerator = new Faker<AgeRating>()
-            .RuleFor(a => a.Censorship, f => f.Lorem.Word());
-        
+        _ageRatingGenerator = new Faker<AgeRating>().RuleFor(
+            a => a.Censorship,
+            f => f.Lorem.Word()
+        );
+
         _movieGenerator = new Faker<Movie>()
             .RuleFor(m => m.Id, (f, m) => f.IndexFaker + 1)
             .RuleFor(m => m.Title, f => f.Lorem.Sentence())

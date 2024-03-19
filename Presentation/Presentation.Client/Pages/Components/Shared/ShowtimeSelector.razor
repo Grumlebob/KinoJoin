@@ -6,8 +6,8 @@
 }
 
 <div class="@(HasAnswered ? "mb-5" : "mb-7") w-fit space-y-1  mt-10  ">
-    <p class="font-semibold ">@LegendTitle</p>
-    <div class="mb-2 divide-x-2 flex w-fit">
+    <p class="font-semibold">@LegendTitle</p>
+    <div class="mb-2 flex w-fit divide-x-2">
         @{
             var firstOption = true;
         }
@@ -24,9 +24,9 @@
 </div>
 @if (HasAnswered)
 {
-    <p class="text-xl font-semibold text-success-darkest mb-5">Du har allerede indsendt et svar på dette event</p>
+    <p class="mb-5 text-xl font-semibold text-success-darkest">Du har allerede indsendt et svar på dette event</p>
 }
-<div class="space-y-5 ">
+<div class="space-y-5">
     @{
             var isFirst = true;
         }

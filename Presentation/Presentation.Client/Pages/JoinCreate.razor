@@ -40,7 +40,7 @@
         </div>
     </form>
 
-    <div class="border rounded p-2 mt-2">
+    <div class="mt-2 rounded border p-2">
         <p class="text-lg font-semibold">Valgte spilletider</p>
         @foreach (var showtimesByMovie in _joinEvent.Showtimes.GroupBy(s => s.Movie.Id))
         {
@@ -85,7 +85,7 @@
 @* Dialog which shows the share link *@
 <dialog id="eventShareDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl md:min-w-96">
     <div class="space-y-1">
-        <p class="text-lg font-semibold  mb-0.5">Dit event er nu oprettet</p>
+        <p class="text-lg font-semibold mb-0.5">Dit event er nu oprettet</p>
         <p class="font-semibold">Send dette link til dine venner (Du kan også se resultater på denne side)</p>
         <div class="flex items-center gap-1">
             <a href="@(_baseUrl + "filling/" + _joinEvent.Id)" class="text-lg text-blue-600 hover:text-blue-700">
@@ -94,7 +94,7 @@
             <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", (_baseUrl + "filling/" + _joinEvent.Id)); await ShowSnackbar("Link kopieret", "success"); })">
                 <CopyIcon Class="hover:bg-gray-200 p-2 rounded-full"/>
             </button>
-            <button @onclick="ShareEvent" class="rounded-full bg-secondary p-2 text-white hover:bg-gray-700 lg:hidden">
+            <button @onclick="ShareEvent" class="rounded-full p-2 text-white bg-secondary hover:bg-gray-700 lg:hidden">
                 <svg class="h-5 w-5 fill-white" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 30 30">
                     <path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"></path>
                 </svg>
@@ -128,7 +128,7 @@
         </div>
     </div>
 
-    <div class=" flex flex-col space-y-4 mt-0 lg:w-1/3 lg:pr-3">
+    <div class="mt-0 flex flex-col space-y-4 lg:w-1/3 lg:pr-3">
         <div class="flex w-full flex-wrap justify-start">
             <div class="w-1/2 pt-3 pr-1.5">
                 <div class="rounded bg-gray-100 shadow">
@@ -148,11 +148,11 @@
         <div class="hidden md:block">
             @_filterInformationBox
         </div>
-        <div class="mt-4 flex justify-end gap-2 w-full md:w-auto text-no-wrap">
-            <button @onclick="async () => { _selectedCinemas.Clear(); _selectedMovies.Clear(); _selectedGenres.Clear(); await HandleShowtimeFiltersChanged(); }" class="rounded-full border border-black px-6 shadow transition duration-300  md:max-w-40 font-label w-1/2 hover:bg-gray-700 hover:text-white">
+        <div class="mt-4 flex w-full justify-end gap-2 text-no-wrap md:w-auto">
+            <button @onclick="async () => { _selectedCinemas.Clear(); _selectedMovies.Clear(); _selectedGenres.Clear(); await HandleShowtimeFiltersChanged(); }" class="w-1/2 rounded-full border border-black px-6 shadow transition duration-300 font-label hover:bg-gray-700 hover:text-white md:max-w-40">
                 Ryd filtrer
             </button>
-            <button @onclick="HandleShowtimeFiltersChanged" class="rounded-full border border-transparent px-6 py-2 text-base font-medium text-white shadow-sm bg-secondary w-1/2 md:max-w-40 text-nowrap  hover:bg-gray-800">
+            <button @onclick="HandleShowtimeFiltersChanged" class="w-1/2 rounded-full border border-transparent px-6 py-2 text-base font-medium text-white shadow-sm bg-secondary text-nowrap hover:bg-gray-800 md:max-w-40">
                 Opdater filtrer
             </button>
         </div>

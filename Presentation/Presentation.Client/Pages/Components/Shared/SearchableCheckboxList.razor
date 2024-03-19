@@ -1,9 +1,9 @@
-﻿<div class="flex flex-col w-full">
+﻿<div class="flex w-full flex-col">
     <!-- Accordion header -->
     <div @onclick="ToggleAccordion" class="cursor-pointer bg-secondary text-white px-5 py-3 @(_isAccordionOpen ? "rounded-t" : "rounded") flex justify-between items-center">
         @if (IconPath != null)
         {
-            <img src="@IconPath" alt="Movie Icon" class="h-6 w-6 mr-2"/>
+            <img src="@IconPath" alt="Movie Icon" class="mr-2 h-6 w-6"/>
         }
         <span>@FilterTitle</span>
         <svg class="transition-transform" style="@(_isAccordionOpen ? "transform: rotate(0deg);" : "transform: rotate(-90deg);")" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
@@ -14,27 +14,27 @@
     <!-- Accordion content including search bar and list -->
     <div class="@(_isAccordionOpen ? "block" : "hidden") transition-all overflow-hidden bg-white px-5 py-3 rounded-b shadow">
         <!-- Search bar -->
-        <input type="text" placeholder="Søg" @oninput="@(e => { _searchTerm = e.Value?.ToString() ?? string.Empty; })" class="w-full p-2 border border-gray-300 rounded-md mb-4"/>
+        <input type="text" placeholder="Søg" @oninput="@(e => { _searchTerm = e.Value?.ToString() ?? string.Empty; })" class="mb-4 w-full rounded-md border border-gray-300 p-2"/>
         <!-- List -->
         <div class="max-h-40 overflow-y-auto">
             @foreach (var (id, label) in IdsToLabels.Where(item => item.Value.ToLowerInvariant().Contains(_searchTerm.ToLowerInvariant())).Select(item => (item.Key, item.Value)))
             {
                 var checkBoxId = $"{_uniqueId.ToString()}-{id}";
-                <div class="flex items-center whitespace-nowrap overflow-hidden mb-2">
+                <div class="mb-2 flex items-center overflow-hidden whitespace-nowrap">
                     <input type="checkbox" id="@checkBoxId" value="@id" @onchange="@(e => HandleCheckboxChange(e, id))" checked="@(SelectedItems.Contains(id))" class="mr-2 h-5 w-5 accent-secondary"/>
-                    <label for="@checkBoxId" class="flex-grow truncate ml-1">@label</label>
+                    <label for="@checkBoxId" class="ml-1 flex-grow truncate">@label</label>
                 </div>
             }
         </div>
     </div>
 
     <!-- Selected items as chips -->
-    <div class="mt-1.5 flex flex-wrap">
+    <div class="flex flex-wrap mt-1.5">
         @foreach (var id in SelectedItems.Where(id => IdsToLabels.ContainsKey(id)))
         {
-            <span class="chip inline-flex items-center bg-gray-100 border text-black text-sm font-medium px-2.5 py-0.5 rounded-full mr-2 mb-2">
+            <span class="mr-2 mb-2 inline-flex items-center rounded-full border bg-gray-100 text-sm font-medium text-black chip px-2.5 py-0.5">
                 @IdsToLabels[id]
-                <button @onclick="() => SelectedItems.Remove(id)" class="ml-1.5  rounded-full text-sm p-0.5 hover:bg-gray-200 focus:outline-none "><CrossIcon/></button>
+                <button @onclick="() => SelectedItems.Remove(id)" class="rounded-full text-sm ml-1.5 p-0.5 hover:bg-gray-200 focus:outline-none"><CrossIcon/></button>
             </span>
         }
     </div>

@@ -1,15 +1,15 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
 
-<dialog class="p-5 rounded" id=@("calendar-dialog"+Desktop) >
-    <div class="flex flex-col gap-4 items-center">
+<dialog class="rounded p-5" id=@("calendar-dialog"+Desktop) >
+    <div class="flex flex-col items-center gap-4">
     <h2 class="text-2xl text-bold">Tilføj til kalender</h2>
    
     <div class="flex items-center gap-1">
 
-        <button class="border border-secondary px-3 py-1 shadow duration-300 transition transition duration-100  rounded-full hover:bg-secondary hover:text-white" onclick="@(async () => await OpenGoogleCalendar())">Tilføj til google kalender</button>
-        <button class="border border-secondary px-3 py-1 shadow duration-300 transition transition duration-100  rounded-full hover:bg-secondary hover:text-white" onclick="@(async () => await DownloadCalendarFile())">Download til andre kalendre</button>
-        <button class="bg-error rounded-full px-3 py-1  text-white hover:bg-error-dark" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog"+Desktop); })" >Luk</button>
+        <button class="rounded-full border px-3 py-1 shadow transition duration-100 duration-300 border-secondary hover:bg-secondary hover:text-white" onclick="@(async () => await OpenGoogleCalendar())">Tilføj til google kalender</button>
+        <button class="rounded-full border px-3 py-1 shadow transition duration-100 duration-300 border-secondary hover:bg-secondary hover:text-white" onclick="@(async () => await DownloadCalendarFile())">Download til andre kalendre</button>
+        <button class="rounded-full px-3 py-1 text-white bg-error hover:bg-error-dark" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog"+Desktop); })" >Luk</button>
     </div>
     </div>
 

@@ -61,7 +61,7 @@
 </dialog>
 
 @* Dialog to confirm the user is done creating the event *@
-<dialog id="eventConfirmDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl min-w-96">
+<dialog id="eventConfirmDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl md:min-w-96">
     <p class="text-lg font-semibold mb-0.5">Bekræft oprettelse</p>
     <div class="mb-4 flex items-center">
         <input id="CanAllShowtimes" type="checkbox" @bind="_hostCanAllShowtimes" class="mr-2 accent-secondary"/>
@@ -83,7 +83,7 @@
 </dialog>
 
 @* Dialog which shows the share link *@
-<dialog id="eventShareDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl min-w-96">
+<dialog id="eventShareDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl md:min-w-96">
     <div class="space-y-1">
         <p class="text-lg font-semibold  mb-0.5">Dit event er nu oprettet</p>
         <p class="font-semibold">Send dette link til dine venner (Du kan også se resultater på denne side)</p>
@@ -175,7 +175,7 @@
 
 <ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de tider du vil have med i dit event" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_availableShowtimeVotes" VotesChanged="OnVoteChange" SelectOptions="_hostSelectOptions"/>
 
-<button class="fixed right-12 bottom-12 z-50 flex h-14 w-14 items-center justify-center gap-1 rounded-full shadow-lg bg-primary hover:bg-primary-dark md:h-auto md:w-auto md:px-4 md:py-2" @onclick="OpenEventDetailsDialog">
+<button class="fixed right-6 bottom-6 md:right-12 md:bottom-12 z-50 flex h-14 w-14 items-center justify-center gap-1 rounded-full shadow-lg bg-primary hover:bg-primary-dark md:h-auto md:w-auto md:px-4 md:py-2" @onclick="OpenEventDetailsDialog">
     <CreateIcon Class="stroke-white fill-white"/>
     <span class="hidden py-1 text-white md:block">
         Opret Event

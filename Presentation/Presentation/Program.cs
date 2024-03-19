@@ -70,7 +70,7 @@ if (GlobalSettings.ShouldPreSeedDatabase)
     var context = scope.ServiceProvider.GetRequiredService<KinoContext>();
 
     var lowestCinemaId = 1; //Hardcoded from kino.dk
-    var highestCinemaId = 71; //Hardcoded from kino.dk
+    var highestCinemaId = 1;//71; //Hardcoded from kino.dk
 
     for (int i = lowestCinemaId; i <= highestCinemaId; i++)
     {

@@ -95,7 +95,8 @@ public class KinoDkService : IKinoDkService
                         Title = movieIdsToNames[jsonMovie.Id],
                         PremiereDate = jsonMovie.Content.FieldPremiere,
                         KinoURL = jsonMovie.Content.URL,
-                        AgeRating = jsonMovie.Content.FieldCensorshipIcon,
+                        AgeRating = jsonMovie.Content.FieldCensorshipIcon == null ? null :
+                            new AgeRating { Censorship = jsonMovie.Content.FieldCensorshipIcon },
                         ImageUrl = jsonMovie
                             .Content
                             .FieldPoster
@@ -213,7 +214,8 @@ public class KinoDkService : IKinoDkService
                 Title = movieIdsToNames[movie.Id],
                 PremiereDate = movie.Content.FieldPremiere,
                 KinoURL = movie.Content.URL,
-                AgeRating = movie.Content.FieldCensorshipIcon,
+                AgeRating = movie.Content.FieldCensorshipIcon == null ? null :
+                    new AgeRating { Censorship = movie.Content.FieldCensorshipIcon },
                 ImageUrl = movie.Content.FieldPoster.FieldMediaImage?.Sources?[0].Srcset,
                 Duration = duration
             };

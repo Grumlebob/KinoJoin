@@ -9,12 +9,12 @@
     return;
 }
 
-<div class="mb-3 w-fit space-y-1  mt-10 ">
-    <p class="font-semibold pl-2">Tryk på de tider du kan</p>
-    <div class="mb-2 divide-x-2 flex w-fit">
+<div class="mt-10 mb-3 w-fit space-y-1">
+    <p class="pl-2 font-semibold">Tryk på de tider du kan</p>
+    <div class="mb-2 flex w-fit divide-x-2">
         @foreach (var option in SelectOptions)
         {
-            <div class="px-2 ">
+            <div class="px-2">
                 <div class="rounded px-1 shadow-md  bg-@option.Color ">
                     <p>@option.VoteOption</p>
                 </div>
@@ -22,7 +22,7 @@
         }
     </div>
 </div>
-<div class="space-y-5 ">
+<div class="space-y-5">
     @foreach (var showtimesByMovie in Showtimes.GroupBy(s => s.Movie.Id))
     {
         var movie = showtimesByMovie.First().Movie;

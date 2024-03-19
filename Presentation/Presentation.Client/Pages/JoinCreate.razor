@@ -1,6 +1,5 @@
 ﻿@page "/"
 @page "/create-event/{FilterString?}"
-@using Microsoft.EntityFrameworkCore.Diagnostics
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
@@ -70,10 +69,17 @@
             Jeg kan alle valgte tider
         </label>
     </div>
-    <div class="flex justify-end space-x-3">
-        <button @onclick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog"))" class="rounded-full px-4 py-2 text-white bg-error hover:bg-error-dark">Rediger videre</button>
-        <button @onclick="FinishJoinEvent" class="rounded-full px-4 py-2 text-white bg-success hover:bg-success-dark">Opret</button>
-    </div>
+    @if (!_uploadingEvent)
+    {
+        <div class="flex justify-end space-x-3">
+            <button @onclick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog"))" class="rounded-full px-4 py-2 text-white bg-error hover:bg-error-dark">Rediger videre</button>
+            <button @onclick="FinishJoinEvent" class="rounded-full px-4 py-2 text-white bg-success hover:bg-success-dark">Opret</button>
+        </div>
+    }
+    else
+    {
+        <LoadingTextAndCircle Text="Opretter"/>
+    }
 </dialog>
 
 @* Dialog which shows the share link *@
@@ -103,7 +109,7 @@
 
 
 <div class="flex">
-    <button @onclick="ToggleFilters" class="rounded-full border border-transparent px-6 py-2 text-base font-medium text-white shadow-sm bg-secondary max-w-40 hover:bg-gray-800 lg:hidden">
+    <button @onclick="() => { _showAllFilters = !_showAllFilters; }" class="rounded-full border border-transparent px-6 py-2 text-base font-medium text-white shadow-sm bg-secondary max-w-40 hover:bg-gray-800 lg:hidden">
         @(_showAllFilters ? "Skjul filtrer" : "Vis alle filtrer")
     </button>
 </div>
@@ -235,12 +241,9 @@
     private DateTime _endDate = DateTime.Today.AddDays(30);
 
     private bool _showAllFilters;
-
-    private void ToggleFilters()
-    {
-        _showAllFilters = !_showAllFilters;
-    }
     //filters end
+
+    private bool _uploadingEvent;
 
     RenderFragment _filterInformationBox;
 
@@ -303,7 +306,7 @@
             if (_cinemaIdsToNames.ContainsKey(cinema.Id)) continue;
             _cinemaIdsToNames[cinema.Id] = cinema.Name;
         }
-        
+
         foreach (var movie in _availableShowtimes.Select(s => s.Movie).DistinctBy(m => m.Id))
         {
             if (_movieIdsToNames.ContainsKey(movie.Id)) continue;
@@ -483,6 +486,7 @@
         else if (_joinEvent.Deadline < DateTime.Now)
         {
             _snackbarMessage = "Deadline skal være i fremtiden";
+            StateHasChanged();
             await Task.Delay(3000).ContinueWith(_ => _snackbarMessage = null);
         }
         else
@@ -493,6 +497,7 @@
 
     private async Task FinishJoinEvent()
     {
+        _uploadingEvent = true;
         var authenticationState = await AuthenticationStateTask;
 
         var user = authenticationState.User;
@@ -536,7 +541,6 @@
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog");
 
         NavigationManager.NavigateTo("filling/" + _joinEvent.Id);
-        //await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventShareDialog");
     }
 
     private void OnVoteChange(ICollection<ParticipantVote> votes)

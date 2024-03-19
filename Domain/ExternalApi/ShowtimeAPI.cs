@@ -116,7 +116,7 @@ public class MovieContent
     public string Label { get; set; }
 
     [JsonProperty("field_censorship_icon")]
-    public string FieldCensorshipIcon { get; set; }
+    public string? FieldCensorshipIcon { get; set; }
 
     [JsonProperty("field_playing_time")]
     public string FieldPlayingTime { get; set; }

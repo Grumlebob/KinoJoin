@@ -77,11 +77,12 @@
 <dialog class="p-5 rounded" id="confirm-delete-dialog">
     @if (_participantToDelete != null)
     {
-        <div class="flex flex-col gap-4 items-center">
-            <p class="font-bold">Er du sikker på at du vil slette @_participantToDelete.Nickname's svar?</p>
-            <div class="flex items-center gap-1">
-                <button class="bg-success rounded-full p-3 py-0.5 w-16 text-white hover:bg-success-dark" @onclick="@(async () => { await DeleteParticipant(_participantToDelete.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Ja</button>
+        <div class="flex flex-col gap-4 items-end">
+            <p class="text-xl font-bold">Er du sikker på at du vil slette @_participantToDelete.Nickname's svar?</p>
+            <div class="flex  gap-1">
                 <button class="bg-error rounded-full p-3 py-0.5 w-16 text-white hover:bg-error-dark" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Nej</button>
+                <button class="bg-success rounded-full p-3 py-0.5 w-16 text-white hover:bg-success-dark" @onclick="@(async () => { await DeleteParticipant(_participantToDelete.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Ja</button>
+
             </div>
         </div>
     }

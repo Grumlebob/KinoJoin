@@ -1,4 +1,6 @@
-﻿namespace Infrastructure.Services;
+﻿using Infrastructure.Persistence;
+
+namespace Infrastructure.Services;
 
 public class KinoJoinService(KinoContext context) : IKinoJoinService
 {

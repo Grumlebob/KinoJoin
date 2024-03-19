@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using Infrastructure.Persistence;
 
 namespace Infrastructure.Services;
 
@@ -288,7 +289,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                         new Movie
                         {
                             Id = movieId,
-                            KinoURL = movie.KinoURL,
+                            KinoUrl = movie.KinoUrl,
                             AgeRating = existingAgeRating ?? movie.AgeRating ?? null,
                             Duration = movie.Duration,
                             ImageUrl = movie.ImageUrl,

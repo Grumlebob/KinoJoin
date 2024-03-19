@@ -16,6 +16,8 @@ public class KinoContext : DbContext
     public DbSet<Cinema> Cinemas { get; set; }
     public DbSet<Room> Rooms { get; set; }
     public DbSet<Genre> Genres { get; set; }
+    
+    public DbSet<AgeRating> AgeRatings { get; set; }
 
     public DbSet<SelectOption> SelectOptions { get; set; }
 
@@ -47,6 +49,12 @@ public class KinoContext : DbContext
             .WithOne()
             .HasForeignKey(p => p.JoinEventId);
         //.IsRequired(false); // This indicates that the foreign key is optional
+        
+        //Age rating is unique
+        modelBuilder
+            .Entity<AgeRating>()
+            .HasIndex(ar => ar.Censorship)
+            .IsUnique();
 
         modelBuilder
             .Entity<Participant>()

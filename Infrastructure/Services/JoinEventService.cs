@@ -278,6 +278,8 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             if (existingMovie == null)
             {
                 var movie = joinEvent.Showtimes.FirstOrDefault(st => st.Movie.Id == movieId)?.Movie;
+                
+                var existingAgeRating = await context.AgeRatings.FindAsync(movie?.AgeRating.Id);
 
                 if (movie != null)
                     context.Movies.Add(
@@ -285,7 +287,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                         {
                             Id = movieId,
                             KinoURL = movie.KinoURL,
-                            AgeRating = movie.AgeRating,
+                            AgeRating = existingAgeRating ?? null,
                             Duration = movie.Duration,
                             ImageUrl = movie.ImageUrl,
                             Title = movie.Title,

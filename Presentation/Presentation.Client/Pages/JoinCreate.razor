@@ -355,7 +355,7 @@
                         Title = _movieIdsToNames[jsonMovie.Id],
                         PremiereDate = jsonMovie.Content.FieldPremiere,
                         KinoURL = jsonMovie.Content.URL,
-                        AgeRating = jsonMovie.Content.FieldCensorshipIcon,
+                        AgeRating = new AgeRating() { Censorship = jsonMovie.Content.FieldCensorshipIcon },
                         ImageUrl = jsonMovie.Content.FieldPoster.FieldMediaImage?.Sources?[0].Srcset,
                         Duration = duration,
                     };
@@ -460,7 +460,7 @@
                 Title = _movieIdsToNames[movie.Id],
                 PremiereDate = movie.Content.FieldPremiere,
                 KinoURL = movie.Content.URL,
-                AgeRating = movie.Content.FieldCensorshipIcon,
+                AgeRating = new AgeRating() {Censorship = movie.Content.FieldCensorshipIcon},
                 ImageUrl = movie.Content.FieldPoster.FieldMediaImage?.Sources?[0].Srcset,
                 Duration = duration
             };

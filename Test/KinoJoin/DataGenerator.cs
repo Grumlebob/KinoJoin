@@ -14,6 +14,7 @@ public class DataGenerator
     private readonly Faker<Playtime> _playtimeGenerator;
     private readonly Faker<VersionTag> _versionTagGenerator;
     private readonly Faker<Room> _roomGenerator;
+    private readonly Faker<AgeRating> _ageRatingGenerator;
 
     public readonly Faker<JoinEvent> JoinEventGenerator;
 
@@ -34,6 +35,9 @@ public class DataGenerator
             .RuleFor(c => c.Id, (f, c) => f.IndexFaker + 1)
             .RuleFor(c => c.Name, f => f.Company.CompanyName());
 
+        _ageRatingGenerator = new Faker<AgeRating>()
+            .RuleFor(a => a.Censorship, f => f.Lorem.Word());
+        
         _movieGenerator = new Faker<Movie>()
             .RuleFor(m => m.Id, (f, m) => f.IndexFaker + 1)
             .RuleFor(m => m.Title, f => f.Lorem.Sentence())
@@ -41,7 +45,7 @@ public class DataGenerator
             .RuleFor(m => m.KinoURL, f => f.Internet.Url())
             .RuleFor(m => m.Duration, f => f.Random.Int(60, 180))
             .RuleFor(m => m.PremiereDate, f => f.Date.Past().ToString())
-            .RuleFor(m => m.AgeRating, f => f.Lorem.Word());
+            .RuleFor(m => m.AgeRating, f => _ageRatingGenerator.Generate());
 
         _hostGenerator = new Faker<Host>()
             .RuleFor(h => h.AuthId, f => f.Random.Uuid().ToString())

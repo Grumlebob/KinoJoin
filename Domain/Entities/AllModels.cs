@@ -59,14 +59,20 @@ public class Movie
     public string? KinoURL { get; set; }
     public int? Duration { get; set; }
     public string? PremiereDate { get; set; }
-    public string? AgeRating { get; set; }
+    public AgeRating? AgeRating { get; set; }
+}
+
+public class AgeRating
+{
+    [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
+    public string Censorship { get; set; }
 }
 
 public class Showtime
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int Id { get; set; }
-
     public int MovieId { get; set; }
     public int CinemaId { get; set; }
     public int PlaytimeId { get; set; }

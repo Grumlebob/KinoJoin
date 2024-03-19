@@ -30,7 +30,7 @@
 
     <!-- Selected items as chips -->
     <div class="mt-1.5 flex flex-wrap">
-        @foreach (var id in SelectedItems)
+        @foreach (var id in SelectedItems.Where(id => IdsToLabels.ContainsKey(id)))
         {
             <span class="chip inline-flex items-center bg-gray-100 border text-black text-sm font-medium px-2.5 py-0.5 rounded-full mr-2 mb-2">
                 @IdsToLabels[id]

@@ -85,8 +85,6 @@
 
     [Parameter] public IGrouping<int, Showtime> ShowtimesByCinema { get; set; }
 
-    [Parameter] public IGrouping<int, Showtime> ShowtimesByMovie { get; set; }
-
     [Parameter] public ICollection<ParticipantVote> Votes { get; set; } = [];
 
     [Parameter] public List<SelectOption> SelectOptions { get; set; } = [new SelectOption() { VoteOption = "Kan ikke", Color = "gray-200" }, new SelectOption() { VoteOption = "Kan godt", Color = "success" }];

@@ -1,5 +1,6 @@
 ﻿@page "/"
 @page "/create-event/{FilterString?}"
+@using Microsoft.EntityFrameworkCore.Diagnostics
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
@@ -262,13 +263,8 @@
         var availableGenres = await genresTask;
 
         _cinemaIdsToNames = availableCinemas == null ? [] : availableCinemas.Select(c => (c.Id, c.Name)).OrderBy(t => t.Name).ToDictionary();
-        _selectedCinemas = _selectedCinemas.Intersect(_cinemaIdsToNames.Keys).ToHashSet(); //cannot select cinemas not in list
-
         _movieIdsToNames = availableMovies == null ? [] : availableMovies.Select(c => (c.Id, c.Title)).OrderBy(t => t.Title).ToDictionary();
-        _selectedMovies = _selectedMovies.Intersect(_movieIdsToNames.Keys).ToHashSet();
-
         _genreIdsToNames = availableGenres == null ? [] : availableGenres.Select(c => (c.Id, c.Name)).OrderBy(t => t.Name).ToDictionary();
-        _selectedGenres = _selectedGenres.Intersect(_genreIdsToNames.Keys).ToHashSet();
 
         _filterInformationBox = (__builder) =>
         {
@@ -300,6 +296,19 @@
         //load all show times from filter
         (_availableShowtimes, _moviesWithoutShowtimes) = await KinoDkService.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
         _availableShowtimeVotes = _availableShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _hostSelectOptions[NoVoteIndex] }).ToList();
+
+        //if KinoDKService yields any data not in database, handle it
+        foreach (var cinema in _availableShowtimes.Select(s => s.Cinema).DistinctBy(c => c.Id))
+        {
+            if (_cinemaIdsToNames.ContainsKey(cinema.Id)) continue;
+            _cinemaIdsToNames[cinema.Id] = cinema.Name;
+        }
+        
+        foreach (var movie in _availableShowtimes.Select(s => s.Movie).DistinctBy(m => m.Id))
+        {
+            if (_movieIdsToNames.ContainsKey(movie.Id)) continue;
+            _movieIdsToNames[movie.Id] = movie.Title;
+        }
 
         _loadingShowtimes = false;
     }

@@ -4,7 +4,8 @@
     <div class="my-5 h-px w-full rounded-full bg-gray-300"></div>
     <div class="grid gap-4 grid-cols-[0.5fr_1fr] grid-rows-[min(100px)_auto] md:grid-cols-[200px_1fr]">
         <!-- PosterImage -->
-        @if(_shouldRender){
+        @if (_shouldRender)
+        {
             <div class="row-span-2 space-y-2 md:min-w-48 md:sticky md:top-16 md:self-start">
                 <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank">
                     <img src="@Movie.ImageUrl" alt="Movie Poster" class="max-h-full w-full rounded-sm shadow"/>
@@ -15,7 +16,7 @@
                     <button class="w-full rounded-full border border-black px-3 py-2 shadow transition duration-100 duration-300 font-label hover:bg-neutral-950 hover:text-white" @onclick="async () => { await ShowMovieTrailer(Movie); }">Se trailer</button>
                 </div>
             </div>
-           } 
+        }
         <!-- MovieHeader -->
         <div class="col-start-2">
             <div class="flex flex-col space-y-2">
@@ -31,7 +32,8 @@
                     </button>
 
                 </div>
-                @if(_shouldRender){
+                @if (_shouldRender)
+                {
                     <div class="block">
                         <div class="inline-flex flex-col items-start justify-between gap-2 rounded md:flex-row md:items-center md:gap-4 md:p-2">
                             <!-- movie-info -->
@@ -46,29 +48,29 @@
                             </div>
                         </div>
                     </div>
-                    }
-                @if(_shouldRender){
-                <div class="block md:hidden">
-                    <!--Læs mere og trailer mobile-->
-                    <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="inline-block w-32 rounded-full border border-black px-3 py-2 text-center transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
-                </div>
-                <div class="block md:hidden">
-                    <button @onclick="async () => { await ShowMovieTrailer(Movie); }" class="inline-block w-32 rounded-full border border-black px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Se trailer</button>
-                </div>
+                }
+                @if (_shouldRender)
+                {
+                    <div class="block md:hidden">
+                        <!--Læs mere og trailer mobile-->
+                        <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="inline-block w-32 rounded-full border border-black px-3 py-2 text-center transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
+                    </div>
+                    <div class="block md:hidden">
+                        <button @onclick="async () => { await ShowMovieTrailer(Movie); }" class="inline-block w-32 rounded-full border border-black px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Se trailer</button>
+                    </div>
                 }
             </div>
         </div>
-            
-        
+
 
         <div class="col-span-3 md:col-start-2 md:row-start-2 md:row-end-3">
-            
-        @if (_shouldRender)
-        {
-            @if (ChildContent is not null)
+
+            @if (_shouldRender)
             {
-                @ChildContent
-            }
+                @if (ChildContent is not null)
+                {
+                    @ChildContent
+                }
             }
         </div>
     </div>

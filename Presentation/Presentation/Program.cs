@@ -2,9 +2,9 @@ using Application;
 using Application.Interfaces;
 using Carter;
 using Domain.Entities;
-using Domain.ExternalApi;
+using Domain.ExternalApiModels;
 using Infrastructure;
-using Infrastructure.Database;
+using Infrastructure.Persistence;
 using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -82,12 +82,12 @@ if (GlobalSettings.ShouldPreSeedDatabase)
 
         try
         {
-            var apiResultObject = JsonConvert.DeserializeObject<Root>(json);
+            var apiResultObject = JsonConvert.DeserializeObject<ShowtimeApiRoot>(json);
 
-            var facets = apiResultObject!.Content.Facets;
+            var facets = apiResultObject!.ShowtimeApiContent.ShowtimeApiFacets;
 
             // Cinemas
-            foreach (var cinemaOption in facets.Cinemas.Options)
+            foreach (var cinemaOption in facets.ShowtimeApiCinemas.Options)
             {
                 var cinema = await context.Cinemas.FindAsync(cinemaOption.Key);
                 if (cinema == null)
@@ -117,7 +117,7 @@ if (GlobalSettings.ShouldPreSeedDatabase)
             }
 
             //Genres
-            foreach (var genreOption in facets.Genres.Options)
+            foreach (var genreOption in facets.ShowtimeApiGenres.Options)
             {
                 var genre = await context.Genres.FindAsync(genreOption.Key);
                 if (genre == null)
@@ -136,12 +136,20 @@ if (GlobalSettings.ShouldPreSeedDatabase)
             //several cinemas may pose the same movie. No need to create the movie object every time
             Dictionary<int, string> _movieIdsToNames = new();
             var MoviesOnKinoDk = new Dictionary<int, Movie>();
-            foreach (var movieOption in apiResultObject.Content.Facets.Movies.Options)
+            foreach (
+                var movieOption in apiResultObject
+                    .ShowtimeApiContent
+                    .ShowtimeApiFacets
+                    .Movies
+                    .Options
+            )
             {
                 _movieIdsToNames.Add(movieOption.Key, movieOption.Value);
             }
 
-            foreach (var jsonCinema in apiResultObject.Content.Content.Content)
+            foreach (
+                var jsonCinema in apiResultObject.ShowtimeApiContent.ShowtimeApiContent.Content
+            )
             {
                 foreach (
                     var jsonMovie in jsonCinema.Movies.Where(jsonMovie =>
@@ -154,13 +162,14 @@ if (GlobalSettings.ShouldPreSeedDatabase)
                     {
                         string imageUrl = null;
                         if (
-                            jsonMovie?.Content?.FieldPoster?.FieldMediaImage?.Sources != null
-                            && jsonMovie.Content.FieldPoster.FieldMediaImage.Sources.Any()
+                            jsonMovie?.Content?.ShowtimeApiFieldPoster?.FieldMediaImage?.Sources
+                                != null
+                            && jsonMovie.Content.ShowtimeApiFieldPoster.FieldMediaImage.Sources.Any()
                         )
                         {
                             imageUrl = jsonMovie
                                 .Content
-                                .FieldPoster
+                                .ShowtimeApiFieldPoster
                                 .FieldMediaImage
                                 .Sources[0]
                                 ?.Srcset;
@@ -171,7 +180,7 @@ if (GlobalSettings.ShouldPreSeedDatabase)
                             Id = jsonMovie.Id,
                             Title = _movieIdsToNames[jsonMovie.Id],
                             PremiereDate = jsonMovie.Content.FieldPremiere,
-                            KinoURL = jsonMovie.Content.URL,
+                            KinoUrl = jsonMovie.Content.Url,
                             AgeRating =
                                 jsonMovie.Content.FieldCensorshipIcon == null
                                     ? null
@@ -189,15 +198,6 @@ if (GlobalSettings.ShouldPreSeedDatabase)
 
             foreach (var movie in MoviesOnKinoDk.Values)
             {
-                if (movie.AgeRating == null)
-                {
-                    Console.WriteLine("AgeRating is null for movie: " + movie.Title);
-                }
-                else
-                {
-                    Console.WriteLine("AgeRating is not null for movie: " + movie.Title);
-                }
-
                 var existingMovie = await context.Movies.FindAsync(movie.Id);
                 var existingAgeRating = await context.AgeRatings.FirstOrDefaultAsync(m =>
                     movie.AgeRating != null && m.Censorship == movie.AgeRating.Censorship
@@ -212,7 +212,7 @@ if (GlobalSettings.ShouldPreSeedDatabase)
                 {
                     existingMovie.Title = movie.Title;
                     existingMovie.PremiereDate = movie.PremiereDate;
-                    existingMovie.KinoURL = movie.KinoURL;
+                    existingMovie.KinoUrl = movie.KinoUrl;
                     existingMovie.AgeRating = existingAgeRating ?? movie.AgeRating ?? null;
                     existingMovie.ImageUrl = movie.ImageUrl;
                     existingMovie.Duration = movie.Duration;

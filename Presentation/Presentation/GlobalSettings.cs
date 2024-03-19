@@ -2,5 +2,5 @@
 
 public static class GlobalSettings
 {
-    public static bool ShouldPreSeedDatabase = false;
+    public static bool ShouldPreSeedDatabase = true;
 }

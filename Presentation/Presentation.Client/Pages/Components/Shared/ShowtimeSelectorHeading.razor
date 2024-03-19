@@ -1,3 +1,4 @@
+@using Domain.ExternalApiModels
 @inject IJSRuntime JsRuntime
 
 
@@ -10,13 +11,13 @@
     @if (_shouldRender)
     {
         <div class="row-span-2 space-y-2 md:min-w-48 md:sticky md:top-16 md:row-span-3 md:self-start">
-            <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank">
+            <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank">
                 <img src="@Movie.ImageUrl" alt="Movie Poster" class="max-h-full w-full rounded-sm shadow"/>
             </a>
             <!--Læs mere og trailer-->
             <div class="hidden flex-col items-center px-3 space-y-1 md:flex">
 
-                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="w-full rounded-full border border-black px-3 py-2 text-center shadow transition duration-300 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
+                <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank" class="w-full rounded-full border border-black px-3 py-2 text-center shadow transition duration-300 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
 
                 <button class="w-full rounded-full border border-black px-3 py-2 shadow transition duration-300 font-label hover:bg-neutral-950 hover:text-white" @onclick="async () => { await ShowMovieTrailer(Movie); }">Se trailer</button>
             </div>
@@ -27,7 +28,7 @@
     <div class="col-start-2">
         <div class="flex flex-col space-y-2">
             <div class="flex justify-between">
-                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="block text-black no-underline divide-y-8">
+                <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank" class="block text-black no-underline divide-y-8">
 
                     <h2 class="text-2xl font-bold md:text-4xl">@Movie.Title</h2>
                 </a>
@@ -69,7 +70,7 @@
 
                 <div class="block md:hidden">
                     <!--Læs mere og trailer mobile-->
-                    <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="inline-block w-32 rounded-full border border-black px-3 py-2 text-center transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
+                    <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank" class="inline-block w-32 rounded-full border border-black px-3 py-2 text-center transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
                 </div>
                 <div class="block md:hidden">
                     <button @onclick="async () => { await ShowMovieTrailer(Movie); }" class="inline-block w-32 rounded-full border border-black px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Se trailer</button>
@@ -120,17 +121,17 @@
     private async Task ShowMovieTrailer(Movie movie)
     {
         var client = new HttpClient();
-        var apiString = $"https://api.kino.dk{movie.KinoURL}?region=content&format=json";
+        var apiString = $"https://api.kino.dk{movie.KinoUrl}?region=content&format=json";
         var json = await client.GetStringAsync(apiString);
 
-        var movieRoot = JsonConvert.DeserializeObject<MovieRoot>(json);
-        if (movieRoot?.Content?.field_trailer?.FieldMediaOembedVideo?.trailerUrl == null) //no video found
+        var movieRoot = JsonConvert.DeserializeObject<MovieApiRoot>(json);
+        if (movieRoot?.ApiContent?.MovieApiFieldTrailer?.MovieApiFieldMediaOembedVideo?.TrailerUrl == null) //no video found
         {
             await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
             return;
         }
 
-        var uri = new Uri(movieRoot.Content.field_trailer.FieldMediaOembedVideo.trailerUrl);
+        var uri = new Uri(movieRoot.ApiContent.MovieApiFieldTrailer.MovieApiFieldMediaOembedVideo.TrailerUrl);
         var videoId = uri.Segments.Last() == "watch" ? HttpUtility.ParseQueryString(uri.Query)["v"] : uri.Segments.Last();
 
         if (videoId == null) await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube

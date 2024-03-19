@@ -70,7 +70,7 @@ if (GlobalSettings.ShouldPreSeedDatabase)
     var context = scope.ServiceProvider.GetRequiredService<KinoContext>();
 
     var lowestCinemaId = 1; //Hardcoded from kino.dk
-    var highestCinemaId = 1;//71; //Hardcoded from kino.dk
+    var highestCinemaId = 71;//71; //Hardcoded from kino.dk
 
     for (int i = lowestCinemaId; i <= highestCinemaId; i++)
     {
@@ -223,22 +223,6 @@ if (GlobalSettings.ShouldPreSeedDatabase)
             Console.WriteLine(e);
             Thread.Sleep(50000);
         }
-    }
-
-    //print unique movie.AgeRating
-    var uniqueAgeRatings = context.Movies.Select(m => m.AgeRating).Distinct().ToList();
-    Console.WriteLine("Unique AgeRatings");
-    foreach (var uniqueAgeRating in uniqueAgeRatings)
-    {
-        Console.WriteLine(uniqueAgeRating?.Censorship);
-    }
-
-    //print full table of movie censorship
-    var allAgeRatings = context.AgeRatings.ToList();
-    Console.WriteLine("All AgeRatings in table");
-    foreach (var ageRating in allAgeRatings)
-    {
-        Console.WriteLine(ageRating.Censorship);
     }
 }
 

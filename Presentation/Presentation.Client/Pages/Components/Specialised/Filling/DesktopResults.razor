@@ -1,8 +1,8 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
 
-<div class="w-full rounded-md border rounded p-3 shadow overflow-auto mb-2">
-    <table class="border-separate border-spacing-2 ">
+<div class="mb-2 w-full overflow-auto rounded rounded-md border p-3 shadow">
+    <table class="border-separate border-spacing-2">
         <tr>
             <th></th>
 
@@ -18,7 +18,7 @@
         {
             <tr>
                 <td>
-                    <div class="flex rounded w-50 shadow-md gap-1  p-5">
+                    <div class="flex gap-1 rounded p-5 shadow-md w-50">
                         <div class="flex">
                         @if (IsHost && participant.Id != 0)
                         {
@@ -31,8 +31,8 @@
 
                             <div class="relative flex items-center">
                                 <NoteIcon Class="stroke-black peer hover:bg-gray-200 rounded-full p-1" Size="28"/>
-                                <div class="absolute invisible z-5 bg-light-gray transform -translate-y-20 translate-x-8 shadow-md min-w-40 max-w-80 rounded text-wrap  bg-gray-100 border border-gray-800 p-3 opacity-0 peer-hover:visible peer-hover:opacity-100">
-                                    <p class="font-bold ">@participant.Nickname's note</p>
+                                <div class="peer-hover:visible invisible absolute translate-x-8 -translate-y-20 transform rounded border border-gray-800 bg-gray-100 p-3 opacity-0 peer-hover:opacity-100 shadow-md z-5 bg-light-gray min-w-40 max-w-80 text-wrap">
+                                    <p class="font-bold">@participant.Nickname's note</p>
                                     @if (!string.IsNullOrEmpty(participant.Note))
                                     {
                                         <p >@participant.Note</p>
@@ -57,7 +57,7 @@
                         <div class="h-16 flex items-center justify-center bg-@(vote.SelectedOption.Color) rounded border border-gray-400 p-5 shadow-md">
                             @if (vote.SelectedOptionId != Event.DefaultSelectOptionId)
                             {
-                                <div class="rounded-full items-center justify-center bg-white w-8 h-8 gap-2">
+                                <div class="h-8 w-8 items-center justify-center gap-2 rounded-full bg-white">
                                     <SingleCheckIcon Class="@("stroke-" + participant.VotedFor.First(v => v.ShowtimeId == showtime.Id).SelectedOption.Color)"/>
                                 </div>
                             }

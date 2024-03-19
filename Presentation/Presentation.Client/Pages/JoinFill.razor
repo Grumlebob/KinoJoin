@@ -20,14 +20,14 @@
 
 @if (_showFirstLoginDialog)
 {
-    <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-        <div class="bg-white mx-4 p-6 rounded-lg shadow-xl mb-40">
-            <div class="flex justify-center flex-col space-y-2">
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="mx-4 mb-40 rounded-lg bg-white p-6 shadow-xl">
+            <div class="flex flex-col justify-center space-y-2">
                 <h2 class="text-xl font-bold">@_event.Host.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h2>
-                <div class=" flex md:justify-end md:items-end">
-                    <div class="w-full md:w-fit flex flex-col md:flex-row gap-2">
-                        <button class="rounded-full border border-secondary shadow px-3 py-2 duration-300 transition font-label hover:bg-neutral-950 hover:text-white" onclick="@(() => { _showFirstLoginDialog = false; })">Uden login</button>
-                        <button class="rounded-full shadow px-3 py-2 font-label bg-primary text-white hover:bg-primary-dark" onclick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + _event?.Id }); })">Anvend dit kino login</button>
+                <div class="flex md:items-end md:justify-end">
+                    <div class="flex w-full flex-col gap-2 md:w-fit md:flex-row">
+                        <button class="rounded-full border px-3 py-2 shadow transition duration-300 border-secondary font-label hover:bg-neutral-950 hover:text-white" onclick="@(() => { _showFirstLoginDialog = false; })">Uden login</button>
+                        <button class="rounded-full px-3 py-2 text-white shadow font-label bg-primary hover:bg-primary-dark" onclick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + _event?.Id }); })">Anvend dit kino login</button>
                     </div>
                 </div>
             </div>
@@ -35,18 +35,18 @@
     </div>
 }
 
-<div class="flex gap-2 my-2 flex-col md:flex-row">
-    <div class="p-3 border rounded w-full md:w-fit md:max-w-md ">
+<div class="my-2 flex flex-col gap-2 md:flex-row">
+    <div class="w-full rounded border p-3 md:w-fit md:max-w-md">
 
-        <div class="space-y-3 ">
+        <div class="space-y-3">
             <div class="flex flex-row gap-1">
                 @if (_isEditing)
                 {
-                    <input class="rounded-md border w-full md:w-60 p-1" type="text" @bind="_event!.Title"/>
+                    <input class="w-full rounded-md border p-1 md:w-60" type="text" @bind="_event!.Title"/>
                 }
                 else
                 {
-                    <h1 class="font-label text-2xl">@_event!.Title</h1>
+                    <h1 class="text-2xl font-label">@_event!.Title</h1>
                 }
 
                 @if (_isHost)
@@ -55,7 +55,7 @@
 
                         @if (_isEditing)
                         {
-                            <div class="border border-secondary px-2 py-1 shadow duration-300 transition transition duration-100  rounded-full hover:bg-secondary hover:text-white">
+                            <div class="rounded-full border px-2 py-1 shadow transition duration-100 duration-300 border-secondary hover:bg-secondary hover:text-white">
                                 <p>Gem ændringer</p>
                             </div>
                         }
@@ -69,7 +69,7 @@
 
             @if (_isEditing)
             {
-                <textarea  class="rounded-md border w-full md:w-60 p-1" type="text" cols="5" placeholder="Beskrivelse"  @bind="_event.Description"></textarea>
+                <textarea  class="w-full rounded-md border p-1 md:w-60" type="text" cols="5" placeholder="Beskrivelse"  @bind="_event.Description"></textarea>
             }
             else
             {
@@ -80,11 +80,11 @@
                 }
             }
 
-            <div class="flex space-x-1 w-full md:w-60">
+            <div class="flex w-full space-x-1 md:w-60">
                 <span class="font-medium">Svarfrist:</span>
                 @if (_isEditing)
                 {
-                    <input class="rounded-md border w-full" type="date" placeholder="Deadline" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")" max="@_event!.Showtimes.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("yyyy-MM-dd")" @bind="@_deadline"/>
+                    <input class="w-full rounded-md border" type="date" placeholder="Deadline" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")" max="@_event!.Showtimes.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("yyyy-MM-dd")" @bind="@_deadline"/>
                 }
                 else
                 {
@@ -97,21 +97,21 @@
             <span class="font-medium">Tidsinterval:</span>
             <span> @_event.Showtimes.Min(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM") - @_event.Showtimes.Max(s => s.Playtime.StartTime.ToLocalTime()).ToString("dd. MMM")</span>
             <br/>
-            <button class=" rounded-full border border-black shadow duration-300 transition px-2 py-1 transition duration-100 font-label hover:bg-neutral-950 hover:text-white" @onclick="ScrollToBottom">Se resultater</button>
+            <button class="rounded-full border border-black px-2 py-1 shadow transition duration-100 duration-300 font-label hover:bg-neutral-950 hover:text-white" @onclick="ScrollToBottom">Se resultater</button>
         </div>
     </div>
     @if (_isHost)
     {
-        <div class="space-y-1 border rounded p-3 w-full md:w-fit md:max-w-md ">
-            <p class="text-lg font-semibold  mb-0.5">Send et link til eventet til dine venner.</p>
-            <div class="flex items-center ">
+        <div class="w-full rounded border p-3 space-y-1 md:w-fit md:max-w-md">
+            <p class="text-lg font-semibold mb-0.5">Send et link til eventet til dine venner.</p>
+            <div class="flex items-center">
                 <a href="@(_baseUrl + "filling/" + _event.Id)" class="text-lg text-blue-600 hover:text-blue-700">
                     @(_baseUrl + "filling/" + _event.Id)
                 </a>
                 <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", (_baseUrl + "filling/" + _event.Id));  })">
                     <CopyIcon Class="hover:bg-gray-200 p-2 rounded-full"/>
                 </button>
-                <button @onclick="ShareEvent" class="rounded-full bg-secondary p-1 text-white hover:bg-gray-700 lg:hidden">
+                <button @onclick="ShareEvent" class="rounded-full p-1 text-white bg-secondary hover:bg-gray-700 lg:hidden">
                     <svg class="fill-white" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="16" height="16" viewBox="0 0 30 30">
                         <path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"></path>
                     </svg>

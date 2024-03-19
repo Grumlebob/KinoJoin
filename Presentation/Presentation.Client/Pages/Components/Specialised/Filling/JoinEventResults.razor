@@ -6,7 +6,7 @@
 <div class="flex flex-col gap-2">
     <div class="flex justify-between">
         <h2 class="text-2xl text-bold">Andres svar</h2>
-        <button class="rounded-full bg-secondary text-white font-bold p-3 md:hidden flex" @onclick="ShowParticipantDialog">
+        <button class="flex rounded-full p-3 font-bold text-white bg-secondary md:hidden" @onclick="ShowParticipantDialog">
             <div class="flex gap-1">
                 <ParticipantsIcon Class="fill-white"/>
                 <p>Deltagere</p>
@@ -15,7 +15,7 @@
     </div>
 
     <label>
-        <div class="rounded border p-3 w-fit">
+        <div class="w-fit rounded border p-3">
             Sortér efter:
             <select onchange="@((ChangeEventArgs e) => { SetSortOption(e.Value.ToString()); })">
                 <option value="@VotesString">@VotesString</option>
@@ -24,7 +24,7 @@
         </div>
     </label>
 
-    <div class="hidden md:block ">
+    <div class="hidden md:block">
         <DesktopResults Event="Event" IsHost="IsHost" OnDeleteParticipant="OpenDeleteDialog" OrderedShowtimes="_orderedShowtimes"/>
     </div>
 
@@ -32,10 +32,10 @@
         <MobileResults CurrentParticipant="CurrentParticipant" Event="Event" IsHost="IsHost" OrderedShowtimes="_orderedShowtimes"/>
     </div>
 </div>
-<dialog id="participantsDialog" class="bg-slates-300 rounded max-w-md w-full fixed p-4 xs:h-dvh">
+<dialog id="participantsDialog" class="fixed w-full max-w-md rounded p-4 bg-slates-300 xs:h-dvh">
 
-    <div class="flex justify-between mb-4">
-        <h4 class="font-bold text-lg">Deltagere</h4>
+    <div class="mb-4 flex justify-between">
+        <h4 class="text-lg font-bold">Deltagere</h4>
         <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", $"participantsDialog"))">
             <CrossIcon/>
         </button>
@@ -48,7 +48,7 @@
             _showNote[participant] = false;
         }
 
-        <div class="flex justify-between  gap-2 w-full">
+        <div class="flex w-full justify-between gap-2">
             <p>@participant.Nickname</p>
             <div>
 
@@ -74,24 +74,24 @@
     }
 </dialog>
 
-<dialog class="p-5 rounded" id="confirm-delete-dialog">
+<dialog class="rounded p-5" id="confirm-delete-dialog">
     @if (_participantToDelete != null)
     {
-        <div class="flex flex-col gap-4 items-end">
+        <div class="flex flex-col items-end gap-4">
             <p class="text-xl font-bold">Er du sikker på at du vil slette @_participantToDelete.Nickname's svar?</p>
-            <div class="flex  gap-1">
-                <button class="bg-error rounded-full p-3 py-0.5 w-16 text-white hover:bg-error-dark" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Nej</button>
-                <button class="bg-success rounded-full p-3 py-0.5 w-16 text-white hover:bg-success-dark" @onclick="@(async () => { await DeleteParticipant(_participantToDelete.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Ja</button>
+            <div class="flex gap-1">
+                <button class="w-16 rounded-full p-3 text-white bg-error py-0.5 hover:bg-error-dark" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Nej</button>
+                <button class="w-16 rounded-full p-3 text-white bg-success py-0.5 hover:bg-success-dark" @onclick="@(async () => { await DeleteParticipant(_participantToDelete.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Ja</button>
 
             </div>
         </div>
     }
 </dialog >
 
-<dialog class="p-5 rounded" id="note-dialog">
+<dialog class="rounded p-5" id="note-dialog">
     @if (_participantToShowNoteFor != null)
     {
-        <div class="flex justify-between mb-4">
+        <div class="mb-4 flex justify-between">
             <p class="font-bold">@_participantToShowNoteFor.Nickname's Note</p>
             <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", $"note-dialog"))">
                 <CrossIcon/>

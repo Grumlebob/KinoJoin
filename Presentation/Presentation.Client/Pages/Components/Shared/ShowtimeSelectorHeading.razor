@@ -5,9 +5,9 @@
 {
     <hr class="bg-gray-300 rounded-full w-full h-px my-5"/>
 }
-<div class="grid gap-4  grid-cols-[0.5fr_1fr] grid-rows-[auto_auto] md:grid-cols-[200px_1fr]">
+<div class="grid gap-4  grid-cols-[0.5fr_1fr] grid-rows-[min-content_auto] md:grid-cols-[200px_1fr]">
     <!-- PosterImage -->
-        @if (_shouldRender)
+    @if (_shouldRender)
     {
         <div class="row-span-2 space-y-2 md:min-w-48 md:sticky md:top-16 md:row-span-3 md:self-start">
             <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank">
@@ -22,66 +22,65 @@
             </div>
         </div>
     }
+
     <!-- MovieHeader -->
     <div class="col-start-2">
         <div class="flex flex-col space-y-2">
-            <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="block text-black no-underline divide-y-8">
+            <div class="flex justify-between">
+                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="block w-fit text-black no-underline divide-y-8">
+                    <h2 class="text-2xl font-bold md:text-4xl">@Movie.Title</h2>
+                </a>
+                <button @onclick="ToggleCollapse" class="translate-x-8">
+                    <svg class="transition-transform" style="@(_shouldRender ? "transform: rotate(0deg)" : "transform: rotate(-180deg)")" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            </div>
 
-                        <h2 class="text-2xl font-bold md:text-4xl">@Movie.Title</h2>
-                    </a>
-                    <button @onclick="ToggleCollapse" class="translate-x-8">
-                        <svg class="transition-transform" style="@(_shouldRender ? "transform: rotate(0deg)" : "transform: rotate(-90deg)")" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                        </svg>
-                    </button>
-
-                </div>
-                @if (_shouldRender)
-                {
-                    <div class="block">
-                        <div class="inline-flex flex-col items-start justify-between gap-2 rounded md:flex-row md:items-center md:gap-4 md:p-2">
-                            <!-- movie-info -->
-                        @if (Movie.PremiereDate != null)
-                    {    <div class="flex space-x-1">
-                                <span class="hidden text-sm text-neutral-400 font-label md:block">Premiere</span>
-                                <span class="text-sm text-neutral-400 font-label">@Movie.PremiereDate </span>
-                            </div>
-                        }
+        </div>
+        @if (_shouldRender)
+        {
+                <div class="inline-flex flex-col items-start justify-between gap-2 rounded md:flex-row md:items-center md:gap-4 md:p-2">
+                    <!-- movie-info -->
+                    @if (Movie.PremiereDate != null)
+                    {
+                        <div class="flex space-x-1">
+                            <span class="hidden text-sm text-neutral-400 font-label md:block">Premiere</span>
+                            <span class="text-sm text-neutral-400 font-label">@Movie.PremiereDate </span>
+                        </div>
+                    }
                     @if (Movie.PremiereDate != null && Movie.Duration != 0)
                     {
                         <span class="hidden text-sm text-neutral-400 md:block">|</span>
                     }
                     @if (Movie.Duration != 0)
                     {
-                            <div class="flex space-x-1">
-                                <span class="hidden text-sm text-neutral-400 font-label md:block">Varighed</span>
-                                <span class="text-sm text-neutral-400 font-label">@Movie.Duration min</span>
-                            </div>}
+                        <div class="flex space-x-1">
+                            <span class="hidden text-sm text-neutral-400 font-label md:block">Varighed</span>
+                            <span class="text-sm text-neutral-400 font-label">@Movie.Duration min</span>
                         </div>
-                    </div>
-                }
-                @if (_shouldRender)
-                {
-                    <div class="block md:hidden">
-                        <!--Læs mere og trailer mobile-->
-                        <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="inline-block w-32 rounded-full border border-black px-3 py-2 text-center transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
-                    </div>
-                    <div class="block md:hidden">
-                        <button @onclick="async () => { await ShowMovieTrailer(Movie); }" class="inline-block w-32 rounded-full border border-black px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Se trailer</button>
-                    </div>
-                }
-        </div>
+                    }
+            <div class="block md:hidden">
+                <!--Læs mere og trailer mobile-->
+                <a href=@($"https://kino.dk{Movie.KinoURL}") target="_blank" class="inline-block w-32 rounded-full border border-black px-3 py-2 text-center transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
+            </div>
+            <div class="block md:hidden">
+                <button @onclick="async () => { await ShowMovieTrailer(Movie); }" class="inline-block w-32 rounded-full border border-black px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Se trailer</button>
+            </div>
+            </div>
+        }
     </div>
 
 
-<div class="col-span-3 md:col-start-2 md:row-start-2 md:row-end-3@(HasAnswered ? "opacity-50" : "")">
-    @if (_shouldRender)
-    {
-        @if (ChildContent is not null)
+    <div class="col-span-3 md:col-start-2 md:row-start-2 md:row-end-3@(HasAnswered ? "opacity-50" : "")">
+        @if (_shouldRender)
         {
-            @ChildContent
+            @if (ChildContent is not null)
+            {
+                @ChildContent
+            }
         }
-    }
+    </div>
 </div>
 
 @if (_trailerUrl != null)

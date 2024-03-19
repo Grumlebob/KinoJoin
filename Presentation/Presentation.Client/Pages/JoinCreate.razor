@@ -306,7 +306,7 @@
             if (_cinemaIdsToNames.ContainsKey(cinema.Id)) continue;
             _cinemaIdsToNames[cinema.Id] = cinema.Name;
         }
-
+        
         foreach (var movie in _availableShowtimes.Select(s => s.Movie).DistinctBy(m => m.Id))
         {
             if (_movieIdsToNames.ContainsKey(movie.Id)) continue;

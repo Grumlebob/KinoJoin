@@ -24,7 +24,7 @@
             @{ var movie = showtimesByMovie.First().Movie; }
             <ShowtimeSelectorHeading Movie="movie">
                 @{ var showtimesByCinemaList = showtimesByMovie.GroupBy(s => s.Cinema.Id).ToList(); }
-                <Virtualize Items="showtimesByCinemaList" OverscanCount="8" Context="showtimesByCinema" ItemSize="100">
+                <Virtualize Items="showtimesByCinemaList" OverscanCount="8" Context="showtimesByCinema" ItemSize="300">
                     <ItemContent>
                         <CinemaShowtimes Showtimes="Showtimes" Votes="Votes" SelectOptions="SelectOptions" VotesChanged="VotesChanged" ShowtimesByCinema="showtimesByCinema" ShowtimesByMovie="showtimesByMovie"/>
                     </ItemContent>

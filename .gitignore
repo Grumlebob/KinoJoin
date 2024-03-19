@@ -6,6 +6,10 @@
 #Custom settings
 appsettings.json
 
+app.min.css
+
+.idea/
+
 .DS_Store
 
 Presentation/Presentation.Client/wwwroot/appsettings.json

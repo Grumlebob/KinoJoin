@@ -37,7 +37,7 @@
                 @{ var showtimesByCinemaList = showtimesByMovie.GroupBy(s => s.Cinema.Id).ToList(); }
                 <Virtualize Items="showtimesByCinemaList" OverscanCount="8" Context="showtimesByCinema" ItemSize="300">
                     <ItemContent>
-                        <CinemaShowtimes Showtimes="Showtimes" HasAnswered="HasAnswered" Votes="Votes" SelectOptions="SelectOptions" VotesChanged="VotesChanged" ShowtimesByCinema="showtimesByCinema" ShowtimesByMovie="showtimesByMovie"/>
+                        <CinemaShowtimes Showtimes="Showtimes" HasAnswered="HasAnswered" Votes="Votes" SelectOptions="SelectOptions" VotesChanged="VotesChanged" ShowtimesByCinema="showtimesByCinema"/>
                     </ItemContent>
                     <Placeholder>
                         <LoadingCircle/>

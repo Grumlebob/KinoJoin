@@ -1,5 +1,6 @@
 ﻿@page "/"
 @page "/create-event/{FilterString?}"
+@using Microsoft.EntityFrameworkCore.Diagnostics
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
@@ -16,7 +17,6 @@
 <h1 class="mb-6 text-2xl font-bold leading-tight text-secondary md:text-2xl lg:text-3xl">
     Velkommen til KinoJoin - Planlæg dit biograf event her
 </h1>
-
 
 
 @* Dialog where user enters title and other event details *@
@@ -86,7 +86,7 @@
                 @(_baseUrl + "filling/" + _joinEvent.Id)
             </a>
             <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", (_baseUrl + "filling/" + _joinEvent.Id)); await ShowSnackbar("Link kopieret", "success"); })">
-            <CopyIcon  Class="hover:bg-gray-200 p-2 rounded-full"/>
+                <CopyIcon Class="hover:bg-gray-200 p-2 rounded-full"/>
             </button>
             <button @onclick="ShareEvent" class="rounded-full bg-secondary p-2 text-white hover:bg-gray-700 lg:hidden">
                 <svg class="h-5 w-5 fill-white" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 30 30">
@@ -268,13 +268,8 @@
         var availableGenres = await genresTask;
 
         _cinemaIdsToNames = availableCinemas == null ? [] : availableCinemas.Select(c => (c.Id, c.Name)).OrderBy(t => t.Name).ToDictionary();
-        _selectedCinemas = _selectedCinemas.Intersect(_cinemaIdsToNames.Keys).ToHashSet(); //cannot select cinemas not in list
-
         _movieIdsToNames = availableMovies == null ? [] : availableMovies.Select(c => (c.Id, c.Title)).OrderBy(t => t.Title).ToDictionary();
-        _selectedMovies = _selectedMovies.Intersect(_movieIdsToNames.Keys).ToHashSet();
-
         _genreIdsToNames = availableGenres == null ? [] : availableGenres.Select(c => (c.Id, c.Name)).OrderBy(t => t.Name).ToDictionary();
-        _selectedGenres = _selectedGenres.Intersect(_genreIdsToNames.Keys).ToHashSet();
 
         _loadingPage = false;
         StateHasChanged();
@@ -289,6 +284,19 @@
         //load all show times from filter
         (_availableShowtimes, _moviesWithoutShowtimes) = await KinoDkService.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
         _availableShowtimeVotes = _availableShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _hostSelectOptions[NoVoteIndex] }).ToList();
+
+        //if KinoDKService yields any data not in database, handle it
+        foreach (var cinema in _availableShowtimes.Select(s => s.Cinema).DistinctBy(c => c.Id))
+        {
+            if (_cinemaIdsToNames.ContainsKey(cinema.Id)) continue;
+            _cinemaIdsToNames[cinema.Id] = cinema.Name;
+        }
+        
+        foreach (var movie in _availableShowtimes.Select(s => s.Movie).DistinctBy(m => m.Id))
+        {
+            if (_movieIdsToNames.ContainsKey(movie.Id)) continue;
+            _movieIdsToNames[movie.Id] = movie.Title;
+        }
 
         _loadingShowtimes = false;
     }
@@ -428,7 +436,7 @@
             await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventDetailsDialog");
         }
     }
-    
+
     private async Task ShowSnackbar(string message, string color)
     {
         _snackbarMessage = message;
@@ -514,7 +522,7 @@
 
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog");
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog");
-        
+
         NavigationManager.NavigateTo("filling/" + _joinEvent.Id);
         //await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventShareDialog");
     }

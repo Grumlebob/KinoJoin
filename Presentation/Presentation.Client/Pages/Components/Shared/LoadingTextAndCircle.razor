@@ -1,4 +1,13 @@
 <div class="flex gap-1">
-    <p class="text-xl font-bold">Indlæser</p>
+    <p class="text-xl font-bold">@Text</p>
     <LoadingCircle/>
 </div>
+
+
+@code{
+    
+    [Parameter]
+    public string Text { get; set; } = "Indlæser";
+
+
+}

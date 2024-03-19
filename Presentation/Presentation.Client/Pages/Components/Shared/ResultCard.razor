@@ -8,14 +8,14 @@
             <p class="font-bold truncate ...">
                 @Showtime.Movie.Title
             </p>
-            
+
             @if (Event.ChosenShowtimeId == Showtime.Id)
             {
                 <div class=" bg-success text-success-darkest bg-opacity-25 p-1 py-0 rounded-full text-xs font-normal">
                     <p >Aftalt tid</p>
                 </div>
             }
-            
+
         </div>
         <div class="flex items-center gap-1 w-full ">
             <p class="font-normal truncate ... text-xs text-gray-700">@Showtime.VersionTag.Type</p>
@@ -52,7 +52,7 @@
             @if (!Desktop)
             {
                 <button @onclick="ShowVotes" class=" bg-white border-2 border-gray-300 rounded-full flex items-center gap-1 py-1 px-2 hover:bg-gray-300">
-                    
+
                     <p class="whitespace-nowrap">
                         Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)))
                     </p>
@@ -62,23 +62,24 @@
 
             @if (IsHost)
             {
-                <button class="bg-primary hover:bg-primary-dark rounded-full p-3 text-white w-fit whitespace-nowrap" @onclick="() => OpenConfirmationDialog(Showtime.Id)">Bekræft event</button>
+                <button class="bg-primary hover:bg-primary-dark rounded-full px-3 py-2 text-white w-fit whitespace-nowrap" @onclick="() => OpenConfirmationDialog(Showtime.Id)">
+                    Bekræft event
+                </button>
             }
         </div>
     </div>
 
 </div>
 @if (!Desktop)
-{ 
+{
     <dialog id="@($"votesDialog{Showtime.Id}")" class="bg-slates-300  rounded max-w-md w-full fixed p-4 xs:h-dvh">
 
-        
-         <div class="flex justify-between mb-4">
-                <h4 class="font-bold text-lg">Stemmer</h4>
-                <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", $"votesDialog{Showtime.Id}"))">
-                    <CrossIcon/>
-                </button>
-         </div>
+        <div class="flex justify-between mb-4">
+            <h4 class="font-bold text-lg">Stemmer</h4>
+            <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", $"votesDialog{Showtime.Id}"))">
+                <CrossIcon/>
+            </button>
+        </div>
         @{ var participantsAndVotes = Event.Participants?.Where(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id)).Select(p => (p, p.VotedFor.First(v => v.ShowtimeId == Showtime.Id))).ToList(); }
         @foreach (var (participant, vote) in participantsAndVotes)
         {
@@ -91,26 +92,27 @@
 }
 
 <dialog class="p-5 rounded " id="@("confirmEvent" + Showtime.Id + Desktop)">
-    <div class="flex flex-col gap-4 items-center">
-        <h2 class="text-2xl text-bold">Ønsker du at bekræfte forestillingen for dette event?</h2>
-        <div class="flex items-center gap-1">
-            <button class="bg-success rounded-full p-3 py-0.5 w-16 text-white hover:bg-success-dark" @onclick="async () => { await OpenDetailsDialog(Showtime, Showtime.Id); }">Ja</button>
+    <div class="flex flex-col gap-4 items-end">
+        <h2 class="text-xl font-bold">Ønsker du at bekræfte forestillingen for dette event?</h2>
+        <div class="flex  gap-1">
             <button class="bg-error rounded-full p-3 py-0.5 w-16 text-white hover:bg-error-dark" @onclick="() => CloseDialog(Showtime.Id)">Nej</button>
+            <button class="bg-success rounded-full p-3 py-0.5 w-16 text-white hover:bg-success-dark" @onclick="@(async () => { await OpenDetailsDialog(Showtime, Showtime.Id);  await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog","confirmEvent" + Showtime.Id + Desktop);})">Ja</button>
         </div>
     </div>
-    <dialog class="p-5 rounded" id="@("confirmDetails" + Showtime.Id + Desktop)">
-        <div class="flex flex-col gap-4 items-center">
-            <h2 class="text-2xl text-bold">Event valgt</h2>
-            <div class="flex @(Desktop ? "" : "flex-col") items-center gap-1">
-                <button class="bg-primary rounded-full p-3 py-0.5   @(Desktop ? "" : "w-full") text-white hover:bg-primary-dark" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("open", $"https://kino.dk/ticketflow/showtimes/{Showtime.Id}", "_blank"); })">Bestil billetter</button>
-                <button class="bg-gray-300 rounded-full p-3 py-0.5 @(Desktop ? "" : "w-full")  hover:bg-gray-400" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "calendar-dialog" + Desktop); })">Tilføj til egen kalender</button>
-                <button class="bg-gray-300 rounded-full p-3 py-0.5 @(Desktop ? "" : "w-full")  hover:bg-gray-400" onclick="@(async () => await GoToMailToLink(Showtime))">Send mail til deltagere</button>
-                <button class="bg-gray-300 rounded-full p-3 py-0.5  @(Desktop ? "" : "w-full") hover:bg-gray-400" @onclick="ShareEvent">Del</button>
-                <button class="bg-error rounded-full p-3 py-0.5 @(Desktop ? "" : "w-full") text-white hover:bg-error-dark" @onclick="() => CloseDialog(Showtime.Id)">Luk</button>
-            </div>
-        </div>
-    </dialog>
 </dialog>
+<dialog class="p-5 rounded" id="@("confirmDetails" + Showtime.Id + Desktop)">
+    <div class="flex flex-col gap-4 items-center">
+        <h2 class="text-xl font-bold">Event valgt</h2>
+        <div class="flex @(Desktop ? "" : "flex-col") gap-2 md:gap-1">
+            <button class="bg-primary rounded-full p-3 py-1   @(Desktop ? "" : "w-full") text-white hover:bg-primary-dark" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("open", $"https://kino.dk/ticketflow/showtimes/{Showtime.Id}", "_blank"); })">Bestil billetter</button>
+            <button class="border border-secondary px-3 py-1 shadow duration-300 transition transition duration-100  rounded-full hover:bg-secondary hover:text-white @(Desktop ? "" : "w-full")" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "calendar-dialog" + Desktop); })">Tilføj til egen kalender</button>
+            <button class="border border-secondary px-3 py-1 shadow duration-300 transition transition duration-100  rounded-full hover:bg-secondary hover:text-white @(Desktop ? "" : "w-full")" onclick="@(async () => await GoToMailToLink(Showtime))">Send mail til deltagere</button>
+            <button class="border border-secondary px-3 py-1 shadow duration-300 transition transition duration-100  rounded-full hover:bg-secondary hover:text-white @(Desktop ? "" : "w-full")" @onclick="ShareEvent">Del</button>
+            <button class="bg-error rounded-full p-3 py-1 @(Desktop ? "" : "w-full") text-white hover:bg-error-dark" @onclick="() => CloseDialog(Showtime.Id)">Luk</button>
+        </div>
+    </div>
+</dialog>
+
 
 <CalendarDialog Event="Event" Desktop="Desktop" Showtime="@Showtime"/>
 
@@ -137,11 +139,9 @@
     private async Task OpenDetailsDialog(Showtime showtime, int index)
     {
         Event.ChosenShowtimeId = showtime.Id;
-        Console.WriteLine("Upload event id " + Event.Id);
         var httpClient = new HttpClient();
         var response = await httpClient.PutAsJsonAsync($"{NavigationManager.BaseUri}putJoinEvent", Event);
         var id = await response.Content.ReadAsStringAsync();
-        Console.WriteLine("Saved id " + id);
         await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + index + Desktop);
     }
 

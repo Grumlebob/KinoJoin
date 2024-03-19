@@ -241,7 +241,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             );
             if (existingVersionTag != null)
             {
-                Console.WriteLine("Existing version tag: " + existingVersionTag.Type);
                 context.Versions.Attach(existingVersionTag);
                 st.VersionTag = existingVersionTag;
             }

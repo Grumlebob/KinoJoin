@@ -12,9 +12,9 @@
 
 <div class="mb-2">
     <!-- CinemaLocation -->
-    <h3 id="@_cinema.Id" class="text-xl font-bold mb-2.5">@_cinema.Name</h3>
+    <h3 id="@cinema.Id" class="text-xl font-bold mb-2.5">@cinema.Name</h3>
 </div>
-<Virtualize Items="_showtimesByVersionTagList" Context="showtimesByVersionTag">
+<Virtualize Items="showtimesByVersionTagList" Context="showtimesByVersionTag" OverscanCount="5">
     <ItemContent>
         @{ var versionTag = showtimesByVersionTag.First().VersionTag; }
         <div class="mb-4 max-w-screen-md">
@@ -31,7 +31,7 @@
                             var startDate = Showtimes.Min(s => s.Playtime.StartTime.ToLocalTime());
                             var endDate = Showtimes.Max(s => s.Playtime.StartTime.ToLocalTime());
 
-                            var latestDateForSpecificCinemaVersion = Showtimes.Where(s => s.Movie.Id == ShowtimesByMovie.Key && s.Cinema.Id == ShowtimesByCinema.Key && s.VersionTag.Type == showtimesByVersionTag.Key).Max(s => s.Playtime.StartTime.ToLocalTime().Date);
+                            var latestDateForSpecificCinemaVersion = showtimesByVersionTag.Max(s => s.Playtime.StartTime.ToLocalTime().Date);
 
                             // Loop through each date in the interval
                             for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
@@ -46,11 +46,11 @@
                         {
                             var localDate = date;
                             //Check if it exists if not, else
-                            if (Showtimes.Any(s => s.Movie.Id == ShowtimesByMovie.Key && s.Cinema.Id == ShowtimesByCinema.Key && s.VersionTag.Type == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == localDate))
+                            if (showtimesByVersionTag.Any(s => s.Playtime.StartTime.ToLocalTime().Date == localDate))
                             {
-                                var column = Showtimes.Where(s => s.Movie.Id == ShowtimesByMovie.Key && s.Cinema.Id == ShowtimesByCinema.Key && s.VersionTag.Type == showtimesByVersionTag.Key && s.Playtime.StartTime.ToLocalTime().Date == localDate).ToList();
+                                var dateColumn = showtimesByVersionTag.Where(s => s.Playtime.StartTime.ToLocalTime().Date == localDate).ToList();
                                 <td class="p-2 align-top">
-                                    <Virtualize Items="column" Context="showtime">
+                                    <Virtualize Items="dateColumn" Context="showtime">
                                         <ItemContent>
                                             @{ var vote = Votes.First(v => v.ShowtimeId == showtime.Id); }
                                             <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center cursor-pointer select-none rounded shadow-inset bg-@vote.SelectedOption.Color hover:border hover:border-gray-300" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(() => HandleShowtimeClick(vote))">
@@ -59,7 +59,11 @@
                                             </div>
                                         </ItemContent>
                                         <Placeholder>
-                                            <LoadingCircle/>
+                                            <!-- empty-showtime -->
+                                            <td class="p-2 align-top">
+                                                <div class="mb-1 h-16 max-h-16 w-24 rounded p-1 shadow-inset empty-showtime">
+                                                </div>
+                                            </td>
                                         </Placeholder>
                                     </Virtualize>
                                 </td>
@@ -97,9 +101,6 @@
 
     [Parameter] public EventCallback<ICollection<ParticipantVote>> VotesChanged { get; set; }
 
-    private Cinema _cinema = new();
-    private ICollection<IGrouping<string, Showtime>> _showtimesByVersionTagList = [];
-
     private bool _hasChanged = false;
 
     private async Task HandleShowtimeClick(ParticipantVote voteToIncrement)
@@ -115,17 +116,20 @@
         _hasChanged = true;
     }
 
-    protected override void OnInitialized()
-    {
-        _cinema = ShowtimesByCinema.First().Cinema;
-        _showtimesByVersionTagList = ShowtimesByCinema.GroupBy(s => s.VersionTag.Type).ToList();
-    }
-
     protected override bool ShouldRender()
     {
         if (!_hasChanged) return false;
         _hasChanged = false;
         return true;
+    }
+
+    private Cinema cinema;
+    private List<IGrouping<string, Showtime>> showtimesByVersionTagList;
+
+    protected override void OnInitialized()
+    {
+        cinema = ShowtimesByCinema.First().Cinema;
+        showtimesByVersionTagList = ShowtimesByCinema.GroupBy(s => s.VersionTag.Type).ToList();
     }
 
     private string CaptitalizeStart(string s)

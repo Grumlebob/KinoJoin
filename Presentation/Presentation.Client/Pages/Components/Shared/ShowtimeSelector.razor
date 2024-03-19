@@ -19,30 +19,42 @@
     </div>
 </div>
 <div class="space-y-5 ">
-    @foreach (var showtimesByMovie in Showtimes.GroupBy(s => s.Movie.Id))
-    {
-        var movie = showtimesByMovie.First().Movie;
-        <ShowtimeSelectorHeading Movie="movie">
-            @foreach (var showtimesByCinema in showtimesByMovie.GroupBy(s => s.Cinema.Id))
-            {
-                <CinemaShowtimes Showtimes="Showtimes" Votes="Votes" SelectOptions="SelectOptions" VotesChanged="VotesChanged" ShowtimesByCinema="showtimesByCinema" ShowtimesByMovie="showtimesByMovie"/>
-            }
-        </ShowtimeSelectorHeading>
-    }
+    <Virtualize Items="showtimesByMovieList" Context="showtimesByMovie" OverscanCount="3">
+        <ItemContent>
+            @{ var movie = showtimesByMovie.First().Movie; }
+            <ShowtimeSelectorHeading Movie="movie">
+                @{ var showtimesByCinemaList = showtimesByMovie.GroupBy(s => s.Cinema.Id).ToList(); }
+                <Virtualize Items="showtimesByCinemaList" OverscanCount="8" Context="showtimesByCinema" ItemSize="100">
+                    <ItemContent>
+                        <CinemaShowtimes Showtimes="Showtimes" Votes="Votes" SelectOptions="SelectOptions" VotesChanged="VotesChanged" ShowtimesByCinema="showtimesByCinema" ShowtimesByMovie="showtimesByMovie"/>
+                    </ItemContent>
+                    <Placeholder>
+                        <LoadingCircle/>
+                    </Placeholder>
+                </Virtualize>
+            </ShowtimeSelectorHeading>
+        </ItemContent>
+        <Placeholder>
+            <LoadingCircle/>
+        </Placeholder>
+    </Virtualize>
 </div>
 
 @if (Showtimes.Count > 0)
 {
-    foreach (var movie in MoviesWithOutShowTimes)
-    {
-        <ShowtimeSelectorHeading Movie="movie">
-            <div class="inline-flex items-center justify-center gap-4 rounded bg-gray-300 p-2">
-                <span>Ingen forestillinger fundet for denne film med de valgte filtre</span>
-            </div>
-        </ShowtimeSelectorHeading>
-    }
+    <Virtualize Items="MoviesWithOutShowTimes" Context="movie" OverscanCount="5">
+        <ItemContent>
+            <ShowtimeSelectorHeading Movie="movie">
+                <div class="inline-flex items-center justify-center gap-4 rounded bg-gray-300 p-2">
+                    <span>Ingen forestillinger fundet for denne film med de valgte filtre</span>
+                </div>
+            </ShowtimeSelectorHeading>
+        </ItemContent>
+        <Placeholder>
+            <LoadingCircle/>
+        </Placeholder>
+    </Virtualize>
 }
-
 
 
 @code {
@@ -56,7 +68,14 @@
     [Parameter] public ICollection<ParticipantVote> Votes { get; set; } = [];
 
     [Parameter] public EventCallback<ICollection<ParticipantVote>> VotesChanged { get; set; }
-    
+
     [Parameter] public required List<SelectOption> SelectOptions { get; set; }
+
+    private List<IGrouping<int, Showtime>> showtimesByMovieList;
+
+    protected override void OnInitialized()
+    {
+        showtimesByMovieList = Showtimes.GroupBy(s => s.Movie.Id).ToList();
+    }
 
 }

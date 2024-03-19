@@ -19,7 +19,7 @@
     </div>
 </div>
 <div class="space-y-5 ">
-    <Virtualize Items="showtimesByMovieList" Context="showtimesByMovie" OverscanCount="3">
+    <Virtualize Items="_showtimesByMovieList" Context="showtimesByMovie" OverscanCount="3">
         <ItemContent>
             @{ var movie = showtimesByMovie.First().Movie; }
             <ShowtimeSelectorHeading Movie="movie">
@@ -71,11 +71,11 @@
 
     [Parameter] public required List<SelectOption> SelectOptions { get; set; }
 
-    private List<IGrouping<int, Showtime>> showtimesByMovieList;
+    private List<IGrouping<int, Showtime>> _showtimesByMovieList = [];
 
     protected override void OnInitialized()
     {
-        showtimesByMovieList = Showtimes.GroupBy(s => s.Movie.Id).ToList();
+        _showtimesByMovieList = Showtimes.GroupBy(s => s.Movie.Id).ToList();
     }
 
 }

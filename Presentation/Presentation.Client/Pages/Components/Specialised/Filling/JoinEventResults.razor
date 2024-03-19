@@ -1,6 +1,6 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
-@inject IJoinEventHttpClient JoinEventHttpClient
+@inject IKinoJoinHttpClient KinoJoinHttpClient
 
 
 <div class="flex flex-col gap-2">
@@ -17,7 +17,7 @@
     <label>
         <div class="rounded border p-3 w-fit">
             Sortér efter:
-            <select onchange="@((ChangeEventArgs e) => { Console.WriteLine(e); SetSortOption(e.Value.ToString()); })">
+            <select onchange="@((ChangeEventArgs e) => { SetSortOption(e.Value.ToString()); })">
                 <option value="@VotesString">@VotesString</option>
                 <option value="@TimeString">@TimeString</option>
             </select>
@@ -77,11 +77,12 @@
 <dialog class="p-5 rounded" id="confirm-delete-dialog">
     @if (_participantToDelete != null)
     {
-        <div class="flex flex-col gap-4 items-center">
-            <p class="font-bold">Er du sikker på at du vil slette @_participantToDelete.Nickname's svar?</p>
-            <div class="flex items-center gap-1">
-                <button class="bg-success rounded-full p-3 py-0.5 w-16 text-white hover:bg-success-dark" @onclick="@(async () => { await DeleteParticipant(_participantToDelete.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Ja</button>
+        <div class="flex flex-col gap-4 items-end">
+            <p class="text-xl font-bold">Er du sikker på at du vil slette @_participantToDelete.Nickname's svar?</p>
+            <div class="flex  gap-1">
                 <button class="bg-error rounded-full p-3 py-0.5 w-16 text-white hover:bg-error-dark" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Nej</button>
+                <button class="bg-success rounded-full p-3 py-0.5 w-16 text-white hover:bg-success-dark" @onclick="@(async () => { await DeleteParticipant(_participantToDelete.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Ja</button>
+
             </div>
         </div>
     }
@@ -123,17 +124,18 @@
 
     private async Task DeleteParticipant(int participantId)
     {
-        var response = await JoinEventHttpClient.DeleteParticipantAsync(Event.Id, participantId);
+        var response = await KinoJoinHttpClient.DeleteParticipantAsync(Event.Id, participantId);
         if (response.IsSuccessStatusCode)
         {
             Event.Participants.RemoveAll(p => p.Id == participantId);
+            UpdateSorting();
             StateHasChanged();
         }
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        _showNote = Event.Participants.ToDictionary(p => p, p => false);
+        _showNote = Event.Participants.ToDictionary(p => p, _ => false);
         SetSortOption(VotesString);
     }
 
@@ -173,6 +175,11 @@
         {
             _orderedShowtimes = Event.Showtimes.OrderBy(s => s.Playtime.StartTime.ToLocalTime()).ToList();
         }
+    }
+    
+    public void UpdateSorting()
+    {
+        SetSortOption(VotesString);
     }
 
 }

@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using Application;
 using Application.Interfaces;
 using Carter;
@@ -19,6 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveWebAssemblyComponents();
 builder.Services.AddScoped<IJoinEventService, JoinEventService>();
+builder.Services.AddScoped<IKinoJoinService, KinoJoinService>();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 

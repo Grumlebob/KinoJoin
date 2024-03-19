@@ -1,6 +1,6 @@
 ﻿<div class="flex flex-col w-full">
     <!-- Accordion header -->
-    <div @onclick="ToggleAccordion" class="cursor-pointer bg-gray-700 text-white px-5 py-3 @(_isAccordionOpen ? "rounded-t" : "rounded") flex justify-between items-center">
+    <div @onclick="ToggleAccordion" class="cursor-pointer bg-secondary text-white px-5 py-3 @(_isAccordionOpen ? "rounded-t" : "rounded") flex justify-between items-center">
         @if (IconPath != null)
         {
             <img src="@IconPath" alt="Movie Icon" class="h-6 w-6 mr-2"/>
@@ -21,7 +21,7 @@
             {
                 var checkBoxId = $"{_uniqueId.ToString()}-{id}";
                 <div class="flex items-center whitespace-nowrap overflow-hidden mb-2">
-                    <input type="checkbox" id="@checkBoxId" value="@id" @onchange="@(e => HandleCheckboxChange(e, id))" checked="@(SelectedItems.Contains(id))" class="mr-2 h-5 w-5 accent-gray-700 "/>
+                    <input type="checkbox" id="@checkBoxId" value="@id" @onchange="@(e => HandleCheckboxChange(e, id))" checked="@(SelectedItems.Contains(id))" class="mr-2 h-5 w-5 accent-secondary"/>
                     <label for="@checkBoxId" class="flex-grow truncate ml-1">@label</label>
                 </div>
             }
@@ -29,7 +29,7 @@
     </div>
 
     <!-- Selected items as chips -->
-    <div class="mt-0.5 flex flex-wrap">
+    <div class="mt-1.5 flex flex-wrap">
         @foreach (var id in SelectedItems)
         {
             <span class="chip inline-flex items-center bg-gray-100 border text-black text-sm font-medium px-2.5 py-0.5 rounded-full mr-2 mb-2">
@@ -73,6 +73,11 @@
     private void ToggleAccordion()
     {
         _isAccordionOpen = !_isAccordionOpen;
+    }
+
+    public void CloseAccordion()
+    {
+        _isAccordionOpen = false;
     }
 
 }

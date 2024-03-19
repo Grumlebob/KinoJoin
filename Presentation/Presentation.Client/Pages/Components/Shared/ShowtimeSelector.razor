@@ -1,38 +1,46 @@
 @inject IJSRuntime JsRuntime
 
-<style>
-
-</style>
-
 @if (Showtimes.Count == 0)
 {
     return;
 }
 
-<div class="mt-10 mb-3 w-fit space-y-1">
-    <p class="pl-2 font-semibold">Tryk på de tider du kan</p>
-    <div class="mb-2 flex w-fit divide-x-2">
+<div class="@(HasAnswered ? "mb-5" : "mb-7") w-fit space-y-1  mt-10  ">
+    <p class="font-semibold ">@LegendTitle</p>
+    <div class="mb-2 divide-x-2 flex w-fit">
+        @{
+            var firstOption = true;
+        }
         @foreach (var option in SelectOptions)
         {
-            <div class="px-2">
+            <div class="@(firstOption ? "pr-2" : "px-2") ">
                 <div class="rounded px-1 shadow-md  bg-@option.Color ">
                     <p>@option.VoteOption</p>
                 </div>
             </div>
+            firstOption = false;
         }
     </div>
 </div>
-<div class="space-y-5">
+@if (HasAnswered)
+{
+    <p class="text-xl font-semibold text-success-darkest mb-5">Du har allerede indsendt et svar på dette event</p>
+}
+<div class="space-y-5 ">
+    @{
+        var isFirst = true;
+    }
     @foreach (var showtimesByMovie in Showtimes.GroupBy(s => s.Movie.Id))
     {
         var movie = showtimesByMovie.First().Movie;
-        <ShowtimeSelectorHeading Movie="movie">
+        <ShowtimeSelectorHeading ShowDivider="!isFirst" HasAnswered="@HasAnswered" Movie="movie">
             @foreach (var showtimesByCinema in showtimesByMovie.GroupBy(s => s.Cinema.Id))
             {
                 var cinema = showtimesByCinema.First().Cinema;
-                <CinemaShowtimes Showtimes="Showtimes" Votes="Votes" SelectOptions="SelectOptions" Cinema="cinema" VotesChanged="VotesChanged" ShowtimesByCinema="showtimesByCinema" ShowtimesByMovie="showtimesByMovie"/>
+                <CinemaShowtimes Showtimes="Showtimes" HasAnswered="HasAnswered" Votes="Votes" SelectOptions="SelectOptions" Cinema="cinema" VotesChanged="VotesChanged" ShowtimesByCinema="showtimesByCinema" ShowtimesByMovie="showtimesByMovie"/>
             }
         </ShowtimeSelectorHeading>
+        isFirst = false;
     }
 </div>
 
@@ -52,6 +60,8 @@
 
 @code {
 
+    [Parameter] public string LegendTitle { get; set; } = "";
+
     [Parameter] public List<Showtime> Showtimes { get; set; } = [];
 
     [Parameter] public List<Movie> MoviesWithOutShowTimes { get; set; } = [];
@@ -62,5 +72,7 @@
 
     //Default options for create page
     [Parameter] public required List<SelectOption> SelectOptions { get; set; }
+    
+    [Parameter] public bool HasAnswered { get; set; }
 
 }

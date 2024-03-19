@@ -18,6 +18,7 @@
 </h1>
 
 
+
 @* Dialog where user enters title and other event details *@
 <dialog id="eventDetailsDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
     <form @onsubmit="ValidateAndOpenConfirmationDialog">
@@ -78,13 +79,16 @@
 @* Dialog which shows the share link *@
 <dialog id="eventShareDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl min-w-96">
     <div class="space-y-1">
-        <p class="text-lg font-semibold mb-0.5">Dit event er nu oprettet</p>
-        <p class="font-semibold">Send dette link til dine venner</p>
-        <div class="flex items-center gap-4">
+        <p class="text-lg font-semibold  mb-0.5">Dit event er nu oprettet</p>
+        <p class="font-semibold">Send dette link til dine venner (Du kan også se resultater på denne side)</p>
+        <div class="flex items-center gap-1">
             <a href="@(_baseUrl + "filling/" + _joinEvent.Id)" class="text-lg text-blue-600 hover:text-blue-700">
                 @(_baseUrl + "filling/" + _joinEvent.Id)
             </a>
-            <button @onclick="ShareEvent" class="rounded-full p-2 text-white bg-secondary hover:bg-gray-700">
+            <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", (_baseUrl + "filling/" + _joinEvent.Id)); await ShowSnackbar("Link kopieret", "success"); })">
+            <CopyIcon  Class="hover:bg-gray-200 p-2 rounded-full"/>
+            </button>
+            <button @onclick="ShareEvent" class="rounded-full bg-secondary p-2 text-white hover:bg-gray-700 lg:hidden">
                 <svg class="h-5 w-5 fill-white" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 30 30">
                     <path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"></path>
                 </svg>
@@ -180,7 +184,7 @@
 
 @if (_snackbarMessage != null)
 {
-    <div class="fixed bottom-10 left-1/2 -translate-x-1/2 transform rounded-md bg-red-600 text-white p-2.5">
+    <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-@_snackbarColor text-white p-2.5 rounded-md">
         @_snackbarMessage
     </div>
 }
@@ -203,6 +207,7 @@
     };
 
     private string? _snackbarMessage;
+    private string? _snackbarColor;
 
     private bool _hostCanAllShowtimes = true;
 
@@ -416,13 +421,20 @@
     {
         if (_joinEvent.Showtimes.Count < 1)
         {
-            _snackbarMessage = "Vælg mindst en mulig forestilling";
-            await Task.Delay(3000).ContinueWith(_ => _snackbarMessage = null);
+            await ShowSnackbar("Vælg mindst en mulig forestilling", "error");
         }
         else
         {
             await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventDetailsDialog");
         }
+    }
+    
+    private async Task ShowSnackbar(string message, string color)
+    {
+        _snackbarMessage = message;
+        _snackbarColor = color;
+        StateHasChanged();
+        await Task.Delay(3000).ContinueWith(_ => _snackbarMessage = null);
     }
 
     private async Task ShareEvent()
@@ -441,8 +453,7 @@
     {
         if (_joinEvent.Showtimes.Count < 1)
         {
-            _snackbarMessage = "Vælg mindst en mulig forestilling";
-            await Task.Delay(3000).ContinueWith(_ => _snackbarMessage = null);
+            await ShowSnackbar("Vælg mindst en mulig forestilling", "error");
         }
         else if (string.IsNullOrEmpty(_joinEvent.Title.Trim()))
         {
@@ -503,7 +514,9 @@
 
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog");
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog");
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventShareDialog");
+        
+        NavigationManager.NavigateTo("filling/" + _joinEvent.Id);
+        //await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventShareDialog");
     }
 
     private void OnVoteChange(ICollection<ParticipantVote> votes)

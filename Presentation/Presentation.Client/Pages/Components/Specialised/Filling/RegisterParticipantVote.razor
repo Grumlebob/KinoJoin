@@ -1,15 +1,11 @@
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
 @inject IKinoJoinHttpClient KinoJoinHttpClient
-@if (AlreadyAnswered)
+@if (!_answerSaved && !AlreadyAnswered)
 {
-    <p class="text-xl font-semibold text-green-700">Du har allerede indsendt et svar på dette event</p>
-}
-else if (!_answerSaved)
-{
-    <EditForm class="w-full md:w-80 space-y-4" Model="@_participant" >
+    <EditForm class="w-full md:w-80 space-y-4 md:mt-7" Model="@_participant">
         <h3 class="font-bold">Dine oplysninger</h3>
-        <InputText class="w-full border p-2 rounded-md" @bind-Value="@_participant.Nickname"  placeholder="Indtast dit navn" required />
+        <InputText class="w-full border p-2 rounded-md" @bind-Value="@_participant.Nickname" placeholder="Indtast dit navn" required/>
         <InputText class="w-full border p-2 rounded-md" @bind-Value="@_participant.Email" placeholder="Skriv din email (valgfrit)" type="email"/>
         <div>
             <InputTextArea class="h-32 w-full resize-none border p-2 rounded-md" @bind-Value="@_participant.Note" placeholder="Note (valgfrit)"/>
@@ -24,7 +20,7 @@ else if (!_answerSaved)
 {
     if (_answerSaved)
     {
-        <p class="text-green-700 text-4xl">@_infoMessage</p>
+        <p class="text-success-darkest font-semibold text-2xl md:mt-7">@_infoMessage</p>
     }
     else
     {
@@ -34,21 +30,23 @@ else if (!_answerSaved)
 
 <dialog class="p-5 rounded " id="NoShowtimesDialog">
     <div class="flex flex-col gap-4 items-end text-center">
-         <h4 class="text-xl font-bold w-full">Obs! Du har ikke valgt nogen tider</h4>
-         <h4 class=" font-bold">Vil du indsende et tomt svar, der viser du ikke kan nogen tider?</h4>
-        <div class="flex  gap-1">
-            <button class="bg-error rounded-full p-3 py-0.5 w-16 text-white hover:bg-error-dark font-label" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog");})">Nej</button>
-            <button class="bg-success rounded-full p-3 py-0.5 w-16 text-white hover:bg-success-dark font-label" @onclick="@(async () => {await SaveParticipantAnswer(true, false); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"); })">Ja</button>
+        <h4 class="text-xl font-bold w-full">Obs! Du har ikke valgt nogen tider</h4>
+        <h4 class=" font-bold">Vil du indsende et tomt svar, der viser du ikke kan nogen tider?</h4>
+        <div class="flex gap-1">
+            <button class="bg-error rounded-full p-3 py-0.5 w-16 text-white hover:bg-error-dark" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"); })">Nej</button>
+            <button class="bg-success rounded-full p-3 py-0.5 w-16 text-white hover:bg-success-dark" @onclick="@(async () => { await SaveParticipantAnswer(true, false); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"); })">Ja</button>
         </div>
     </div>
 </dialog>
 
-<dialog id="same-name-dialog" class="rounded p-4">
-    <h4 class="font-bold">Der er allerede en deltager med dette navn</h4>
-    <h4 class="font-bold">Ønsker du at sende et nyt svar i samme navn?</h4>
-    <div class="inline-flex space-x-2">
-        <button class="rounded-full bg-success p-2 text-white hover:bg-success" @onclick="@(async () => { await SaveParticipantAnswer(true, true); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Ja</button>
-        <button class="rounded-full bg-error p-2 text-white hover:bg-error" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Nej</button>
+<dialog id="same-name-dialog" class="p-5 rounded">
+    <div class="flex flex-col gap-4 ">
+        <h4 class="text-xl font-bold w-full">Der er allerede en deltager med dette navn</h4>
+        <h4 class="font-bold">Ønsker du at sende et nyt svar i samme navn?</h4>
+        <div class="flex gap-1 justify-end w-full">
+            <button class="bg-error rounded-full p-3 py-0.5 w-16 text-white hover:bg-error-dark" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Nej</button>
+            <button class="bg-success rounded-full p-3 py-0.5 w-16 text-white hover:bg-success-dark" @onclick="@(async () => { await SaveParticipantAnswer(true, true); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Ja</button>
+        </div>
     </div>
 </dialog>
 
@@ -94,8 +92,8 @@ else if (!_answerSaved)
 
             if (VotedFor.All(v => v.SelectedOptionId == Event.DefaultSelectOptionId))
             {
-               await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "NoShowtimesDialog");
-               return;
+                await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "NoShowtimesDialog");
+                return;
             }
         }
 
@@ -118,10 +116,10 @@ else if (!_answerSaved)
                 return;
             }
         }
-        
+
         _participant.AuthId = LoggedInUserId;
         _participant.VotedFor = VotedFor.Where(v => v.SelectedOptionId != Event.DefaultSelectOptionId).ToList();
-        
+
         Event.Participants.Add(_participant);
 
 

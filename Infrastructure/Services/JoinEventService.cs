@@ -10,6 +10,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             .JoinEvents.AsNoTracking()
             .Include(j => j.Showtimes)
             .ThenInclude(s => s.Movie)
+            .ThenInclude(m => m.AgeRating)
             .Include(j => j.Showtimes)
             .ThenInclude(s => s.Cinema)
             .Include(j => j.Showtimes)
@@ -40,6 +41,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         var joinEvents = await query
             .Include(j => j.Showtimes)
             .ThenInclude(s => s.Movie)
+            .ThenInclude(m => m.AgeRating)
             .Include(j => j.Showtimes)
             .ThenInclude(s => s.Cinema)
             .Include(j => j.Showtimes)
@@ -277,6 +279,9 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             if (existingMovie == null)
             {
                 var movie = joinEvent.Showtimes.FirstOrDefault(st => st.Movie.Id == movieId)?.Movie;
+                var existingAgeRating = await context.AgeRatings.FirstOrDefaultAsync(m =>
+                    movie.AgeRating != null && m.Censorship == movie.AgeRating.Censorship
+                );
 
                 if (movie != null)
                     context.Movies.Add(
@@ -284,7 +289,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                         {
                             Id = movieId,
                             KinoURL = movie.KinoURL,
-                            AgeRating = movie.AgeRating,
+                            AgeRating = existingAgeRating ?? movie.AgeRating ?? null,
                             Duration = movie.Duration,
                             ImageUrl = movie.ImageUrl,
                             Title = movie.Title,
@@ -294,10 +299,15 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             }
             else
             {
+                var existingAgeRating = await context.AgeRatings.FirstOrDefaultAsync(m =>
+                    existingMovie.AgeRating != null
+                    && m.Censorship == existingMovie.AgeRating.Censorship
+                );
                 // Attach existing movies to each showtime
                 foreach (var showtime in joinEvent.Showtimes.Where(st => st.Movie.Id == movieId))
                 {
                     showtime.Movie = existingMovie;
+                    showtime.Movie.AgeRating = existingAgeRating;
                 }
             }
         }

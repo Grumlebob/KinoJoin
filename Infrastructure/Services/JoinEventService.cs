@@ -68,8 +68,9 @@ public class JoinEventService(KinoContext context) : IJoinEventService
     public async Task DeleteParticipantAsync(int eventId, int participantId)
     {
         // Find the participant directly without loading the entire JoinEvent and Participants
-        var participant = await context.Participants
-            .FirstOrDefaultAsync(p => p.Id == participantId && p.JoinEventId == eventId);
+        var participant = await context.Participants.FirstOrDefaultAsync(p =>
+            p.Id == participantId && p.JoinEventId == eventId
+        );
 
         // If the participant exists, remove it
         if (participant != null)
@@ -208,18 +209,29 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         var versionTypes = joinEvent.Showtimes.Select(st => st.VersionTag.Type).Distinct().ToList();
         var roomIds = joinEvent.Showtimes.Select(st => st.Room.Id).Distinct().ToList();
         var all = await context.Playtimes.ToListAsync();
-        var existingCinemas = await context.Cinemas.Where(c => cinemaIds.Contains(c.Id)).ToDictionaryAsync(c => c.Id);
-        var existingPlaytimes = await context.Playtimes.Where(p => playtimeStartTimes.Contains(p.StartTime)).ToDictionaryAsync(p => p.StartTime);
-        var existingVersionTags =
-            await context.Versions.Where(v => versionTypes.Contains(v.Type)).ToDictionaryAsync(v => v.Type);
-        var existingRooms = await context.Rooms.Where(r => roomIds.Contains(r.Id)).ToDictionaryAsync(r => r.Id);
+        var existingCinemas = await context
+            .Cinemas.Where(c => cinemaIds.Contains(c.Id))
+            .ToDictionaryAsync(c => c.Id);
+        var existingPlaytimes = await context
+            .Playtimes.Where(p => playtimeStartTimes.Contains(p.StartTime))
+            .ToDictionaryAsync(p => p.StartTime);
+        var existingVersionTags = await context
+            .Versions.Where(v => versionTypes.Contains(v.Type))
+            .ToDictionaryAsync(v => v.Type);
+        var existingRooms = await context
+            .Rooms.Where(r => roomIds.Contains(r.Id))
+            .ToDictionaryAsync(r => r.Id);
 
         foreach (var showtime in joinEvent.Showtimes)
         {
             // Handle Cinema
             if (!existingCinemas.TryGetValue(showtime.Cinema.Id, out var existingCinema))
             {
-                existingCinema = new Cinema { Id = showtime.Cinema.Id, Name = showtime.Cinema.Name };
+                existingCinema = new Cinema
+                {
+                    Id = showtime.Cinema.Id,
+                    Name = showtime.Cinema.Name
+                };
                 context.Cinemas.Add(existingCinema);
                 existingCinemas[existingCinema.Id] = existingCinema;
             }
@@ -228,7 +240,12 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
             //For some reason context.playtimes.Where doesn't work. It returns null.
             // Handle Playtime
-            if (!existingPlaytimes.TryGetValue(showtime.Playtime.StartTime, out var existingPlaytime))
+            if (
+                !existingPlaytimes.TryGetValue(
+                    showtime.Playtime.StartTime,
+                    out var existingPlaytime
+                )
+            )
             {
                 existingPlaytime = new Playtime { StartTime = showtime.Playtime.StartTime };
                 context.Playtimes.Add(existingPlaytime);
@@ -251,7 +268,12 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             //}
 
             // Handle VersionTag
-            if (!existingVersionTags.TryGetValue(showtime.VersionTag.Type, out var existingVersionTag))
+            if (
+                !existingVersionTags.TryGetValue(
+                    showtime.VersionTag.Type,
+                    out var existingVersionTag
+                )
+            )
             {
                 existingVersionTag = new VersionTag { Type = showtime.VersionTag.Type };
                 context.Versions.Add(existingVersionTag);
@@ -274,7 +296,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         await context.SaveChangesAsync();
     }
 
-
     //OPTIMIZED DB CALLS
     private async Task HandleMovies(JoinEvent joinEvent)
     {
@@ -282,15 +303,14 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         var movieIds = joinEvent.Showtimes.Select(st => st.Movie.Id).Distinct().ToList();
 
         // Fetch all existing movies in a single query
-        var existingMovies = await context.Movies
-            .Where(m => movieIds.Contains(m.Id))
-            .ToListAsync();
+        var existingMovies = await context.Movies.Where(m => movieIds.Contains(m.Id)).ToListAsync();
 
         var existingAgeRatings = await context.AgeRatings.ToListAsync();
 
         foreach (var movie in joinEvent.Showtimes.Select(st => st.Movie).Distinct())
         {
-            if (movie == null) continue;
+            if (movie == null)
+                continue;
             var existingMovie = existingMovies.FirstOrDefault(m => m.Id == movie.Id);
 
             if (existingMovie != null)
@@ -303,8 +323,9 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                 existingMovie.PremiereDate = movie.PremiereDate;
 
                 // Update age rating
-                var existingAgeRating =
-                    existingAgeRatings.FirstOrDefault(ar => ar.Censorship == movie.AgeRating?.Censorship);
+                var existingAgeRating = existingAgeRatings.FirstOrDefault(ar =>
+                    ar.Censorship == movie.AgeRating?.Censorship
+                );
                 if (existingAgeRating != null)
                 {
                     existingMovie.AgeRating = existingAgeRating;
@@ -316,8 +337,9 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                 context.Movies.Add(movie);
 
                 // Update age rating
-                var existingAgeRating =
-                    existingAgeRatings.FirstOrDefault(ar => ar.Censorship == movie.AgeRating?.Censorship);
+                var existingAgeRating = existingAgeRatings.FirstOrDefault(ar =>
+                    ar.Censorship == movie.AgeRating?.Censorship
+                );
                 if (existingAgeRating != null)
                 {
                     movie.AgeRating = existingAgeRating;
@@ -327,7 +349,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
         await context.SaveChangesAsync();
     }
-
 
     //OPTIMIZED DB CALLS
     private async Task HandleHost(JoinEvent joinEvent)
@@ -350,8 +371,8 @@ public class JoinEventService(KinoContext context) : IJoinEventService
     {
         var showtimeIds = joinEvent.Showtimes.Select(s => s.Id).ToList();
 
-        var existingShowtimes = await context.Showtimes
-            .Where(s => showtimeIds.Contains(s.Id))
+        var existingShowtimes = await context
+            .Showtimes.Where(s => showtimeIds.Contains(s.Id))
             .ToDictionaryAsync(s => s.Id);
 
         var newShowtimesToBeAdded = new List<Showtime>();
@@ -393,14 +414,20 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
     private async Task HandleSelectOptions(JoinEvent joinEvent)
     {
-        await context.SelectOptions.UpsertRange(joinEvent.SelectOptions).On(s => new { s.VoteOption, s.Color })
+        await context
+            .SelectOptions.UpsertRange(joinEvent.SelectOptions)
+            .On(s => new { s.VoteOption, s.Color })
             .RunAsync();
 
         var allSelectOptions = await context.SelectOptions.ToListAsync();
-        
-        var upsertedSelectOptions = allSelectOptions.Where(so =>
-            joinEvent.SelectOptions.Any(eventSo =>
-                eventSo.VoteOption == so.VoteOption && eventSo.Color == so.Color)).ToList();
+
+        var upsertedSelectOptions = allSelectOptions
+            .Where(so =>
+                joinEvent.SelectOptions.Any(eventSo =>
+                    eventSo.VoteOption == so.VoteOption && eventSo.Color == so.Color
+                )
+            )
+            .ToList();
 
         joinEvent.SelectOptions = upsertedSelectOptions;
     }
@@ -412,9 +439,9 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         var defaultSelectOption = joinEvent.DefaultSelectOption;
 
         // Check if the DefaultSelectOption is already in the prefetched list
-        var existingDefaultSelectOption = joinEvent.SelectOptions
-            .FirstOrDefault(so => so.VoteOption == defaultSelectOption.VoteOption
-                                  && so.Color == defaultSelectOption.Color);
+        var existingDefaultSelectOption = joinEvent.SelectOptions.FirstOrDefault(so =>
+            so.VoteOption == defaultSelectOption.VoteOption && so.Color == defaultSelectOption.Color
+        );
 
         if (existingDefaultSelectOption != null)
         {
@@ -425,9 +452,10 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         else
         {
             // Check if it exists in the database (in case it's not in the prefetched list)
-            existingDefaultSelectOption = await context.SelectOptions
-                .FirstOrDefaultAsync(so => so.VoteOption == defaultSelectOption.VoteOption
-                                           && so.Color == defaultSelectOption.Color);
+            existingDefaultSelectOption = await context.SelectOptions.FirstOrDefaultAsync(so =>
+                so.VoteOption == defaultSelectOption.VoteOption
+                && so.Color == defaultSelectOption.Color
+            );
 
             if (existingDefaultSelectOption != null)
             {

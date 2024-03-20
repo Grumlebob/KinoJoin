@@ -17,8 +17,8 @@ public class JoinEventConfiguration : IEntityTypeConfiguration<JoinEvent>
         // Many to one relations
         builder.HasMany(je => je.Participants).WithOne().HasForeignKey(p => p.JoinEventId);
 
-        builder.Property(je => je.Deadline)
-            .HasConversion(d => d.ToUniversalTime()
-                , d => d.ToLocalTime());
+        builder
+            .Property(je => je.Deadline)
+            .HasConversion(d => d.ToUniversalTime(), d => d.ToLocalTime());
     }
 }

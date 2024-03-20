@@ -142,7 +142,7 @@ public class KinoJoinTests : IAsyncLifetime
         joinEventFromApiUpdatedParticipantName.Should().NotBeNull();
         var participant = joinEventFromApiUpdatedParticipantName.Participants.First();
         participant.Nickname.Should().Be("Updated");
-        
+
         //Test DeleteParticipantAsync. eventGroup.MapDelete("{eventId}/participants/{participantId}", DeleteParticipant);
         JoinEvent joinEventToDelete = new();
         //find joinEventWithAtleast 1 participant
@@ -165,7 +165,7 @@ public class KinoJoinTests : IAsyncLifetime
             $"api/events/{joinEventToDelete.Id}/participants/{participantToDelete.Id}"
         );
         deleteParticipantResponse.EnsureSuccessStatusCode();
-        
+
         //Check that the participant got deleted
         var getResponseDeletedParticipant = await _client.GetAsync(
             $"api/events/{joinEventToDelete.Id}"

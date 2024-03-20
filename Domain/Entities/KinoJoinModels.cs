@@ -18,9 +18,11 @@ public class JoinEvent
 
     public DateTime Deadline { get; set; }
 
-    [ForeignKey("HostId")] public Host? Host { get; set; }
+    [ForeignKey("HostId")]
+    public Host? Host { get; set; }
 
-    [ForeignKey("DefaultSelectOptionId")] public SelectOption? DefaultSelectOption { get; set; }
+    [ForeignKey("DefaultSelectOptionId")]
+    public SelectOption? DefaultSelectOption { get; set; }
 }
 
 public class Showtime
@@ -35,15 +37,20 @@ public class Showtime
     public int RoomId { get; set; }
 
     //Foreign Keys
-    [ForeignKey("VersionTagId")] public VersionTag? VersionTag { get; set; }
+    [ForeignKey("VersionTagId")]
+    public VersionTag? VersionTag { get; set; }
 
-    [ForeignKey("RoomId")] public Room? Room { get; set; }
+    [ForeignKey("RoomId")]
+    public Room? Room { get; set; }
 
-    [ForeignKey("MovieId")] public Movie? Movie { get; set; }
+    [ForeignKey("MovieId")]
+    public Movie? Movie { get; set; }
 
-    [ForeignKey("CinemaId")] public Cinema? Cinema { get; set; }
+    [ForeignKey("CinemaId")]
+    public Cinema? Cinema { get; set; }
 
-    [ForeignKey("PlaytimeId")] public Playtime? Playtime { get; set; }
+    [ForeignKey("PlaytimeId")]
+    public Playtime? Playtime { get; set; }
 }
 
 public class Movie
@@ -141,7 +148,8 @@ public class ParticipantVote
     public int ShowtimeId { get; set; }
     public int SelectedOptionId { get; set; }
 
-    [ForeignKey("SelectedOptionId")] public SelectOption? SelectedOption { get; set; }
+    [ForeignKey("SelectedOptionId")]
+    public SelectOption? SelectedOption { get; set; }
 }
 
 /// <summary>

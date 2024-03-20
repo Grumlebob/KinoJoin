@@ -16,7 +16,7 @@ public class KinoDkService : IKinoDkService
     public async Task<(
         List<Showtime> showtimes,
         List<Movie> moviesWithoutShowtimes
-        )> GetShowtimesFromFilters(
+    )> GetShowtimesFromFilters(
         ICollection<int>? cinemaIds = null,
         ICollection<int>? movieIds = null,
         ICollection<int>? genreIds = null,
@@ -72,8 +72,7 @@ public class KinoDkService : IKinoDkService
             );
 
         var showtimes = new List<Showtime>();
-        var existingMovies =
-            new Dictionary<int, Movie>(); //several cinemas may show the same movie. No need to create the movie object every time
+        var existingMovies = new Dictionary<int, Movie>(); //several cinemas may show the same movie. No need to create the movie object every time
 
         foreach (var jsonCinema in apiResultObject.ShowtimeApiContent.ShowtimeApiContent.Content)
         {
@@ -91,8 +90,7 @@ public class KinoDkService : IKinoDkService
             {
                 if (!int.TryParse(jsonMovie.Content.FieldPlayingTime, out var duration))
                     duration = 0;
-                if (!existingMovies.TryGetValue(jsonMovie.Id,
-                        out var movieObject)) //use existing movie object or create new
+                if (!existingMovies.TryGetValue(jsonMovie.Id, out var movieObject)) //use existing movie object or create new
                 {
                     movieObject = new Movie
                     {
@@ -112,7 +110,7 @@ public class KinoDkService : IKinoDkService
                             .ShowtimeApiFieldPoster
                             .FieldMediaImage
                             ?.Sources
-                                ?[0]
+                            ?[0]
                             .Srcset,
                         Duration = duration,
                     };

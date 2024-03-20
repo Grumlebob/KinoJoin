@@ -61,7 +61,7 @@ public class KinoJoinHttpClient : IKinoJoinHttpClient
     {
         return await _httpClient.GetFromJsonAsync<ICollection<Genre>>("api/kino-data/genres");
     }
-    
+
     public async Task<HttpResponseMessage> UpdateBaseDataFromKinoDkAsync()
     {
         return await _httpClient.GetAsync("api/kino-data/all");

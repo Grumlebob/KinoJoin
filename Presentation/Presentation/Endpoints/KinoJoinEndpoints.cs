@@ -137,14 +137,14 @@ public class KinoJoinEndpoints : ICarterModule
             return TypedResults.NotFound();
         }
     }
-    
+
     private static async Task<Results<Ok, BadRequest<string>>> UpdateBaseDataFromKinoDk(
         [FromServices] IFetchNewestKinoDkDataService service
     )
     {
         try
         {
-            await service.UpdateBaseDataFromKinoDk(1,71);
+            await service.UpdateBaseDataFromKinoDk(1, 71);
             return TypedResults.Ok();
         }
         catch (Exception)

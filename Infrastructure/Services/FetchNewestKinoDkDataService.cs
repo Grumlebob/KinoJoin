@@ -7,7 +7,7 @@ namespace Infrastructure.Services;
 public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKinoDkDataService
 {
     private readonly HttpClient _httpClient = new();
-    
+
     public async Task UpdateBaseDataFromKinoDk(int lowestCinemaId, int highestCinemaId)
     {
         for (int i = lowestCinemaId; i <= highestCinemaId; i++)
@@ -47,7 +47,9 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                         .FirstOrDefaultAsync();
                     if (version == null)
                     {
-                        await context.Versions.AddAsync(new VersionTag { Type = versionOption.Value });
+                        await context.Versions.AddAsync(
+                            new VersionTag { Type = versionOption.Value }
+                        );
                     }
 
                     await context.SaveChangesAsync();
@@ -100,7 +102,7 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                             string imageUrl = null;
                             if (
                                 jsonMovie?.Content?.ShowtimeApiFieldPoster?.FieldMediaImage?.Sources
-                                != null
+                                    != null
                                 && jsonMovie.Content.ShowtimeApiFieldPoster.FieldMediaImage.Sources.Any()
                             )
                             {

@@ -1,3 +1,5 @@
+@inject IJSRuntime JsRuntime
+
 <style>
     .empty-showtime {
         background-image: repeating-linear-gradient(
@@ -28,13 +30,17 @@
 <Virtualize Items="_showtimesByVersionTagList" Context="showtimesByVersionTag" OverscanCount="5" ItemSize="300">
     <ItemContent>
         @{ var versionTag = showtimesByVersionTag.First().VersionTag; }
-        <div class="mb-4 max-w-screen-md">
+        <div class="mb-4 max-w-screen-md relative">
             <!-- Version -->
             <div class="w-fit">
                 <p class="bg-gray-200 px-2 py-1 font-label">@versionTag.Type</p>
             </div>
+            <!-- Blur left edge (100%-20px to not cover scroll bar) -->
+            <div class="h-[calc(100%-20px)] w-10 absolute left-0 bg-gradient-to-r from-white rounded-md"></div>
+            <!-- Blur right edge -->
+            <div class="h-[calc(100%-20px)] w-10 absolute right-0 bg-gradient-to-l from-white rounded-md"></div>
             <!-- Showtimes -->
-            <div class="overflow-x-auto">
+            <div id="@(_cinema.Id + versionTag.Type)" class="overflow-x-auto" @onscroll="@(async () => { var d = await JsRuntime.InvokeAsync<ScrollData>("customFunctions.getScrollData", _cinema.Id + versionTag.Type);})">
                 <table class="border-collapse">
                     <tr>
                         @{
@@ -64,7 +70,7 @@
                                     @foreach (var showtime in dateColumn)
                                     {
                                         var vote = Votes.First(v => v.ShowtimeId == showtime.Id);
-                                        <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center  select-none rounded shadow-inset bg-@vote.SelectedOption.Color @(HasAnswered ? "":"hover:border hover:border-gray-300 cursor-pointer")" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(() => HandleShowtimeClick(vote))">
+                                        <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center  select-none rounded shadow-inset bg-@vote.SelectedOption.Color @(HasAnswered ? "" : "hover:border hover:border-gray-300 cursor-pointer")" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(() => HandleShowtimeClick(vote))">
                                             <div class="mb-1 text-center text-sm line-clamp-1"> @showtime.Room.Name </div >
                                             <div class="text-lg font-bold"> @showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm", CultureInfo.InvariantCulture) </div > <!--showtime - time-->
                                         </div>
@@ -102,10 +108,11 @@
 
     [Parameter] public EventCallback<ICollection<ParticipantVote>> VotesChanged { get; set; }
     
+    [Parameter] public bool HasAnswered { get; set; }
+    
     private Cinema _cinema = new();
     private List<IGrouping<string, Showtime>> _showtimesByVersionTagList = [];
     
-    [Parameter] public bool HasAnswered { get; set; }
 
     private bool _hasChanged = false;
     
@@ -148,5 +155,27 @@
 
     private string CaptitalizeStart(string s)
         => char.ToUpper(s[0]) + s[1..];
+
+    private class ScrollData
+    {
+        public double ScrollLeft { private get; init; }
+        public double ScrollWidth { private get; init; }
+        public double ClientWidth { private get; init; }
+
+        public bool HasScrollBar()
+        {
+            return ScrollWidth > ClientWidth;
+        }
+
+        public bool AllTheWayLeft()
+        {
+            return ScrollLeft == 0;
+        }
+
+        public bool AllTheWayRight()
+        {
+            return Math.Abs(ScrollLeft + ClientWidth - ScrollWidth) < 1;
+        }
+    }
 
 }

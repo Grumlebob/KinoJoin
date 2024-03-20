@@ -67,6 +67,16 @@
             scrollStep();
         },
         
+        getScrollData: function(elementId) {
+                   let element = document.getElementById(elementId);
+           
+                   return {
+                       ScrollLeft: element.scrollLeft,
+                       ScrollWidth: element.scrollWidth,
+                       ClientWidth: element.clientWidth
+                   };
+               }
+        
     }
     
     window.downloadFileFromStream = async (fileName, contentStreamReference) => {

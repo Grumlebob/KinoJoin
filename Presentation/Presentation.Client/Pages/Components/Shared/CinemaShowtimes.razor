@@ -35,17 +35,13 @@
             <div class="w-fit">
                 <p class="bg-gray-200 px-2 py-1 font-label">@versionTag.Type</p>
             </div>
-            
+
             <!-- Blur left edge (100%-30px to not cover scroll bar) -->
-            <div class="absolute rounded h-[calc(100%-50px)] w-10 bg-gradient-to-r from-white items-center">
-                <button>L</button>
-            </div>
+            <div class="absolute rounded h-[calc(100%-50px)] w-10 bg-gradient-to-r from-white items-center"></div>
 
             <!-- Blur right edge -->
-            <div class="absolute rounded right-0 h-[calc(100%-50px)] w-10 bg-gradient-to-l from-white items-center">
-                <button>R</button>
-            </div>
-            
+            <div class="absolute rounded right-0 h-[calc(100%-50px)] w-10 bg-gradient-to-l from-white items-center"></div>
+
             <!-- Showtimes (padding LR and inline-block makes room for blurs to disappear wen scrolled all the way left or right)-->
             <div class="overflow-x-auto px-10">
                 <table class="border-collapse inline-block">

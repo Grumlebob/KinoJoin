@@ -35,12 +35,16 @@
             <div class="w-fit">
                 <p class="bg-gray-200 px-2 py-1 font-label">@versionTag.Type</p>
             </div>
+            
             <!-- Blur left edge (100%-20px to not cover scroll bar) -->
             <div class="h-[calc(100%-20px)] w-10 absolute left-0 bg-gradient-to-r from-white rounded-md"></div>
+
             <!-- Blur right edge -->
             <div class="h-[calc(100%-20px)] w-10 absolute right-0 bg-gradient-to-l from-white rounded-md"></div>
+
+            }
             <!-- Showtimes -->
-            <div id="@(_cinema.Id + versionTag.Type)" class="overflow-x-auto" @onscroll="@(async () => { var d = await JsRuntime.InvokeAsync<ScrollData>("customFunctions.getScrollData", _cinema.Id + versionTag.Type);})">
+            <div class="overflow-x-auto">
                 <table class="border-collapse">
                     <tr>
                         @{
@@ -107,15 +111,14 @@
     [Parameter] public List<SelectOption> SelectOptions { get; set; } = [new SelectOption() { VoteOption = "Kan ikke", Color = "gray-200" }, new SelectOption() { VoteOption = "Kan godt", Color = "success" }];
 
     [Parameter] public EventCallback<ICollection<ParticipantVote>> VotesChanged { get; set; }
-    
+
     [Parameter] public bool HasAnswered { get; set; }
-    
+
     private Cinema _cinema = new();
     private List<IGrouping<string, Showtime>> _showtimesByVersionTagList = [];
-    
 
     private bool _hasChanged = false;
-    
+
     protected override void OnInitialized()
     {
         _cinema = ShowtimesByCinema.First().Cinema;
@@ -134,7 +137,7 @@
     private async Task HandleShowtimeClick(ParticipantVote voteToIncrement)
     {
         if (HasAnswered) return;
-        
+
         //find index of select option in order to increment it
         var next = (SelectOptions.FindIndex(
                        s => (s.VoteOption, s.Color) == (voteToIncrement.SelectedOption.VoteOption, voteToIncrement.SelectedOption.Color)) + 1)
@@ -155,27 +158,5 @@
 
     private string CaptitalizeStart(string s)
         => char.ToUpper(s[0]) + s[1..];
-
-    private class ScrollData
-    {
-        public double ScrollLeft { private get; init; }
-        public double ScrollWidth { private get; init; }
-        public double ClientWidth { private get; init; }
-
-        public bool HasScrollBar()
-        {
-            return ScrollWidth > ClientWidth;
-        }
-
-        public bool AllTheWayLeft()
-        {
-            return ScrollLeft == 0;
-        }
-
-        public bool AllTheWayRight()
-        {
-            return Math.Abs(ScrollLeft + ClientWidth - ScrollWidth) < 1;
-        }
-    }
 
 }

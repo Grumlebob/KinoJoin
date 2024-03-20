@@ -23,7 +23,7 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public async Task SimpleJoinEventTest()
     {
-        const int casesToInsert = 10;
+        const int casesToInsert = 1000;
 
         var joinEvents = _dataGenerator.JoinEventGenerator.Generate(casesToInsert);
 

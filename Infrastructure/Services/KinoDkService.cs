@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
 using Domain.ExternalApiModels;
-using Infrastructure.Persistence;
 using Newtonsoft.Json;
 
 namespace Infrastructure.Services;

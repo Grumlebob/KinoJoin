@@ -2,7 +2,7 @@
 
 //Global settings
 using BenchmarkDotNet.Running;
-using Infrastructure.Database;
+using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Playwright;

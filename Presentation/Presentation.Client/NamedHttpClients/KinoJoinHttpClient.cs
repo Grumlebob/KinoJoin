@@ -12,6 +12,7 @@ public interface IKinoJoinHttpClient
     Task<ICollection<Cinema>?> GetCinemasAsync();
     Task<ICollection<Movie>?> GetMoviesAsync();
     Task<ICollection<Genre>?> GetGenresAsync();
+    Task<HttpResponseMessage> UpdateBaseDataFromKinoDkAsync();
 }
 
 public class KinoJoinHttpClient : IKinoJoinHttpClient
@@ -59,5 +60,10 @@ public class KinoJoinHttpClient : IKinoJoinHttpClient
     public async Task<ICollection<Genre>?> GetGenresAsync()
     {
         return await _httpClient.GetFromJsonAsync<ICollection<Genre>>("api/kino-data/genres");
+    }
+    
+    public async Task<HttpResponseMessage> UpdateBaseDataFromKinoDkAsync()
+    {
+        return await _httpClient.GetAsync("api/kino-data/all");
     }
 }

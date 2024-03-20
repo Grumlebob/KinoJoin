@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Text;
-using Domain.ExternalApi;
+using Domain.ExternalApiModels;
+using Infrastructure.Persistence;
 using Newtonsoft.Json;
 
 namespace Infrastructure.Services;
@@ -15,7 +16,7 @@ public class KinoDkService : IKinoDkService
     public async Task<(
         List<Showtime> showtimes,
         List<Movie> moviesWithoutShowtimes
-    )> GetShowtimesFromFilters(
+        )> GetShowtimesFromFilters(
         ICollection<int>? cinemaIds = null,
         ICollection<int>? movieIds = null,
         ICollection<int>? genreIds = null,
@@ -54,24 +55,27 @@ public class KinoDkService : IKinoDkService
         var apiString = BaseUrl + filterStringBuilder;
 
         var json = await _httpClient.GetStringAsync(apiString);
-        var apiResultObject = JsonConvert.DeserializeObject<Root>(json);
+        var apiResultObject = JsonConvert.DeserializeObject<ShowtimeApiRoot>(json);
         if (apiResultObject == null)
             return ([], []);
 
         //names are stored in facets
-        var cinemaIdsToNames = apiResultObject.Content.Facets.Cinemas.Options.ToDictionary(
-            cinemaOption => cinemaOption.Key,
-            cinemaOption => cinemaOption.Value
-        );
-        var movieIdsToNames = apiResultObject.Content.Facets.Movies.Options.ToDictionary(
-            movieOption => movieOption.Key,
-            movieOption => movieOption.Value
-        );
+        var cinemaIdsToNames =
+            apiResultObject.ShowtimeApiContent.ShowtimeApiFacets.ShowtimeApiCinemas.Options.ToDictionary(
+                cinemaOption => cinemaOption.Key,
+                cinemaOption => cinemaOption.Value
+            );
+        var movieIdsToNames =
+            apiResultObject.ShowtimeApiContent.ShowtimeApiFacets.Movies.Options.ToDictionary(
+                movieOption => movieOption.Key,
+                movieOption => movieOption.Value
+            );
 
         var showtimes = new List<Showtime>();
-        var existingMovies = new Dictionary<int, Movie>(); //several cinemas may show the same movie. No need to create the movie object every time
+        var existingMovies =
+            new Dictionary<int, Movie>(); //several cinemas may show the same movie. No need to create the movie object every time
 
-        foreach (var jsonCinema in apiResultObject.Content.Content.Content)
+        foreach (var jsonCinema in apiResultObject.ShowtimeApiContent.ShowtimeApiContent.Content)
         {
             var cinemaObject = new Cinema
             {
@@ -87,14 +91,15 @@ public class KinoDkService : IKinoDkService
             {
                 if (!int.TryParse(jsonMovie.Content.FieldPlayingTime, out var duration))
                     duration = 0;
-                if (!existingMovies.TryGetValue(jsonMovie.Id, out var movieObject)) //use existing movie object or create new
+                if (!existingMovies.TryGetValue(jsonMovie.Id,
+                        out var movieObject)) //use existing movie object or create new
                 {
                     movieObject = new Movie
                     {
                         Id = jsonMovie.Id,
                         Title = movieIdsToNames[jsonMovie.Id],
                         PremiereDate = jsonMovie.Content.FieldPremiere,
-                        KinoURL = jsonMovie.Content.URL,
+                        KinoUrl = jsonMovie.Content.Url,
                         AgeRating =
                             jsonMovie.Content.FieldCensorshipIcon == null
                                 ? null
@@ -104,10 +109,10 @@ public class KinoDkService : IKinoDkService
                                 },
                         ImageUrl = jsonMovie
                             .Content
-                            .FieldPoster
+                            .ShowtimeApiFieldPoster
                             .FieldMediaImage
                             ?.Sources
-                            ?[0]
+                                ?[0]
                             .Srcset,
                         Duration = duration,
                     };
@@ -134,8 +139,8 @@ public class KinoDkService : IKinoDkService
                         {
                             var roomObject = new Room
                             {
-                                Id = jsonShowtime.RoomContent.Id,
-                                Name = jsonShowtime.RoomContent.Label
+                                Id = jsonShowtime.ShowtimeApiRoomContent.Id,
+                                Name = jsonShowtime.ShowtimeApiRoomContent.Label
                             };
 
                             var dateString = jsonDate.Date + " " + jsonShowtime.Time;
@@ -199,13 +204,13 @@ public class KinoDkService : IKinoDkService
 
         var movieApiString = BaseUrl + filterString;
         var movieJson = await _httpClient.GetStringAsync(movieApiString);
-        var root = JsonConvert.DeserializeObject<Root>(movieJson);
+        var root = JsonConvert.DeserializeObject<ShowtimeApiRoot>(movieJson);
         if (root == null)
             return (showtimes, []);
 
         List<Movie> missingMovies = [];
         foreach (
-            var movie in root.Content.Content.Content.SelectMany(cinema =>
+            var movie in root.ShowtimeApiContent.ShowtimeApiContent.Content.SelectMany(cinema =>
                 cinema.Movies.Where(movie => missingMovies.All(m => m.Id != movie.Id))
             )
         )
@@ -218,12 +223,12 @@ public class KinoDkService : IKinoDkService
                 Id = movie.Id,
                 Title = movieIdsToNames[movie.Id],
                 PremiereDate = movie.Content.FieldPremiere,
-                KinoURL = movie.Content.URL,
+                KinoUrl = movie.Content.Url,
                 AgeRating =
                     movie.Content.FieldCensorshipIcon == null
                         ? null
                         : new AgeRating { Censorship = movie.Content.FieldCensorshipIcon },
-                ImageUrl = movie.Content.FieldPoster.FieldMediaImage?.Sources?[0].Srcset,
+                ImageUrl = movie.Content.ShowtimeApiFieldPoster.FieldMediaImage?.Sources?[0].Srcset,
                 Duration = duration
             };
             missingMovies.Add(movieObject);

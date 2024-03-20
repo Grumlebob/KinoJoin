@@ -1,6 +1,7 @@
 ﻿using Application.Interfaces;
 using Carter;
 using Domain.Entities;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,6 +24,7 @@ public class KinoJoinEndpoints : ICarterModule
         kinoDataGroup.MapGet("cinemas", GetCinemas);
         kinoDataGroup.MapGet("movies", GetMovies);
         kinoDataGroup.MapGet("genres", GetGenres);
+        kinoDataGroup.MapGet("all", UpdateBaseDataFromKinoDk);
     }
 
     //Result<> is a union type, that can be all the different responses we can return, so it is easier to test.
@@ -133,6 +135,21 @@ public class KinoJoinEndpoints : ICarterModule
         catch (Exception)
         {
             return TypedResults.NotFound();
+        }
+    }
+    
+    private static async Task<Results<Ok, BadRequest<string>>> UpdateBaseDataFromKinoDk(
+        [FromServices] IFetchNewestKinoDkDataService service
+    )
+    {
+        try
+        {
+            await service.UpdateBaseDataFromKinoDk(-10,85);
+            return TypedResults.Ok();
+        }
+        catch (Exception)
+        {
+            return TypedResults.BadRequest(DefaultErrorMessage);
         }
     }
 }

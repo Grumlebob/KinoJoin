@@ -29,6 +29,7 @@ public class KinoContext : DbContext
         modelBuilder.ApplyConfiguration(new ParticipantVoteConfiguration());
         modelBuilder.ApplyConfiguration(new ParticipantConfiguration());
         modelBuilder.ApplyConfiguration(new ShowtimeConfiguration());
+        modelBuilder.ApplyConfiguration(new PlaytimeConfiguration());
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

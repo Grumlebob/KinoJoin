@@ -204,12 +204,12 @@ public class JoinEventService(KinoContext context) : IJoinEventService
     private async Task HandleStaticKinoData(JoinEvent joinEvent)
     {
         var cinemaIds = joinEvent.Showtimes.Select(st => st.Cinema.Id).Distinct().ToList();
-        //var playtimeStartTimes = joinEvent.Showtimes.Select(st => st.Playtime.StartTime).Distinct().ToList();
+        var playtimeStartTimes = joinEvent.Showtimes.Select(st => st.Playtime.StartTime).Distinct();
         var versionTypes = joinEvent.Showtimes.Select(st => st.VersionTag.Type).Distinct().ToList();
         var roomIds = joinEvent.Showtimes.Select(st => st.Room.Id).Distinct().ToList();
-
+        var all = await context.Playtimes.ToListAsync();
         var existingCinemas = await context.Cinemas.Where(c => cinemaIds.Contains(c.Id)).ToDictionaryAsync(c => c.Id);
-        //var existingPlaytimes = await context.Playtimes.Where(p => playtimeStartTimes.Contains(p.StartTime)).ToDictionaryAsync(p => p.StartTime);
+        var existingPlaytimes = await context.Playtimes.Where(p => playtimeStartTimes.Contains(p.StartTime)).ToDictionaryAsync(p => p.StartTime);
         var existingVersionTags =
             await context.Versions.Where(v => versionTypes.Contains(v.Type)).ToDictionaryAsync(v => v.Type);
         var existingRooms = await context.Rooms.Where(r => roomIds.Contains(r.Id)).ToDictionaryAsync(r => r.Id);
@@ -228,27 +228,27 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
             //For some reason context.playtimes.Where doesn't work. It returns null.
             // Handle Playtime
-            //if (!existingPlaytimes.TryGetValue(showtime.Playtime.StartTime, out var existingPlaytime))
-            //{
-            //    existingPlaytime = new Playtime { StartTime = showtime.Playtime.StartTime };
-            //    context.Playtimes.Add(existingPlaytime);
-            //    existingPlaytimes[existingPlaytime.StartTime] = existingPlaytime;
-            //}
-            //showtime.Playtime = existingPlaytime;
+            if (!existingPlaytimes.TryGetValue(showtime.Playtime.StartTime, out var existingPlaytime))
+            {
+                existingPlaytime = new Playtime { StartTime = showtime.Playtime.StartTime };
+                context.Playtimes.Add(existingPlaytime);
+                existingPlaytimes[existingPlaytime.StartTime] = existingPlaytime;
+            }
+            showtime.Playtime = existingPlaytime;
 
-            // Handle Playtime
-            var existingPlaytime = await context.Playtimes.FirstOrDefaultAsync(p =>
-                p.StartTime == showtime.Playtime.StartTime
-            );
-            if (existingPlaytime != null)
-            {
-                context.Playtimes.Attach(existingPlaytime);
-                showtime.Playtime = existingPlaytime;
-            }
-            else
-            {
-                context.Playtimes.Add(showtime.Playtime);
-            }
+            //// Handle Playtime
+            //var existingPlaytime = await context.Playtimes.FirstOrDefaultAsync(p =>
+            //    p.StartTime == showtime.Playtime.StartTime
+            //);
+            //if (existingPlaytime != null)
+            //{
+            //    context.Playtimes.Attach(existingPlaytime);
+            //    showtime.Playtime = existingPlaytime;
+            //}
+            //else
+            //{
+            //    context.Playtimes.Add(showtime.Playtime);
+            //}
 
             // Handle VersionTag
             if (!existingVersionTags.TryGetValue(showtime.VersionTag.Type, out var existingVersionTag))

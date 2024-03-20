@@ -39,10 +39,10 @@
                     <tr>
                         @{
                             // Determine the start and end dates of the interval
-                            var startDate = Showtimes.Min(s => s.Playtime.StartTime.ToLocalTime());
-                            var endDate = Showtimes.Max(s => s.Playtime.StartTime.ToLocalTime());
+                            var startDate = Showtimes.Min(s => s.Playtime.StartTime);
+                            var endDate = Showtimes.Max(s => s.Playtime.StartTime);
 
-                            var latestDateForSpecificCinemaVersion = showtimesByVersionTag.Max(s => s.Playtime.StartTime.ToLocalTime().Date);
+                            var latestDateForSpecificCinemaVersion = showtimesByVersionTag.Max(s => s.Playtime.StartTime.Date);
 
                             // Loop through each date in the interval
                             for (var date = startDate.Date; date <= endDate.Date && date <= latestDateForSpecificCinemaVersion.Date; date = date.AddDays(1))
@@ -57,16 +57,16 @@
                         {
                             var localDate = date;
                             //Check if it exists if not, else
-                            if (showtimesByVersionTag.Any(s => s.Playtime.StartTime.ToLocalTime().Date == localDate))
+                            if (showtimesByVersionTag.Any(s => s.Playtime.StartTime.Date == localDate))
                             {
-                                var dateColumn = showtimesByVersionTag.Where(s => s.Playtime.StartTime.ToLocalTime().Date == localDate).ToList();
+                                var dateColumn = showtimesByVersionTag.Where(s => s.Playtime.StartTime.Date == localDate).ToList();
                                 <td class="p-2 align-top">
                                     @foreach (var showtime in dateColumn)
                                     {
                                         var vote = Votes.First(v => v.ShowtimeId == showtime.Id);
-                                        <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center  select-none rounded shadow-inset bg-@vote.SelectedOption.Color @(HasAnswered ? "":"hover:border hover:border-gray-300 cursor-pointer")" value="@showtime.Playtime.StartTime.ToLocalTime()" @onclick="@(() => HandleShowtimeClick(vote))">
+                                        <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center  select-none rounded shadow-inset bg-@vote.SelectedOption.Color @(HasAnswered ? "":"hover:border hover:border-gray-300 cursor-pointer")" value="@showtime.Playtime.StartTime" @onclick="@(() => HandleShowtimeClick(vote))">
                                             <div class="mb-1 text-center text-sm line-clamp-1"> @showtime.Room.Name </div >
-                                            <div class="text-lg font-bold"> @showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm", CultureInfo.InvariantCulture) </div > <!--showtime - time-->
+                                            <div class="text-lg font-bold"> @showtime.Playtime.StartTime.ToString("HH:mm", CultureInfo.InvariantCulture) </div > <!--showtime - time-->
                                         </div>
                                     }
                                 </td>

@@ -30,7 +30,7 @@
     {
         var url = "https://calendar.google.com/calendar/u/0/r/eventedit?"
                   + $"text={Event.Title}"
-                  + $"&dates={Showtime.Playtime.StartTime.ToLocalTime().ToString("yyyyMMddTHHmmss")}/{Showtime.Playtime.StartTime.ToLocalTime().AddMinutes((double)Showtime.Movie.Duration).ToString("yyyyMMddTHHmmss")}"
+                  + $"&dates={Showtime.Playtime.StartTime.ToString("yyyyMMddTHHmmss")}/{Showtime.Playtime.StartTime.AddMinutes((double)Showtime.Movie.Duration).ToString("yyyyMMddTHHmmss")}"
                   + $"&location={Showtime.Cinema.Name}"
                   + $"&details={Event.Description} %0AFilm: {Showtime.Movie.Title}, {Showtime.Room.Name}, {Showtime.VersionTag.Type}";
 

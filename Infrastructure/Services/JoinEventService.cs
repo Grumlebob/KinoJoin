@@ -119,7 +119,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             return newId;
         }
     }
-
+    
     private async Task<int> UpdateJoinEventAsync(JoinEvent updatedJoinEvent)
     {
         await context.JoinEvents.ExecuteUpdateAsync(setters =>
@@ -319,19 +319,18 @@ public class JoinEventService(KinoContext context) : IJoinEventService
     }
 
 
+    //OPTIMIZED DB CALLS
     private async Task HandleHost(JoinEvent joinEvent)
     {
         var existingHost = await context.Hosts.FindAsync(joinEvent.Host.AuthId);
-        if (existingHost != null)
-        {
-            context.Hosts.Attach(existingHost);
-            joinEvent.Host = existingHost;
-        }
-        else
+        if (existingHost == null)
         {
             context.Hosts.Add(joinEvent.Host);
         }
-
+        else
+        {
+            joinEvent.Host = existingHost;
+        }
         await context.SaveChangesAsync();
     }
 
@@ -411,28 +410,47 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         joinEvent.SelectOptions = selectOptionsToAttach;
     }
 
+    //OPTIMIZED DB CALLS
+    //It will first check the joinEvent.SelectOptions, as that list has been processed in previous method and includes references to DB entities
     private async Task HandleDefaultSelectOptions(JoinEvent joinEvent)
     {
-        var existingDefaultSelectOption = await context.SelectOptions.FirstOrDefaultAsync(so =>
-            so.VoteOption == joinEvent.DefaultSelectOption.VoteOption
-            && so.Color == joinEvent.DefaultSelectOption.Color
-        );
+        var defaultSelectOption = joinEvent.DefaultSelectOption;
+    
+        // Check if the DefaultSelectOption is already in the prefetched list
+        var existingDefaultSelectOption = joinEvent.SelectOptions
+            .FirstOrDefault(so => so.VoteOption == defaultSelectOption.VoteOption
+                                  && so.Color == defaultSelectOption.Color);
 
-        // Existing option found, use it for the JoinEvent
         if (existingDefaultSelectOption != null)
         {
+            // Use the existing option
             joinEvent.DefaultSelectOption = existingDefaultSelectOption;
             joinEvent.DefaultSelectOptionId = existingDefaultSelectOption.Id;
         }
         else
         {
-            // No existing option found, add new DefaultSelectOption to the database
-            context.SelectOptions.Add(joinEvent.DefaultSelectOption);
-            await context.SaveChangesAsync(); // Ensure the DefaultSelectOption gets an ID
-            joinEvent.DefaultSelectOptionId = joinEvent.DefaultSelectOption.Id;
+            // Check if it exists in the database (in case it's not in the prefetched list)
+            existingDefaultSelectOption = await context.SelectOptions
+                .FirstOrDefaultAsync(so => so.VoteOption == defaultSelectOption.VoteOption
+                                           && so.Color == defaultSelectOption.Color);
+
+            if (existingDefaultSelectOption != null)
+            {
+                // Use the existing option from the database
+                joinEvent.DefaultSelectOption = existingDefaultSelectOption;
+                joinEvent.DefaultSelectOptionId = existingDefaultSelectOption.Id;
+            }
+            else
+            {
+                // It doesn't exist in either the prefetched list or the database, so add it
+                context.SelectOptions.Add(defaultSelectOption);
+                await context.SaveChangesAsync();
+                joinEvent.DefaultSelectOptionId = defaultSelectOption.Id;
+            }
         }
     }
 
+    //OPTIMIZED DB CALLS
     private async Task<int> HandleJoinEvent(JoinEvent joinEvent)
     {
         var newJoinEvent = new JoinEvent

@@ -38,9 +38,9 @@ public class KinoJoinEndpoints : ICarterModule
             var result = await joinEventService.UpsertJoinEventAsync(joinEvent);
             return TypedResults.Ok(result);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return TypedResults.BadRequest(DefaultErrorMessage);
+            return TypedResults.BadRequest(e.Message);
         }
     }
 

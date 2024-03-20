@@ -144,7 +144,7 @@ public class KinoJoinEndpoints : ICarterModule
     {
         try
         {
-            await service.UpdateBaseDataFromKinoDk(-10,85);
+            await service.UpdateBaseDataFromKinoDk(1,71);
             return TypedResults.Ok();
         }
         catch (Exception)

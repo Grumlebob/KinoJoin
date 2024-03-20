@@ -388,7 +388,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         joinEvent.Showtimes = showtimesWithEfCoreTracking;
     }
 
-    private async Task HandleSelectOptions2(JoinEvent joinEvent)
+    private async Task HandleSelectOptions(JoinEvent joinEvent)
     {
         await context.SelectOptions.UpsertRange(joinEvent.SelectOptions).On(s => new { s.VoteOption, s.Color })
             .RunAsync();
@@ -400,35 +400,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                 eventSo.VoteOption == so.VoteOption && eventSo.Color == so.Color)).ToList();
 
         joinEvent.SelectOptions = upsertedSelectOptions;
-    }
-
-    private async Task HandleSelectOptions(JoinEvent joinEvent)
-    {
-        var allSelectOptions = await context.SelectOptions.ToListAsync();
-
-        var selectOptionsToAttach = new List<SelectOption>();
-
-        foreach (var selectOption in joinEvent.SelectOptions)
-        {
-            var existingSelectOption = allSelectOptions.FirstOrDefault(so =>
-                so.VoteOption == selectOption.VoteOption && so.Color == selectOption.Color);
-
-            if (existingSelectOption != null)
-            {
-                selectOption.Id = existingSelectOption.Id;
-                selectOptionsToAttach.Add(existingSelectOption); // Attach the existing one
-                context.Entry(existingSelectOption).CurrentValues.SetValues(selectOption); // Update the existing entity
-            }
-            else
-            {
-                context.SelectOptions.Add(selectOption);
-                selectOptionsToAttach.Add(selectOption);
-            }
-        }
-
-        joinEvent.SelectOptions = selectOptionsToAttach;
-
-        await context.SaveChangesAsync();
     }
 
     //OPTIMIZED DB CALLS

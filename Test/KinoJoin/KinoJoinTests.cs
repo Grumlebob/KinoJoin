@@ -23,7 +23,7 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public async Task SimpleJoinEventTest()
     {
-        const int casesToInsert = 10;
+        const int casesToInsert = 100;
 
         var joinEvents = _dataGenerator.JoinEventGenerator.Generate(casesToInsert);
 
@@ -140,7 +140,45 @@ public class KinoJoinTests : IAsyncLifetime
         var joinEventFromApiUpdatedParticipantName =
             await getResponseUpdatedParticipantName.Content.ReadFromJsonAsync<JoinEvent>();
         joinEventFromApiUpdatedParticipantName.Should().NotBeNull();
-        joinEventFromApiUpdatedParticipantName.Participants.First().Nickname.Should().Be("Updated");
+        var participant = joinEventFromApiUpdatedParticipantName.Participants.First();
+        participant.Nickname.Should().Be("Updated");
+
+        //Test DeleteParticipantAsync. eventGroup.MapDelete("{eventId}/participants/{participantId}", DeleteParticipant);
+        JoinEvent joinEventToDelete = new();
+        //find joinEventWithAtleast 1 participant
+        for (var i = casesToInsert - 1; i >= 0; i--)
+        {
+            var getResponse = await _client.GetAsync($"api/events/{i}");
+            var joinEventFromApi = await getResponse.Content.ReadFromJsonAsync<JoinEvent>();
+            if (joinEventFromApi.Participants.Count > 0)
+            {
+                joinEventToDelete = joinEventFromApi;
+                break;
+            }
+        }
+        //Get count of participants
+        var participantCountBeforeDelete = joinEventToDelete.Participants.Count;
+        //Get the last participant
+        var participantToDelete = joinEventToDelete.Participants.Last();
+        //Delete the participant
+        var deleteParticipantResponse = await _client.DeleteAsync(
+            $"api/events/{joinEventToDelete.Id}/participants/{participantToDelete.Id}"
+        );
+        deleteParticipantResponse.EnsureSuccessStatusCode();
+
+        //Check that the participant got deleted
+        var getResponseDeletedParticipant = await _client.GetAsync(
+            $"api/events/{joinEventToDelete.Id}"
+        );
+        var joinEventFromApiDeletedParticipant =
+            await getResponseDeletedParticipant.Content.ReadFromJsonAsync<JoinEvent>();
+        var participantCountAfterDelete = joinEventFromApiDeletedParticipant.Participants.Count;
+        participantCountAfterDelete.Should().Be(participantCountBeforeDelete - 1);
+        //check that participantToDelete is not in the list of participants
+        joinEventFromApiDeletedParticipant
+            .Participants.Any(p => p.Id == participantToDelete.Id)
+            .Should()
+            .BeFalse();
     }
 
     //We don't care about the InitializeAsync method, but needed to implement the IAsyncLifetime interface

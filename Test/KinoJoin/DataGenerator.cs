@@ -22,7 +22,12 @@ public class DataGenerator
     {
         _playtimeGenerator = new Faker<Playtime>().RuleFor(
             p => p.StartTime,
-            f => f.Date.Future().ToUniversalTime()
+            f =>
+            {
+                var d = f.Date.Future();
+                //remove precision down to seconds because ef core is not precise down to a few ticks differences
+                return d.AddTicks(-(d.Ticks % TimeSpan.TicksPerSecond));
+            }
         );
 
         _versionTagGenerator = new Faker<VersionTag>().RuleFor(v => v.Type, f => f.Lorem.Word());

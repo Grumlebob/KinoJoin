@@ -169,11 +169,11 @@
                     Event.Participants?
                         .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)
                             .Sum(v => Event.SelectOptions.FindIndex(s => s.Id == v.SelectedOptionId))))
-                .ThenBy(s => s.Playtime.StartTime.ToLocalTime()).ToList();
+                .ThenBy(s => s.Playtime.StartTime).ToList();
         }
         else
         {
-            _orderedShowtimes = Event.Showtimes.OrderBy(s => s.Playtime.StartTime.ToLocalTime()).ToList();
+            _orderedShowtimes = Event.Showtimes.OrderBy(s => s.Playtime.StartTime).ToList();
         }
     }
     

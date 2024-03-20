@@ -16,13 +16,7 @@ public class JoinEvent
     public List<SelectOption> SelectOptions { get; set; } = [];
     public int DefaultSelectOptionId { get; set; }
 
-    private DateTime _deadline;
-
-    public DateTime Deadline
-    {
-        get => _deadline;
-        set => _deadline = value.Kind == DateTimeKind.Utc ? value : value.ToUniversalTime();
-    }
+    public DateTime Deadline { get; set; }
 
     [ForeignKey("HostId")]
     public Host? Host { get; set; }
@@ -87,13 +81,7 @@ public class Playtime
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
-    private DateTime _startTime;
-
-    public DateTime StartTime
-    {
-        get => _startTime;
-        set => _startTime = value.Kind == DateTimeKind.Utc ? value : value.ToUniversalTime();
-    }
+    public DateTime StartTime { get; set; }
 }
 
 [Index(nameof(Type), IsUnique = true)]

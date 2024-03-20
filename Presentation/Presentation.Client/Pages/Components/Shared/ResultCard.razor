@@ -32,7 +32,7 @@
     <div class="flex w-full items-center gap-1">
         <DateIcon Class="fill-black"></DateIcon>
         <p class="truncate font-normal ...">
-            @Showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM") - kl. @Showtime.Playtime.StartTime.ToLocalTime().ToString("HH:mm") - @Showtime.Playtime.StartTime.ToLocalTime().AddMinutes((double)Showtime.Movie.Duration).ToString("HH:mm")
+            @Showtime.Playtime.StartTime.ToString("dd. MMM") - kl. @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes((double)Showtime.Movie.Duration).ToString("HH:mm")
         </p>
     </div>
     <div class="flex w-full items-center gap-1">
@@ -159,7 +159,7 @@
     private async Task GoToMailToLink(Showtime showtime)
     {
         var mails = Event.Participants.Where(p => p.Email is not null).Select(p => p.Email);
-        var text = Event.Description + "\n" + "Valgt forestilling: " + showtime.Movie.Title + ", " + showtime.Cinema.Name + ", " + showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM HH:mm");
+        var text = Event.Description + "\n" + "Valgt forestilling: " + showtime.Movie.Title + ", " + showtime.Cinema.Name + ", " + showtime.Playtime.StartTime.ToString("dd. MMM HH:mm");
         await JsRuntime.InvokeVoidAsync("open", $"mailto:{string.Join(",", mails)}?subject={Event.Title}&body={text}", "_blank");
     }
 
@@ -170,7 +170,7 @@
         var data = new
         {
             title = Event.Title,
-            text = Event.Description + "\n" + "Valgt forestilling: " + showtime.Movie.Title + ", " + showtime.Cinema.Name + ", " + showtime.Playtime.StartTime.ToLocalTime().ToString("dd. MMM HH:mm")
+            text = Event.Description + "\n" + "Valgt forestilling: " + showtime.Movie.Title + ", " + showtime.Cinema.Name + ", " + showtime.Playtime.StartTime.ToString("dd. MMM HH:mm")
         };
 
         await JsRuntime.InvokeVoidAsync("navigator.share", data);

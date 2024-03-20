@@ -1,3 +1,5 @@
+@inject IJSRuntime JsRuntime
+
 <style>
     .empty-showtime {
         background-image: repeating-linear-gradient(
@@ -28,14 +30,21 @@
 <Virtualize Items="_showtimesByVersionTagList" Context="showtimesByVersionTag" OverscanCount="5" ItemSize="300">
     <ItemContent>
         @{ var versionTag = showtimesByVersionTag.First().VersionTag; }
-        <div class="mb-4 max-w-screen-md">
+        <div class="mb-4 max-w-screen-md relative">
             <!-- Version -->
             <div class="w-fit">
                 <p class="bg-gray-200 px-2 py-1 font-label">@versionTag.Type</p>
             </div>
-            <!-- Showtimes -->
-            <div class="overflow-x-auto">
-                <table class="border-collapse">
+
+            <!-- Blur left edge (100%-30px to not cover scroll bar) -->
+            <div class="absolute rounded h-[calc(100%-50px)] w-10 bg-gradient-to-r from-white items-center"></div>
+
+            <!-- Blur right edge -->
+            <div class="absolute rounded right-0 h-[calc(100%-50px)] w-10 bg-gradient-to-l from-white items-center"></div>
+
+            <!-- Showtimes (padding LR and inline-block makes room for blurs to disappear wen scrolled all the way left or right)-->
+            <div class="overflow-x-auto px-10">
+                <table class="border-collapse inline-block">
                     <tr>
                         @{
                             // Determine the start and end dates of the interval
@@ -64,7 +73,7 @@
                                     @foreach (var showtime in dateColumn)
                                     {
                                         var vote = Votes.First(v => v.ShowtimeId == showtime.Id);
-                                        <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center  select-none rounded shadow-inset bg-@vote.SelectedOption.Color @(HasAnswered ? "":"hover:border hover:border-gray-300 cursor-pointer")" value="@showtime.Playtime.StartTime" @onclick="@(() => HandleShowtimeClick(vote))">
+                                        <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center  select-none rounded shadow-inset bg-@vote.SelectedOption.Color @(HasAnswered ? "" : "hover:border hover:border-gray-300 cursor-pointer")" value="@showtime.Playtime.StartTime" @onclick="@(() => HandleShowtimeClick(vote))">
                                             <div class="mb-1 text-center text-sm line-clamp-1"> @showtime.Room.Name </div >
                                             <div class="text-lg font-bold"> @showtime.Playtime.StartTime.ToString("HH:mm", CultureInfo.InvariantCulture) </div > <!--showtime - time-->
                                         </div>
@@ -101,14 +110,14 @@
     [Parameter] public List<SelectOption> SelectOptions { get; set; } = [new SelectOption() { VoteOption = "Kan ikke", Color = "gray-200" }, new SelectOption() { VoteOption = "Kan godt", Color = "success" }];
 
     [Parameter] public EventCallback<ICollection<ParticipantVote>> VotesChanged { get; set; }
-    
-    private Cinema _cinema = new();
-    private List<IGrouping<string, Showtime>> _showtimesByVersionTagList = [];
-    
+
     [Parameter] public bool HasAnswered { get; set; }
 
+    private Cinema _cinema = new();
+    private List<IGrouping<string, Showtime>> _showtimesByVersionTagList = [];
+
     private bool _hasChanged = false;
-    
+
     protected override void OnInitialized()
     {
         _cinema = ShowtimesByCinema.First().Cinema;
@@ -127,7 +136,7 @@
     private async Task HandleShowtimeClick(ParticipantVote voteToIncrement)
     {
         if (HasAnswered) return;
-        
+
         //find index of select option in order to increment it
         var next = (SelectOptions.FindIndex(
                        s => (s.VoteOption, s.Color) == (voteToIncrement.SelectedOption.VoteOption, voteToIncrement.SelectedOption.Color)) + 1)

@@ -1909,10 +1909,6 @@ video {
     min-width: 24rem;
   }
 
-  .md\:max-w-40 {
-    max-width: 10rem;
-  }
-
   .md\:max-w-md {
     max-width: 28rem;
   }

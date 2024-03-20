@@ -12,13 +12,13 @@
     return;
 }
 
-<div class="flex justify-between mb-6">
+<div class="mb-6 flex justify-between">
     <h1 class="text-2xl font-bold leading-tight text-secondary md:text-2xl lg:text-3xl">
         Velkommen til KinoJoin - Planlæg dit biograf event her
     </h1>
     @if (_isLoggedInUserAdmin)
     {
-        <button class="rounded-full p-1 text-black bg-yellow-100 hover:bg-success-dark focus:outline-none focus:ring-2 focus:ring-green-400" @onclick="UpdateBaseDataFromKinoDk">Update from kino.dk</button>
+        <button class="rounded-full bg-yellow-100 p-1 text-black hover:bg-success-dark focus:outline-none focus:ring-2 focus:ring-green-400" @onclick="UpdateBaseDataFromKinoDk">Update from kino.dk</button>
     }
 </div>
 
@@ -150,14 +150,14 @@
         </div>
     </div>
     <div class="flex justify-between">
-        <div class="hidden md:block h-10">
+        <div class="hidden h-10 md:block">
             @_filterInformationBox
         </div>
-        <div class="mt-4 flex w-full h-10 justify-end gap-2 text-no-wrap md:w-auto">
-            <button @onclick="async () => { _selectedCinemas.Clear(); _selectedMovies.Clear(); _selectedGenres.Clear(); await HandleShowtimeFiltersChanged(); }" class="w-1/2 rounded-full border border-black px-6 shadow transition duration-300 font-label hover:bg-gray-700 hover:text-white md:max-w-40">
+        <div class="mt-4 flex w-full justify-end gap-2 text-no-wrap md:w-auto">
+            <button @onclick="async () => { _selectedCinemas.Clear(); _selectedMovies.Clear(); _selectedGenres.Clear(); await HandleShowtimeFiltersChanged(); }" class="w-fit p-2 rounded-full border border-black shadow transition duration-300 font-label hover:bg-gray-700 hover:text-white">
                 Ryd filtrer
             </button>
-            <button @onclick="HandleShowtimeFiltersChanged" class="w-1/2 rounded-full border border-transparent px-6 py-2 text-base font-medium text-white shadow-sm bg-secondary text-nowrap hover:bg-gray-800 md:max-w-40">
+            <button @onclick="HandleShowtimeFiltersChanged" class="w-fit p-2 rounded-full border border-transparent text-white shadow-sm font-label bg-secondary text-nowrap hover:bg-gray-800">
                 Opdater filtrer
             </button>
         </div>

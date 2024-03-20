@@ -36,16 +36,19 @@
                 <p class="bg-gray-200 px-2 py-1 font-label">@versionTag.Type</p>
             </div>
             
-            <!-- Blur left edge (100%-20px to not cover scroll bar) -->
-            <div class="h-[calc(100%-20px)] w-10 absolute left-0 bg-gradient-to-r from-white rounded-md"></div>
+            <!-- Blur left edge (100%-30px to not cover scroll bar) -->
+            <div class="absolute rounded h-[calc(100%-50px)] w-10 bg-gradient-to-r from-white items-center">
+                <button>L</button>
+            </div>
 
             <!-- Blur right edge -->
-            <div class="h-[calc(100%-20px)] w-10 absolute right-0 bg-gradient-to-l from-white rounded-md"></div>
-
-            }
-            <!-- Showtimes -->
-            <div class="overflow-x-auto">
-                <table class="border-collapse">
+            <div class="absolute rounded right-0 h-[calc(100%-50px)] w-10 bg-gradient-to-l from-white items-center">
+                <button>R</button>
+            </div>
+            
+            <!-- Showtimes (padding LR and inline-block makes room for blurs to disappear wen scrolled all the way left or right)-->
+            <div class="overflow-x-auto px-10">
+                <table class="border-collapse inline-block">
                     <tr>
                         @{
                             // Determine the start and end dates of the interval

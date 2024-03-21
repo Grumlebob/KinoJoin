@@ -285,7 +285,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             // Handle Room
             if (!existingRooms.TryGetValue(showtime.Room.Id, out var existingRoom))
             {
-                existingRoom = new Room { Id = showtime.Room.Id };
+                existingRoom = new Room { Id = showtime.Room.Id, Name = showtime.Room.Name };
                 context.Rooms.Add(existingRoom);
                 existingRooms[existingRoom.Id] = existingRoom;
             }

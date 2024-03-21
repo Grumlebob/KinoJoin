@@ -55,6 +55,7 @@ public class KinoJoinEndpoints : ICarterModule
         }
         catch (Exception e)
         {
+            //TODO cant return exception message to client, should be logged instead
             return TypedResults.BadRequest(e.Message);
         }
     }

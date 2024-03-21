@@ -4,21 +4,20 @@
 @inject IKinoJoinHttpClient KinoJoinHttpClient
 @if (!_answerSaved && !AlreadyAnswered)
 {
-    <EditForm OnValidSubmit="@(async context => { await SaveParticipantAnswer(false, false); })" class="w-full space-y-4 md:mt-7 md:w-80" Model="@_participant">
-        <DataAnnotationsValidator  />
-       
+    <EditForm Model="@_participant" OnValidSubmit="@(async context => { await SaveParticipantAnswer(false, false); })" class="w-full space-y-4 md:mt-7 md:w-80">
+        <DataAnnotationsValidator/>
         
         <h3 class="font-bold">Dine oplysninger</h3>
         <div class="text-error">
-        <ValidationSummary />
+            <ValidationSummary/>
         </div>
-        <InputText class="w-full rounded-md border p-2"  @bind-Value="@_participant.Nickname" placeholder="Indtast dit navn" required/>
+        <InputText class="w-full rounded-md border p-2" @bind-Value="@_participant.Nickname" placeholder="Indtast dit navn" required/>
 
-        <InputText class="w-full rounded-md border p-2"  @bind-Value="@_participant.Email" placeholder="Skriv din email (valgfrit)" type="email"/>
+        <InputText class="w-full rounded-md border p-2" @bind-Value="@_participant.Email" placeholder="Skriv din email (valgfrit)" type="email"/>
         <div>
             <InputTextArea class="h-32 w-full resize-none rounded-md border p-2" @bind-Value="@_participant.Note" placeholder="Note (valgfrit)"/>
         </div>
-        <button class="rounded-full p-2 text-white bg-primary hover:bg-primary-dark"  type="submit">
+        <button class="rounded-full p-2 text-white bg-primary hover:bg-primary-dark" type="submit">
             Send svar
         </button>
     </EditForm>

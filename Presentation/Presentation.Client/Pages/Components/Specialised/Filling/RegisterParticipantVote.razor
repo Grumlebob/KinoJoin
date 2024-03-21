@@ -1,3 +1,5 @@
+@using System.Reflection
+@using Domain.Helpers
 @inject IJSRuntime JsRuntime
 @inject NavigationManager NavigationManager
 @inject IKinoJoinHttpClient KinoJoinHttpClient
@@ -5,10 +7,10 @@
 {
     <EditForm class="w-full space-y-4 md:mt-7 md:w-80" Model="@_participant">
         <h3 class="font-bold">Dine oplysninger</h3>
-        <InputText class="w-full rounded-md border p-2" @bind-Value="@_participant.Nickname" placeholder="Indtast dit navn" required/>
-        <InputText class="w-full rounded-md border p-2" @bind-Value="@_participant.Email" placeholder="Skriv din email (valgfrit)" type="email"/>
+        <InputText class="w-full rounded-md border p-2" maxLength="@(GettingAttributeHelper.GetMaxLength<Participant>(p => p.Nickname))" @bind-Value="@_participant.Nickname" placeholder="Indtast dit navn" required/>
+        <InputText class="w-full rounded-md border p-2" maxLength="@(GettingAttributeHelper.GetMaxLength<Participant>(p => p.Email))" @bind-Value="@_participant.Email" placeholder="Skriv din email (valgfrit)" type="email"/>
         <div>
-            <InputTextArea class="h-32 w-full resize-none rounded-md border p-2" @bind-Value="@_participant.Note" placeholder="Note (valgfrit)"/>
+            <InputTextArea  maxLength="@(GettingAttributeHelper.GetMaxLength<Participant>(p => p.Note))" class="h-32 w-full resize-none rounded-md border p-2" @bind-Value="@_participant.Note" placeholder="Note (valgfrit)"/>
         </div>
         <button class="rounded-full p-2 text-white bg-primary hover:bg-primary-dark" @onclick="@(async () => { await SaveParticipantAnswer(false, false); })" type="submit">
             Send svar

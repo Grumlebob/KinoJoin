@@ -1,5 +1,6 @@
 ﻿@page "/"
 @page "/create-event/{FilterString?}"
+@using Domain.Helpers
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
@@ -27,12 +28,12 @@
 <dialog id="eventDetailsDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
     <form @onsubmit="ValidateAndOpenConfirmationDialog">
         <p class="text-lg font-semibold mb-0.5">Event Titel</p>
-        <input class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-4 md:w-96"
+        <input  maxLength="@(GettingAttributeHelper.GetMaxLength<JoinEvent>(e => e.Title))" class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-4 md:w-96"
                type="text" placeholder="Titel" required
                @bind="_joinEvent.Title"/>
 
         <p class="text-lg font-semibold mb-0.5">Event Beskrivelse</p>
-        <textarea class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-4 md:w-96"
+        <textarea maxLength="@(GettingAttributeHelper.GetMaxLength<JoinEvent>(e => e.Description))" class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-4 md:w-96"
                   placeholder="Beskrivelse (valgfrit)" 
                   @bind="@_joinEvent.Description"></textarea>
 

@@ -6,9 +6,12 @@ public class JoinEvent
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-
     public string HostId { get; set; } = string.Empty;
+    
+    [MaxLength(60)]
     public string Title { get; set; } = string.Empty;
+    
+    [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
     public List<Showtime> Showtimes { get; set; } = [];
     public int? ChosenShowtimeId { get; set; }
@@ -133,8 +136,14 @@ public class Participant
 
     public string? AuthId { get; set; }
     public int JoinEventId { get; set; }
+    
+    [MaxLength(60)]
     public string Nickname { get; set; } = string.Empty;
+    
+    [MaxLength(60)]
     public string? Email { get; set; }
+    
+    [MaxLength(500)]
     public string? Note { get; set; }
     public ICollection<ParticipantVote> VotedFor { get; set; } = [];
 }

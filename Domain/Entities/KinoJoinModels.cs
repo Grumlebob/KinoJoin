@@ -8,10 +8,10 @@ public class JoinEvent
     public int Id { get; set; }
     public string HostId { get; set; } = string.Empty;
     
-    [MaxLength(60)]
+    [MaxLength(60,ErrorMessage = "Titel kan høst være 60 tegn.")]
     public string Title { get; set; } = string.Empty;
     
-    [MaxLength(500)]
+    [MaxLength(500,ErrorMessage = "Beskrivelse kan høst være 500 tegn.")]
     public string Description { get; set; } = string.Empty;
     public List<Showtime> Showtimes { get; set; } = [];
     public int? ChosenShowtimeId { get; set; }
@@ -137,13 +137,13 @@ public class Participant
     public string? AuthId { get; set; }
     public int JoinEventId { get; set; }
     
-    [MaxLength(60)]
+    [MaxLength(60, ErrorMessage = "Navn kan højst være 60 tegn.")]
     public string Nickname { get; set; } = string.Empty;
     
-    [MaxLength(60)]
+    [MaxLength(60, ErrorMessage = "Email kan høst være 60 tegn.")]
     public string? Email { get; set; }
     
-    [MaxLength(500)]
+    [MaxLength(500, ErrorMessage = "Note kan høst være 500 tegn.")]
     public string? Note { get; set; }
     public ICollection<ParticipantVote> VotedFor { get; set; } = [];
 }

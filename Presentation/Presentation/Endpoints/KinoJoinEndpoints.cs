@@ -35,19 +35,21 @@ public class KinoJoinEndpoints : ICarterModule
         [FromServices] IJoinEventService joinEventService
     )
     {
-        
         //Validate joinEvent
         var validator = new DataAnnotationsValidator.DataAnnotationsValidator();
         var validationResults = new List<ValidationResult>();
         validator.TryValidateObjectRecursive(joinEvent, validationResults);
-        
+
         //If validation fails, return BadRequest with error messages
         if (validationResults.Any())
         {
-            var errorMessage = String.Join(" ", validationResults.Select(x => x.ErrorMessage).ToList());
+            var errorMessage = String.Join(
+                " ",
+                validationResults.Select(x => x.ErrorMessage).ToList()
+            );
             return TypedResults.BadRequest(errorMessage);
         }
-        
+
         try
         {
             var result = await joinEventService.UpsertJoinEventAsync(joinEvent);

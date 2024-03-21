@@ -71,7 +71,7 @@ public class DataGenerator
             .RuleFor(p => p.AuthId, f => f.Random.Uuid().ToString())
             .RuleFor(p => p.Nickname, f => f.Internet.UserName())
             .RuleFor(p => p.Email, f => f.Internet.Email())
-            .RuleFor(p => p.Note, f => f.Lorem.Sentence());
+            .RuleFor(p => p.Note, f => f.Lorem.Sentence(3));
 
         _selectOptionGenerator = new Faker<SelectOption>()
             .RuleFor(o => o.VoteOption, f => f.Lorem.Word())
@@ -84,8 +84,8 @@ public class DataGenerator
             var joinEvent = new JoinEvent
             {
                 HostId = f.Random.Uuid().ToString(),
-                Title = f.Lorem.Sentence(),
-                Description = f.Lorem.Paragraph(),
+                Title = f.Lorem.Sentence(3),
+                Description = f.Lorem.Paragraph(3),
                 Showtimes = _showtimeGenerator.Generate(f.Random.Int(5, 5)),
                 Participants = participants,
                 SelectOptions = _selectOptionGenerator.Generate(f.Random.Int(2, 5)),

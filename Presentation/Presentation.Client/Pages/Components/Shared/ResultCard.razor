@@ -95,8 +95,8 @@
     <div class="flex flex-col items-end gap-4">
         <h2 class="text-xl font-bold">Ønsker du at bekræfte forestillingen for dette event?</h2>
         <div class="flex gap-1">
-            <button class="w-16 rounded-full p-3 text-white bg-error py-0.5 hover:bg-error-dark" @onclick="() => CloseDialog(Showtime.Id)">Nej</button>
-            <button class="w-16 rounded-full p-3 text-white bg-success py-0.5 hover:bg-success-dark" @onclick="@(async () => { await OpenDetailsDialog(Showtime, Showtime.Id);  await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog","confirmEvent" + Showtime.Id + Desktop);})">Ja</button>
+            <button class="w-fit p-4 px-6 rounded-full border border-black shadow transition duration-300 font-label hover:bg-gray-700 hover:text-white" @onclick="() => CloseDialog(Showtime.Id)">Nej</button>
+            <button class="w-fit p-4 px-6 rounded-full border border-transparent text-white shadow-sm font-label bg-secondary text-nowrap hover:bg-gray-800" @onclick="@(async () => { await OpenDetailsDialog(Showtime, Showtime.Id);  await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog","confirmEvent" + Showtime.Id + Desktop);})">Ja</button>
         </div>
     </div>
 </dialog>

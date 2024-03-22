@@ -1,6 +1,6 @@
 ﻿<div class="flex w-full flex-col">
     <!-- Accordion header -->
-    <div @onclick="ToggleAccordion" class="cursor-pointer bg-secondary text-white px-5 py-3 @(_isAccordionOpen ? "rounded-t" : "rounded") flex justify-between items-center">
+    <div @onclick="ToggleAccordion" class="cursor-pointer bg-secondary text-white px-5 py-3 @(_isAccordionOpen ? "rounded-t-3xl" : "rounded-full") flex justify-between items-center">
         @if (IconPath != null)
         {
             <img src="@IconPath" alt="Movie Icon" class="mr-2 h-6 w-6"/>
@@ -12,7 +12,7 @@
     </div>
 
     <!-- Accordion content including search bar and list -->
-    <div class="@(_isAccordionOpen ? "block" : "hidden") transition-all overflow-hidden bg-white px-5 py-3 rounded-b shadow">
+    <div class="@(_isAccordionOpen ? "block" : "hidden") transition-all overflow-hidden bg-white px-5 py-3 rounded shadow">
         <!-- Search bar -->
         <input type="text" placeholder="Søg" @oninput="@(e => { _searchTerm = e.Value?.ToString() ?? string.Empty; })" class="mb-4 w-full rounded-md border border-gray-300 p-2"/>
         <!-- List -->

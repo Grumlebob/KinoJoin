@@ -1193,14 +1193,14 @@ video {
   border-radius: 0.125rem;
 }
 
-.rounded-b {
-  border-bottom-right-radius: 0.25rem;
-  border-bottom-left-radius: 0.25rem;
-}
-
 .rounded-t {
   border-top-left-radius: 0.25rem;
   border-top-right-radius: 0.25rem;
+}
+
+.rounded-t-3xl {
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
 }
 
 .border {
@@ -1886,6 +1886,10 @@ video {
 
   .md\:row-start-2 {
     grid-row-start: 2;
+  }
+
+  .md\:row-end-3 {
+    grid-row-end: 3;
   }
 
   .md\:mt-7 {

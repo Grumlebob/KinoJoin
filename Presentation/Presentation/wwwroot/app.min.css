@@ -691,6 +691,16 @@ video {
   margin-bottom: 1.25rem;
 }
 
+.mx-5 {
+  margin-left: 1.25rem;
+  margin-right: 1.25rem;
+}
+
+.mx-10 {
+  margin-left: 2.5rem;
+  margin-right: 2.5rem;
+}
+
 .mb-0 {
   margin-bottom: 0px;
 }
@@ -781,6 +791,10 @@ video {
 
 .mt-16 {
   margin-top: 4rem;
+}
+
+.mt-40 {
+  margin-top: 10rem;
 }
 
 .line-clamp-1 {

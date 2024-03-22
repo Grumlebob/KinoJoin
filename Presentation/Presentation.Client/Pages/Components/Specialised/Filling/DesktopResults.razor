@@ -1,16 +1,16 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
 
-<div class="mb-2 w-full overflow-auto rounded rounded-md border p-3 shadow">
+<div class="mb-2 w-full overflow-auto rounded-md border p-3 shadow">
     <table class="border-separate border-spacing-2">
-        <tr>
-            <th></th>
+        <tr >
+            <th></th>@*Empty cell above the participant names*@
 
             @foreach (var showtime in OrderedShowtimes)
             {
-                <th >
+                <th class="md:max-w-40 md:min-w-40">
                     <ResultCard Event="Event" Showtime="showtime" Desktop="true" IsHost="IsHost"></ResultCard>
-                </th>
+                    </th>
             }
         </tr>
 

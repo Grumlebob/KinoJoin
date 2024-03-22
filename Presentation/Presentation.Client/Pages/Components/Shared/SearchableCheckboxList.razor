@@ -1,6 +1,6 @@
 ﻿<div class="flex w-full flex-col">
     <!-- Accordion header -->
-    <div @onclick="ToggleAccordion" class="cursor-pointer bg-secondary text-white px-5 py-3 @(_isAccordionOpen ? "rounded-t-3xl" : "rounded-full") flex justify-between items-center">
+    <div @onclick="ToggleAccordion" class="cursor-pointer bg-secondary font-semibold text-white px-5 py-3 @(_isAccordionOpen ? "rounded-t-3xl" : "rounded-full") flex justify-between items-center">
         @if (IconPath != null)
         {
             <img src="@IconPath" alt="Movie Icon" class="mr-2 h-6 w-6"/>

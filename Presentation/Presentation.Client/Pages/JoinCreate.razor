@@ -158,10 +158,10 @@
             @_filterInformationBox
         </div>
         <div class="mt-4 flex w-full justify-end gap-2 text-no-wrap md:w-auto">
-            <button @onclick="async () => { _selectedCinemas.Clear(); _selectedMovies.Clear(); _selectedGenres.Clear(); await HandleShowtimeFiltersChanged(); }" class="w-fit p-2 rounded-full border border-black shadow transition duration-300 font-label hover:bg-gray-700 hover:text-white">
+            <button @onclick="async () => { _selectedCinemas.Clear(); _selectedMovies.Clear(); _selectedGenres.Clear(); await HandleShowtimeFiltersChanged(); }" class="w-fit p-4 px-6 rounded-full border border-black shadow transition duration-300 font-label hover:bg-gray-700 hover:text-white">
                 Ryd filtrer
             </button>
-            <button @onclick="HandleShowtimeFiltersChanged" class="w-fit p-2 rounded-full border border-transparent text-white shadow-sm font-label bg-secondary text-nowrap hover:bg-gray-800">
+            <button @onclick="HandleShowtimeFiltersChanged" class="w-fit p-4 px-6 rounded-full border border-transparent text-white shadow-sm font-label bg-secondary text-nowrap hover:bg-gray-800">
                 Opdater filtrer
             </button>
         </div>

@@ -42,7 +42,7 @@
             <div class="flex flex-row gap-1">
                 @if (_isEditing)
                 {
-                    <input class="w-full rounded-md border p-1 md:w-60" type="text" @bind="_event!.Title"/>
+                    <input class="w-full rounded-full border p-1 md:w-60" type="text" @bind="_event!.Title"/>
                 }
                 else
                 {
@@ -69,13 +69,13 @@
 
             @if (_isEditing)
             {
-                <textarea  class="w-full rounded-md border p-1 md:w-60" type="text" cols="5" placeholder="Beskrivelse"  @bind="_event.Description"></textarea>
+                <textarea  class="w-full rounded-2xl border p-1 md:w-60" type="text" cols="5" placeholder="Beskrivelse"  @bind="_event.Description"></textarea>
             }
             else
             {
                 if (_event.Description != "")
                 {
-                    <p>@_event.Description</p>
+                    <p >@_event.Description</p>
                     <br/>
                 }
             }
@@ -84,7 +84,7 @@
                 <span class="font-medium">Svarfrist:</span>
                 @if (_isEditing)
                 {
-                    <input class="w-full rounded-md border" type="date" placeholder="Deadline" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")" max="@_event!.Showtimes.Max(s => s.Playtime.StartTime).ToString("yyyy-MM-dd")" @bind="@_deadline"/>
+                    <input class="w-full rounded-2xl border" type="date" placeholder="Deadline" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")" max="@_event!.Showtimes.Max(s => s.Playtime.StartTime).ToString("yyyy-MM-dd")" @bind="@_deadline"/>
                 }
                 else
                 {

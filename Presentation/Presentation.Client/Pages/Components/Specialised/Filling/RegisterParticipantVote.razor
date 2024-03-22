@@ -11,11 +11,11 @@
         <div class="text-error">
             <ValidationSummary/>
         </div>
-        <InputText class="w-full rounded-md border p-2" @bind-Value="@_participant.Nickname" placeholder="Indtast dit navn" required/>
+        <InputText class="w-full rounded-full border p-2" @bind-Value="@_participant.Nickname" placeholder="Indtast dit navn" required/>
 
-        <InputText class="w-full rounded-md border p-2" @bind-Value="@_participant.Email" placeholder="Skriv din email (valgfrit)" type="email"/>
+        <InputText class="w-full rounded-full border p-2" @bind-Value="@_participant.Email" placeholder="Skriv din email (valgfrit)" type="email"/>
         <div>
-            <InputTextArea class="h-32 w-full resize-none rounded-md border p-2" @bind-Value="@_participant.Note" placeholder="Note (valgfrit)"/>
+            <InputTextArea class="h-32 w-full resize-none rounded-3xl border p-2" @bind-Value="@_participant.Note" placeholder="Note (valgfrit)"/>
         </div>
         <button class="rounded-full p-2 text-white bg-primary hover:bg-primary-dark" type="submit">
             Send svar

@@ -1,3 +1,4 @@
+@using System.Security.Cryptography.X509Certificates
 @inject IJSRuntime JsRuntime
 
 <style>
@@ -29,21 +30,32 @@
 
 <Virtualize Items="_showtimesByVersionTagList" Context="showtimesByVersionTag" OverscanCount="5" ItemSize="300">
     <ItemContent>
-        @{ var versionTag = showtimesByVersionTag.First().VersionTag; }
+
+        @{
+            var versionTag = showtimesByVersionTag.First().VersionTag;
+            var uniqueId = $"{_cinema.Id}-{versionTag?.Type.Replace(" ", "")}";
+
+            Console.WriteLine("Id in render: " + uniqueId);
+        }
+
         <div class="mb-4 max-w-screen-md relative">
             <!-- Version -->
             <div class="w-fit">
-                <p class="bg-gray-200 px-2 py-1 font-label">@versionTag.Type</p>
+                <p class="bg-gray-200 px-2 py-1 font-label">@versionTag?.Type</p>
             </div>
 
-            <!-- Blur left edge (100%-30px to not cover scroll bar) -->
-            <div class="absolute rounded h-[calc(100%-50px)] w-10 bg-gradient-to-r from-white items-center"></div>
+            <!-- Blur left edge (100%-50px to not cover scroll bar) -->
+            <div id="@uniqueId-blur-left" class="absolute rounded h-[calc(100%-50px)] w-10 bg-gradient-to-r from-white items-center">
+                <button>left</button>
+            </div>
 
             <!-- Blur right edge -->
-            <div class="absolute rounded right-0 h-[calc(100%-50px)] w-10 bg-gradient-to-l from-white items-center"></div>
+            <div id="@uniqueId-blur-right" class="absolute rounded right-0 h-[calc(100%-50px)] w-10 bg-gradient-to-l from-white items-center">
+                <button>right</button>
+            </div>
 
             <!-- Showtimes (padding LR and inline-block makes room for blurs to disappear wen scrolled all the way left or right)-->
-            <div class="overflow-x-auto px-10">
+            <div id="@uniqueId" class="overflow-x-auto px-10">
                 <table class="border-collapse inline-block">
                     <tr>
                         @{
@@ -94,6 +106,8 @@
                 </table >
             </div >
         </div>
+        @{
+        }
     </ItemContent>
     <Placeholder>
         <LoadingCircle/>
@@ -114,15 +128,37 @@
 
     [Parameter] public bool HasAnswered { get; set; }
 
+    private HashSet<string> _showtimeContainerIds = new();
+
     private Cinema _cinema = new();
     private List<IGrouping<string, Showtime>> _showtimesByVersionTagList = [];
 
     private bool _hasChanged = false;
 
-    protected override void OnInitialized()
+
+    protected override async Task OnInitializedAsync()
     {
         _cinema = ShowtimesByCinema.First().Cinema;
         _showtimesByVersionTagList = ShowtimesByCinema.GroupBy(s => s.VersionTag.Type).ToList();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Console.WriteLine("OnAfterRenderAsync " + string.Join("\n", _showtimeContainerIds));
+
+
+        var scrollIds = Showtimes.Select(s => $"{s.CinemaId}-{s.VersionTag.Type.Replace(" ", "")}").Distinct();
+        //subscribe
+        foreach (var id in scrollIds)
+        {
+            Console.WriteLine("Id in init: " + id);
+            await JsRuntime.InvokeVoidAsync("subscribeScroll", id);
+        }
+
+        // foreach (var id in _showtimeContainerIds)
+        // {
+        //     await JsRuntime.InvokeVoidAsync("subsribeScroll", id);
+        // }
     }
 
     private bool _shouldRender = true;
@@ -149,14 +185,18 @@
         _hasChanged = true;
     }
 
-    protected override bool ShouldRender()
-    {
-        if (!_hasChanged) return false;
-        _hasChanged = false;
-        return true;
-    }
-
     private string CaptitalizeStart(string s)
         => char.ToUpper(s[0]) + s[1..];
+
+
+    private void AddShowtime(string uniqueId)
+    {
+        var entryIsNew = _showtimeContainerIds.Add(uniqueId);
+
+        if (entryIsNew)
+        {
+            StateHasChanged();
+        }
+    }
 
 }

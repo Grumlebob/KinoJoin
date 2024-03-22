@@ -22,7 +22,7 @@
 </head>
 
 <body class="bg-[#f1f1f1]">
-<Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)"/>
+<Routes @rendermode="new InteractiveWebAssemblyRenderMode(false)"/>
 <script src="_framework/blazor.web.js"></script>
 <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
 
@@ -67,7 +67,33 @@
             scrollStep();
         },
         
+
+        
     }
+    
+    function subscribeScroll (elementId) {
+                   let scrollContainer = document.getElementById(elementId);
+                   let leftBlur = document.getElementById(`${elementId}-blur-left`);
+                   let rightBlur = document.getElementById(`${elementId}-blur-right`);
+                   if (!scrollContainer)
+                       return;
+                   
+                   scrollContainer.onscroll = function() {
+                       if (scrollContainer.scrollLeft === 0){
+                          leftBlur.style.display = "none";
+                           }
+                       else{
+                        leftBlur.style.display = "block";
+                           }
+                      if (scrollContainer.scrollLeft + scrollContainer.clientWidth === scrollContainer.scrollWidth){
+                          rightBlur.style.display = "none";
+                           }
+                       else{
+                        rightBlur.style.display = "block";
+                           }
+                   }
+                   
+               }
     
     window.downloadFileFromStream = async (fileName, contentStreamReference) => {
                     const arrayBuffer = await contentStreamReference.arrayBuffer();

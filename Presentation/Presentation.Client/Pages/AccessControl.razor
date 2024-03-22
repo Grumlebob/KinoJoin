@@ -7,7 +7,7 @@
         <a href="#" @onclick="BeginSignOut">Log out</a>
     </Authorized>
     <NotAuthorized>
-        @if (Navigation.BaseUri.Contains("5001"))
+        @if (Navigation.BaseUri.Contains("https"))
         {
             <a href="authentication/login">Log in</a>
         }

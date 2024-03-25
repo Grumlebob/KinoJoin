@@ -6,6 +6,8 @@ public class JoinEvent
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
+
+    [MaxLength(260, ErrorMessage = "HostId kan høst være 260 tegn.")]
     public string HostId { get; set; } = string.Empty;
 
     [MaxLength(60, ErrorMessage = "Titel kan høst være 60 tegn.")]
@@ -61,10 +63,17 @@ public class Movie
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int Id { get; set; }
 
+    [MaxLength(260, ErrorMessage = "Title kan høst være 260 tegn.")]
     public required string Title { get; set; }
+
+    [MaxLength(100, ErrorMessage = "Image url kan høst være 260 tegn.")]
     public string? ImageUrl { get; set; }
+
+    [MaxLength(100, ErrorMessage = "Kino's info url kan høst være 260 tegn.")]
     public string? KinoUrl { get; set; } = string.Empty;
     public int? Duration { get; set; }
+
+    [MaxLength(100, ErrorMessage = "PremiereDate kan høst være 260 tegn.")]
     public string? PremiereDate { get; set; }
     public AgeRating? AgeRating { get; set; }
 }
@@ -75,6 +84,7 @@ public class AgeRating
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
+    [MaxLength(50, ErrorMessage = "Censorship kan høst være 260 tegn.")]
     public string Censorship { get; set; } = string.Empty;
 }
 
@@ -93,6 +103,7 @@ public class VersionTag
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
+    [MaxLength(260, ErrorMessage = "Version Type kan høst være 260 tegn.")]
     public string Type { get; set; } = string.Empty;
 }
 
@@ -101,6 +112,7 @@ public class Cinema
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int Id { get; set; }
 
+    [MaxLength(260, ErrorMessage = "Cinema Name kan høst være 260 tegn.")]
     public string Name { get; set; } = string.Empty;
 }
 
@@ -109,6 +121,7 @@ public class Room
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int Id { get; set; }
 
+    [MaxLength(260, ErrorMessage = "Room name kan høst være 260 tegn.")]
     public string Name { get; set; } = string.Empty;
 }
 
@@ -117,15 +130,20 @@ public class Genre
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public required int Id { get; set; }
 
+    [MaxLength(260, ErrorMessage = "Genre name kan høst være 260 tegn.")]
     public string Name { get; set; } = string.Empty;
 }
 
 public class Host
 {
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
+    [MaxLength(260, ErrorMessage = "Host authentication ID kan høst være 260 tegn.")]
     public string AuthId { get; set; } = string.Empty;
 
+    [MaxLength(260, ErrorMessage = "Username kan høst være 260 tegn.")]
     public string Username { get; set; } = string.Empty;
+
+    [MaxLength(260, ErrorMessage = "Email kan høst være 260 tegn.")]
     public string? Email { get; set; }
 }
 
@@ -134,6 +152,7 @@ public class Participant
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
+    [MaxLength(260, ErrorMessage = "Participant authentication ID kan høst være 260 tegn.")]
     public string? AuthId { get; set; }
     public int JoinEventId { get; set; }
 
@@ -175,11 +194,13 @@ public class SelectOption
     [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
+    [MaxLength(260, ErrorMessage = "VoteOption kan høst være 260 tegn.")]
     public required string VoteOption { get; set; }
 
     /// <remark>
     /// In order to use a color in a tailwind class dynamically, the class must be used somewhere else in the project statically.
     /// Add new colors to GenerateCustomTailwindColorsBeforeRunTime.razor to use them
     /// </remark>
+    [MaxLength(260, ErrorMessage = "Color kan høst være 260 tegn.")]
     public required string Color { get; set; }
 }

@@ -208,7 +208,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         var playtimeStartTimes = joinEvent.Showtimes.Select(st => st.Playtime.StartTime).Distinct();
         var versionTypes = joinEvent.Showtimes.Select(st => st.VersionTag.Type).Distinct().ToList();
         var roomIds = joinEvent.Showtimes.Select(st => st.Room.Id).Distinct().ToList();
-        var all = await context.Playtimes.ToListAsync();
+
         var existingCinemas = await context
             .Cinemas.Where(c => cinemaIds.Contains(c.Id))
             .ToDictionaryAsync(c => c.Id);
@@ -252,20 +252,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
                 existingPlaytimes[existingPlaytime.StartTime] = existingPlaytime;
             }
             showtime.Playtime = existingPlaytime;
-
-            //// Handle Playtime
-            //var existingPlaytime = await context.Playtimes.FirstOrDefaultAsync(p =>
-            //    p.StartTime == showtime.Playtime.StartTime
-            //);
-            //if (existingPlaytime != null)
-            //{
-            //    context.Playtimes.Attach(existingPlaytime);
-            //    showtime.Playtime = existingPlaytime;
-            //}
-            //else
-            //{
-            //    context.Playtimes.Add(showtime.Playtime);
-            //}
 
             // Handle VersionTag
             if (

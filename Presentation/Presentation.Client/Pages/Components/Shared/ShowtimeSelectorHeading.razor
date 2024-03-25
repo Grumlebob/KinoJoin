@@ -38,35 +38,37 @@
                     </svg>
                 </button>
             </div>
-            </div>
-            @if (_shouldRender)
-            {
-                <div class="inline-flex flex-col items-start justify-between gap-2 rounded md:flex-row md:items-center md:gap-4 md:py-2">
-                    <!-- movie-info -->
-                    @if (Movie.PremiereDate != null)
-                    {
-                        <div class="flex space-x-1">
-                            <span class="hidden text-sm text-neutral-400 font-label md:block">Premiere</span>
-                            <span class="text-sm text-neutral-400 font-label">@Movie.PremiereDate </span>
-                        </div>
-                    }
-                    @if (Movie.PremiereDate != null && Movie.Duration != 0)
-                    {
-                        <span class="hidden text-sm text-neutral-400 md:block">|</span>
-                    }
-                    @if (Movie.Duration != 0)
-                    {
-                        <div class="flex space-x-1">
-                            <span class="hidden text-sm text-neutral-400 font-label md:block">Varighed</span>
-                            <span class="text-sm text-neutral-400 font-label">@Movie.Duration min</span>
-                        </div>
-                    }
-                    @if (Movie.AgeRating != null)
-                    {
+        </div>
+        @if (_shouldRender)
+        {
+            <div class="inline-flex flex-col items-start justify-between gap-2 rounded md:flex-row md:items-center md:gap-4 md:py-2">
+                <!-- movie-info -->
+                @if (Movie.PremiereDate != null)
+                {
                     <div class="flex space-x-1">
-                    <img src=@CensorshipToIcon[Movie.AgeRating.Censorship] alt="@Movie.AgeRating.Censorship" class="h-5 w-5"/>
-                 </div> 
-                    }
+                        <span class="hidden text-sm text-neutral-400 font-label md:block">Premiere</span>
+                        <span class="text-sm text-neutral-400 font-label">@Movie.PremiereDate </span>
+                    </div>
+                }
+                @if (Movie.PremiereDate != null && Movie.Duration != 0)
+                {
+                    <span class="hidden text-sm text-neutral-400 md:block">|</span>
+                }
+                @if (Movie.Duration != 0)
+                {
+                    <div class="flex space-x-1">
+                        <span class="hidden text-sm text-neutral-400 font-label md:block">Varighed</span>
+                        <span class="text-sm text-neutral-400 font-label">@Movie.Duration min</span>
+                    </div>
+                }
+                @if (Movie.AgeRating != null)
+                {
+                    <div class="flex space-x-1">
+                        <a href="https://medieraadet.dk/" target="_blank">
+                            <img src=@CensorshipToIcon[Movie.AgeRating.Censorship] alt="@Movie.AgeRating.Censorship" class="h-5 w-5"/>
+                        </a>
+                    </div>
+                }
 
                 <div class="block md:hidden">
                     <!--Læs mere og trailer mobile-->
@@ -75,11 +77,11 @@
                 <div class="block md:hidden">
                     <button @onclick="async () => { await ShowMovieTrailer(Movie); }" class="inline-block w-32 rounded-full border border-black px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Se trailer</button>
                 </div>
-                </div>
-            }
-        </div>
+            </div>
+        }
+    </div>
 
-    @*TODO Opacity should only be set for the showtime buttons *@    
+    @*TODO Opacity should only be set for the showtime buttons *@
     <div class="col-span-3 md:col-start-2 md:row-start-2 md:row-end-3 @(HasAnswered ? "opacity-50" : "")">
         @if (_shouldRender)
         {

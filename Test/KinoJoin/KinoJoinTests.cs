@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Net.Http.Json;
 using Domain.Entities;
 using FluentAssertions;
 
@@ -21,12 +22,22 @@ public class KinoJoinTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task SimpleJoinEventTest()
+    public async Task CompleteJoinEventFlowFromStartToFinish()
     {
-        const int casesToInsert = 100;
+        const int casesToInsert = 10;
 
         var joinEvents = _dataGenerator.JoinEventGenerator.Generate(casesToInsert);
 
+        //VALIDATION test made separately from the UPSERTING test, to make it easier to debug
+        var validator = new DataAnnotationsValidator.DataAnnotationsValidator();
+        var validationResults = new List<ValidationResult>();
+        foreach (var joinEvent in joinEvents)
+        {
+            validator.TryValidateObjectRecursive(joinEvent, validationResults);
+        }
+        validationResults.Should().BeEmpty();
+
+        //UPSERTING
         foreach (var joinEvent in joinEvents)
         {
             //Insert

@@ -771,10 +771,6 @@ video {
   margin-top: 0.5rem;
 }
 
-.mt-3 {
-  margin-top: 0.75rem;
-}
-
 .mt-4 {
   margin-top: 1rem;
 }
@@ -859,40 +855,16 @@ video {
   height: fit-content;
 }
 
+.h-full {
+  height: 100%;
+}
+
 .h-px {
   height: 1px;
 }
 
 .h-screen {
   height: 100vh;
-}
-
-.h-2 {
-  height: 0.5rem;
-}
-
-.h-full {
-  height: 100%;
-}
-
-.h-96 {
-  height: 24rem;
-}
-
-.h-60 {
-  height: 15rem;
-}
-
-.h-72 {
-  height: 18rem;
-}
-
-.h-1 {
-  height: 0.25rem;
-}
-
-.h-1\/3 {
-  height: 33.333333%;
 }
 
 .max-h-16 {
@@ -905,48 +877,6 @@ video {
 
 .max-h-full {
   max-height: 100%;
-}
-
-.max-h-fit {
-  max-height: -moz-fit-content;
-  max-height: fit-content;
-}
-
-.max-h-96 {
-  max-height: 24rem;
-}
-
-.max-h-9 {
-  max-height: 2.25rem;
-}
-
-.max-h-32 {
-  max-height: 8rem;
-}
-
-.max-h-5 {
-  max-height: 1.25rem;
-}
-
-.min-h-fit {
-  min-height: -moz-fit-content;
-  min-height: fit-content;
-}
-
-.min-h-96 {
-  min-height: 24rem;
-}
-
-.min-h-9 {
-  min-height: 2.25rem;
-}
-
-.min-h-full {
-  min-height: 100%;
-}
-
-.w-1\/12 {
-  width: 8.333333%;
 }
 
 .w-1\/2 {
@@ -1006,16 +936,20 @@ video {
   width: 100vw;
 }
 
-.w-40 {
-  width: 10rem;
-}
-
 .min-w-40 {
   min-width: 10rem;
 }
 
+.min-w-48 {
+  min-width: 12rem;
+}
+
 .max-w-40 {
   max-width: 10rem;
+}
+
+.max-w-48 {
+  max-width: 12rem;
 }
 
 .max-w-6xl {
@@ -1036,30 +970,6 @@ video {
 
 .max-w-screen-md {
   max-width: 768px;
-}
-
-.max-w-4 {
-  max-width: 1rem;
-}
-
-.max-w-16 {
-  max-width: 4rem;
-}
-
-.max-w-32 {
-  max-width: 8rem;
-}
-
-.max-w-36 {
-  max-width: 9rem;
-}
-
-.max-w-96 {
-  max-width: 24rem;
-}
-
-.max-w-56 {
-  max-width: 14rem;
 }
 
 .flex-grow {
@@ -2014,16 +1924,12 @@ video {
     display: none;
   }
 
+  .md\:h-24 {
+    height: 6rem;
+  }
+
   .md\:h-auto {
     height: auto;
-  }
-
-  .md\:h-72 {
-    height: 18rem;
-  }
-
-  .md\:h-80 {
-    height: 20rem;
   }
 
   .md\:w-60 {
@@ -2055,16 +1961,8 @@ video {
     min-width: 24rem;
   }
 
-  .md\:min-w-40 {
-    min-width: 10rem;
-  }
-
   .md\:max-w-md {
     max-width: 28rem;
-  }
-
-  .md\:max-w-40 {
-    max-width: 10rem;
   }
 
   .md\:grid-cols-\[200px_1fr\] {
@@ -2073,6 +1971,10 @@ video {
 
   .md\:flex-row {
     flex-direction: row;
+  }
+
+  .md\:items-start {
+    align-items: flex-start;
   }
 
   .md\:items-end {

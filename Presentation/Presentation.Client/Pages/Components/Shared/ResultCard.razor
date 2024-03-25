@@ -1,8 +1,8 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
-<div class="flex md:h-80 flex-col justify-start text-start items-start gap-2 bg-slate-50 @(Desktop ? "w-70 ..." : "w-full")   rounded p-5 shadow-md  text-wrap  ">
+<div class="flex  flex-col justify-start text-start items-start gap-2 bg-slate-50   rounded p-5 shadow-md  text-wrap  ">
 
-    <div class="gap-1 h-1/3">
+    <div class="@(Desktop ? "" : "gap-1") md:h-24">
         <div class="flex w-full items-center gap-2 ">
 
             <div class="flex w-full items-center gap-1">
@@ -21,6 +21,7 @@
             }
         </div>
 
+
         <p class=" md:hidden  text-xs font-normal text-gray-700 ">@Showtime.VersionTag.Type</p>
 
         <div class="flex flex-col  hidden md:block">
@@ -32,7 +33,8 @@
 
     </div>
 
-    <div class="gap-1 h-1/3">
+    <hr class="h-px w-full rounded-full bg-gray-300"/>
+    <div class="gap-1 md:h-24">
         <div class="flex w-full items-center gap-1 ">
             @* <CinemaIcon Class="fill-black "/>*@
             <p class=" font-normal">
@@ -44,8 +46,11 @@
             <p class=" text-xs font-normal text-gray-700 ">@Showtime.Room.Name</p>
         </div>
     </div>
-    <div class="flex flex-col items-end justify-end h-full">
-        <div class="gap-1 h-full flex flex-col items-end justify-end">
+
+    <hr class=" h-px w-full rounded-full bg-gray-300"/>
+
+    <div class="flex flex-col h-full w-full justify-end gap-2">
+        <div class="gap-1 h-full flex flex-col justify-end">
             <div class="flex w-full items-center gap-1">
                 <DateIcon Class="fill-black"></DateIcon>
                 <p class=" font-normal ">
@@ -66,7 +71,13 @@
             </div>
         </div>
 
+        @if (!Desktop || IsHost)
+        {
+            <hr class=" h-px w-full rounded-full bg-gray-300"/>
+        }
         <div class="flex w-full items-center gap-1 ">
+
+
             @if (!Desktop)
             {
                 if (HasVoted)
@@ -79,7 +90,7 @@
                     </div>
                 }
             }
-            <div class="flex h-fit w-full justify-end md:justify-start gap-1">
+            <div class="flex h-fit w-full justify-end items-end md:justify-start md:items-start gap-1 w-full">
                 @if (!Desktop)
                 {
                     <button @onclick="ShowVotes" class="flex items-center gap-1 rounded-full border-2 border-gray-300 bg-white px-2 py-1 hover:bg-gray-300">

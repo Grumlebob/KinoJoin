@@ -1,8 +1,6 @@
 ﻿using Application.Interfaces;
 using Carter;
 using Domain.Entities;
-using FluentValidation.Results;
-using Infrastructure.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
@@ -55,10 +53,9 @@ public class KinoJoinEndpoints : ICarterModule
             var result = await joinEventService.UpsertJoinEventAsync(joinEvent);
             return TypedResults.Ok(result);
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            //TODO cant return exception message to client, should be logged instead
-            return TypedResults.BadRequest(e.Message);
+            return TypedResults.BadRequest(DefaultErrorMessage);
         }
     }
 

@@ -17,9 +17,10 @@
             <!--Læs mere og trailer-->
             <div class="hidden flex-col items-center px-3 space-y-1 md:flex">
 
-                <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank" class="w-full rounded-full border border-black px-3 py-2 text-center shadow transition duration-300 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
+                <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank" class="w-full  rounded-full py-[14px] px-[17px]  text-nowrap flex items-center justify-center  bg-transparent text-black font-label border border-[#c4c4c4]  transition duration-200  hover:bg-black hover:border-black hover:text-white">Læs mere</a>
 
-                <button class="w-full rounded-full border border-black px-3 py-2 shadow transition duration-300 font-label hover:bg-neutral-950 hover:text-white" @onclick="async () => { await ShowMovieTrailer(Movie); }">Se trailer</button>
+                <Button Variant="Button.ButtonVariant.White" Class="w-full" OnClick="@(async () => await ShowMovieTrailer(Movie))">Se trailer</Button>
+                                                                      
             </div>
         </div>
     }

@@ -51,20 +51,13 @@
         <div class="flex h-fit w-full justify-end gap-1">
             @if (!Desktop)
             {
-                <button @onclick="ShowVotes" class="flex items-center gap-1 rounded-full border-2 border-gray-300 bg-white px-2 py-1 hover:bg-gray-300">
-
-                    <p class="whitespace-nowrap">
-                        Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)))
-                    </p>
-                </button>
+                <Button OnClick="@ShowVotes">Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)))</Button>
             }
 
 
             @if (IsHost)
             {
-                <button class="w-fit whitespace-nowrap rounded-full px-3 py-2 text-white bg-primary hover:bg-primary-dark" @onclick="() => OpenConfirmationDialog(Showtime.Id)">
-                    Bekræft event
-                </button>
+                <Button Variant="Button.ButtonVariant.Red">Bekræft event</Button>
             }
         </div>
     </div>

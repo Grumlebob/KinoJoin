@@ -5,7 +5,6 @@
 @inject IKinoJoinHttpClient KinoJoinHttpClient
 @inject IKinoDkService KinoDkService
 
-
 @if (_loadingPage)
 {
     <LoadingTextAndCircle/>
@@ -25,27 +24,29 @@
 
 @* Dialog where user enters title and other event details *@
 <dialog id="eventDetailsDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
-    <EditForm OnValidSubmit="context => ValidateAndOpenConfirmationDialog()"  model="@_joinEvent">
-        <DataAnnotationsValidator  />
+    <EditForm OnValidSubmit="context => ValidateAndOpenConfirmationDialog()" model="@_joinEvent">
+
+        <DataAnnotationsValidator/>
         <p class="text-lg font-semibold mb-0.5">Event Titel</p>
-        <InputText class="mb-2 w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:ring-2 focus:border-transparent focus:outline-none md:w-96"
-               type="text" placeholder="Titel" required
-               @bind-Value="_joinEvent.Title"/>
+        <InputText class="mb-2 w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
+                   type="text" placeholder="Titel" required
+                   @bind-Value="_joinEvent.Title"/>
 
         <p class="text-lg font-semibold mb-0.5">Event Beskrivelse</p>
-        <InputTextArea  class="mb-2 w-full rounded-3xl border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
-                  placeholder="Beskrivelse (valgfrit)" 
-                  @bind-Value="@_joinEvent.Description"></InputTextArea>
+        <InputTextArea class="mb-2 w-full rounded-3xl border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
+                       placeholder="Beskrivelse (valgfrit)"
+                       @bind-Value="@_joinEvent.Description">
+        </InputTextArea>
 
         <p class="text-lg font-semibold mb-0.5">Deadline</p>
         <input class="mb-2 w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
                type="date" placeholder="Deadline" value="@_joinEvent.Deadline.ToString("yyyy-MM-dd")" @oninput="@(v => { if (DateTime.TryParse(v.Value?.ToString(), CultureInfo.InvariantCulture, out var parsedDate)) _joinEvent.Deadline = parsedDate; })"/>
-       <div class="text-error">
-               <ValidationSummary />
-               </div>
+        <div class="text-error">
+            <ValidationSummary/>
+        </div>
         <div class="mt-5 mb-5 flex justify-end space-x-3">
-            <button type="button" @onclick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog"))" class="w-fit p-4 px-6 rounded-full border border-black shadow transition duration-300 font-label hover:bg-gray-700 hover:text-white">Annuller</button>
-            <button type="submit" class="w-fit p-4 px-6 rounded-full border border-transparent text-white shadow-sm font-label bg-secondary text-nowrap hover:bg-gray-800">Opret</button>
+            <Button Type="button" Variant="Button.ButtonVariant.White" OnClick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog"))">Annuller</Button>
+            <Button Type="submit" Variant="Button.ButtonVariant.Black" Class="font-label">Opret</Button>
         </div>
     </EditForm>
 
@@ -71,6 +72,7 @@
 
 @* Dialog to confirm the user is done creating the event *@
 <dialog id="eventConfirmDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl md:min-w-96">
+    <form @onsubmit="FinishJoinEvent">
     <p class="text-lg font-semibold mb-0.5">Bekræft oprettelse</p>
     <div class="mb-4 flex items-center">
         <input id="CanAllShowtimes" type="checkbox" @bind="_hostCanAllShowtimes" class="mr-2 accent-secondary"/>
@@ -81,14 +83,15 @@
     @if (!_uploadingEvent)
     {
         <div class="flex justify-end space-x-3">
-            <button @onclick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog"))" class="w-fit p-4 px-6 rounded-full border border-black shadow transition duration-300 font-label hover:bg-gray-700 hover:text-white">Rediger videre</button>
-            <button @onclick="FinishJoinEvent" class="w-fit p-4 px-6 rounded-full border border-transparent text-white shadow-sm font-label bg-secondary text-nowrap hover:bg-gray-800">Opret</button>
+            <Button Type="button" Variant="Button.ButtonVariant.White" OnClick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog"))">Rediger videre</Button>
+            <Button Type="submit" Variant="Button.ButtonVariant.Black" OnClick="@FinishJoinEvent" Class="font-label">Opret</Button>
         </div>
     }
     else
     {
         <LoadingTextAndCircle Text="Opretter"/>
     }
+    </form>
 </dialog>
 
 @* Dialog which shows the share link *@
@@ -118,9 +121,9 @@
 
 
 <div class="flex">
-    <button @onclick="() => { _showAllFilters = !_showAllFilters; }" class="rounded-full border border-transparent px-6 py-2 text-base font-medium text-white shadow-sm bg-secondary max-w-40 hover:bg-gray-800 lg:hidden">
+    <Button Variant="Button.ButtonVariant.Black" OnClick="() => _showAllFilters = !_showAllFilters" Class="lg:hidden">
         @(_showAllFilters ? "Skjul filtrer" : "Vis alle filtrer")
-    </button>
+    </Button>
 </div>
 
 
@@ -158,12 +161,8 @@
             @_filterInformationBox
         </div>
         <div class="mt-4 flex w-full justify-end gap-2 text-no-wrap md:w-auto">
-            <button @onclick="async () => { _selectedCinemas.Clear(); _selectedMovies.Clear(); _selectedGenres.Clear(); await HandleShowtimeFiltersChanged(); }" class="w-fit p-4 px-6 rounded-full border border-black shadow transition duration-300 font-label hover:bg-gray-700 hover:text-white">
-                Ryd filtrer
-            </button>
-            <button @onclick="HandleShowtimeFiltersChanged" class="w-fit p-4 px-6 rounded-full border border-transparent text-white shadow-sm font-label bg-secondary text-nowrap hover:bg-gray-800">
-                Opdater filtrer
-            </button>
+            <Button Variant="Button.ButtonVariant.White" OnClick="HandleFilterReset">Ryd filtre</Button>
+            <Button Variant="Button.ButtonVariant.Black" OnClick="HandleShowtimeFiltersChanged">Opdater filtre</Button>
         </div>
     </div>
 
@@ -184,12 +183,18 @@
 
 <ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de spilletider du vil have med i dit event" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_availableShowtimeVotes" VotesChanged="OnVoteChange" SelectOptions="_hostSelectOptions"/>
 
-<button class="fixed right-6 bottom-6 z-50 flex items-center justify-center gap-1 rounded-full shadow-lg bg-primary hover:bg-primary-dark md:right-12 md:bottom-12 h-auto w-auto px-4 py-2" @onclick="OpenEventDetailsDialog">
+@* <button class="fixed right-6 bottom-6 z-50 flex h-auto w-auto items-center justify-center gap-1 rounded-full px-4 py-2 shadow-lg bg-primary hover:bg-primary-dark md:right-12 md:bottom-12" @onclick="OpenEventDetailsDialog"> *@
+@*     <CreateIcon Class="stroke-white fill-white"/> *@
+@*     <span class="py-1 text-white"> *@
+@*         Opret og del *@
+@*     </span> *@
+@* </button> *@
+<Button Variant="Button.ButtonVariant.Red" OnClick="OpenEventDetailsDialog" Class="fixed right-6 text-sm bottom-6 z-50 flex gap-1">
     <CreateIcon Class="stroke-white fill-white"/>
-    <span class="py-1 text-white">
+    <span class="text-white">
         Opret og del
     </span>
-</button>
+</Button>
 
 @if (_snackbarMessage != null)
 {
@@ -579,6 +584,18 @@
     private async Task UpdateBaseDataFromKinoDk()
     {
         await KinoJoinHttpClient.UpdateBaseDataFromKinoDkAsync();
+    }
+
+}
+
+@code {
+
+    private async Task HandleFilterReset()
+    {
+        _selectedCinemas.Clear();
+        _selectedMovies.Clear();
+        _selectedGenres.Clear();
+        await HandleShowtimeFiltersChanged();
     }
 
 }

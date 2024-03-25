@@ -71,28 +71,46 @@
         
     }
     
-    function subscribeScroll (elementId) {
+    function setScrollButtons (elementId) {
                    let scrollContainer = document.getElementById(elementId);
                    let leftBlur = document.getElementById(`${elementId}-blur-left`);
                    let rightBlur = document.getElementById(`${elementId}-blur-right`);
-                   if (!scrollContainer)
+                   
+                   if (!scrollContainer || !leftBlur || !rightBlur)
                        return;
                    
-                   scrollContainer.onscroll = function() {
-                       if (scrollContainer.scrollLeft === 0){
-                          leftBlur.style.display = "none";
-                           }
-                       else{
-                        leftBlur.style.display = "block";
-                           }
-                      if (scrollContainer.scrollLeft + scrollContainer.clientWidth === scrollContainer.scrollWidth){
-                          rightBlur.style.display = "none";
-                           }
-                       else{
-                        rightBlur.style.display = "block";
-                           }
-                   }
+                   leftBlur.onclick = () => {scrollContainer.scrollTo({
+                                               left: scrollContainer.scrollLeft - 300,
+                                               behavior: 'smooth'
+                                             })};
+                   rightBlur.onclick = () => {scrollContainer.scrollTo({
+                                                left: scrollContainer.scrollLeft + 300,
+                                                behavior: 'smooth'
+                                             })};
                    
+                   const toggleScrollButtons = function() {
+                       if (scrollContainer.scrollWidth <= scrollContainer.clientWidth) { //no overflow
+                           leftBlur.style.display = "none";
+                           rightBlur.style.display = "none";
+                           return;
+                       }
+                      
+                       if (scrollContainer.scrollLeft === 0) { //scrolled to left end
+                          leftBlur.style.display = "none";
+                       }
+                       else {
+                           leftBlur.style.display = "block";
+                       }
+                       
+                       if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 1) { //scrolled to right end
+                           rightBlur.style.display = "none";
+                       }
+                       else {
+                           rightBlur.style.display = "block";
+                       }
+                   }
+                   toggleScrollButtons(); //initially calculate if it should show buttons
+                   scrollContainer.onscroll = toggleScrollButtons; //dynamically calculate when scrolling
                }
     
     window.downloadFileFromStream = async (fileName, contentStreamReference) => {

@@ -40,10 +40,42 @@
         <ItemContent>
             @{ var movie = showtimesByMovie.First().Movie; }
             <ShowtimeSelectorHeading ShowDivider="!isFirst" HasAnswered="@HasAnswered" Movie="movie">
-                @{ var showtimesByCinemaList = showtimesByMovie.GroupBy(s => s.Cinema.Id).ToList(); }
+                @{
+                    var showtimesByCinemaList = showtimesByMovie.GroupBy(s => s.Cinema.Id).ToList();
+                }
                 <Virtualize Items="showtimesByCinemaList" OverscanCount="8" Context="showtimesByCinema" ItemSize="300">
                     <ItemContent>
-                        <CinemaShowtimes Showtimes="Showtimes" HasAnswered="HasAnswered" Votes="Votes" SelectOptions="SelectOptions" VotesChanged="VotesChanged" ShowtimesByCinema="showtimesByCinema"/>
+                        @{ var cinema = showtimesByCinema.First().Cinema; }
+                        <div class="mb-2 flex justify-between">
+                            <!-- CinemaLocation -->
+                            <h3 id="@cinema.Id" class="text-xl font-bold mb-2.5">@cinema.Name</h3>
+                            <button @onclick="() => ToggleCollapse(movie.Id, cinema.Id)">
+                                <svg class="transition-transform" style="@(_hiddenMovieCinemaSections.Contains((movie.Id, cinema.Id)) ? "transform: rotate(0deg);" : "transform: rotate(-180deg);")" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        @if (!_hiddenMovieCinemaSections.Contains((movie.Id, cinema.Id)))
+                        {
+                            var showtimesByVersionTagList = showtimesByCinema.GroupBy(s => s.VersionTag.Type).ToList();
+
+                            <Virtualize Items="showtimesByVersionTagList" Context="showtimesByVersionTag" OverscanCount="5" ItemSize="300">
+                                <ItemContent>
+
+                                    @{
+                                        var uniqueId = $"{cinema.Id}-{showtimesByVersionTag.Key}";
+                                    }
+
+                                    <div class="mb-4 max-w-screen-md">
+                                        <ShowtimeTable SelectOptions="SelectOptions" UniqueId="@uniqueId" Votes="Votes" VotesChanged="VotesChanged" Showtimes="@showtimesByVersionTag.ToList()" HasAnswered="HasAnswered" StartDate="@Showtimes.Min(s => s.Playtime.StartTime)"/>
+                                    </div>
+                                </ItemContent>
+                                <Placeholder>
+                                    <LoadingCircle/>
+                                </Placeholder>
+                            </Virtualize>
+                        }
                     </ItemContent>
                     <Placeholder>
                         <LoadingCircle/>
@@ -93,9 +125,22 @@
 
     private List<IGrouping<int, Showtime>> _showtimesByMovieList = [];
 
+    ///<summary>Cinemas under movies that are toggled away: (MovieId, CinemaId)</summary>
+    private HashSet<(int, int)> _hiddenMovieCinemaSections = [];
+
     protected override void OnInitialized()
     {
         _showtimesByMovieList = Showtimes.GroupBy(s => s.Movie.Id).ToList();
+    }
+
+    private void ToggleCollapse(int movieId, int cinemaId)
+    {
+        if (!_hiddenMovieCinemaSections.Add((movieId, cinemaId)))
+        {
+            _hiddenMovieCinemaSections.Remove((movieId, cinemaId));
+        }
+
+        StateHasChanged();
     }
 
 }

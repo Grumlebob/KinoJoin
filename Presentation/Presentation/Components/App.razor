@@ -90,23 +90,23 @@
                    
                    const toggleScrollButtons = function() {
                        if (scrollContainer.scrollWidth <= scrollContainer.clientWidth) { //no overflow
-                           leftBlur.style.display = "none";
-                           rightBlur.style.display = "none";
+                           leftBlur.style.visibility = "hidden";
+                           rightBlur.style.visibility = "hidden";
                            return;
                        }
                       
                        if (scrollContainer.scrollLeft === 0) { //scrolled to left end
-                          leftBlur.style.display = "none";
+                          leftBlur.style.visibility = "hidden";
                        }
                        else {
-                           leftBlur.style.display = "block";
+                           leftBlur.style.visibility = "visible";
                        }
                        
                        if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 1) { //scrolled to right end
-                           rightBlur.style.display = "none";
+                           rightBlur.style.visibility = "hidden";
                        }
                        else {
-                           rightBlur.style.display = "block";
+                           rightBlur.style.visibility = "visible";
                        }
                    }
                    toggleScrollButtons(); //initially calculate if it should show buttons

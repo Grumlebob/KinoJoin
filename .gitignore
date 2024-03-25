@@ -4,15 +4,11 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 #Custom settings
-appsettings.json
-
 app.min.css
 
 .idea/
 
 .DS_Store
-
-Presentation/Presentation.Client/wwwroot/appsettings.json
 
 # User-specific files
 *.rsuser

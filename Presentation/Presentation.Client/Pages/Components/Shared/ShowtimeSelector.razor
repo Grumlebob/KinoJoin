@@ -68,7 +68,7 @@
                                     }
 
                                     <div class="mb-4 max-w-screen-md">
-                                        <ShowtimeTable SelectOptions="SelectOptions" UniqueId="@uniqueId" Votes="Votes" VotesChanged="VotesChanged" Showtimes="@showtimesByVersionTag.ToList()" HasAnswered="HasAnswered" StartDate="@Showtimes.Min(s => s.Playtime.StartTime)"/>
+                                        <ShowtimeTable SelectOptions="SelectOptions" UniqueId="@uniqueId" Votes="Votes" VotesChanged="VotesChanged" Showtimes="@showtimesByVersionTag.ToList()" HasAnswered="HasAnswered" StartDate="@Showtimes.Min(s => s.Playtime.StartTime.Date)"/>
                                     </div>
                                 </ItemContent>
                                 <Placeholder>

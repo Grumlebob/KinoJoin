@@ -5,31 +5,37 @@
     return;
 }
 
-<div class="@(HasAnswered ? "mb-5" : "mb-7") w-fit space-y-1  mt-10  ">
-    <p class="font-semibold">@LegendTitle</p>
-    <div class="mb-2 flex w-fit divide-x-2">
-        @{
-            var firstOption = true;
-        }
-        @foreach (var option in SelectOptions)
-        {
-            <div class="@(firstOption ? "pr-2" : "px-2") ">
-                <div class="rounded px-1 shadow-md  bg-@option.Color ">
-                    <p>@option.VoteOption</p>
+<div class="flex flex-col items-center justify-center content-center  mt-16 ">
+    <p class="font-bold text-3xl">@LegendTitle</p>
+    <div class=" @(HasAnswered ? "mb-5" : "mb-7") w-fit space-y-1 ">
+        <div class="mb-2 flex w-fit divide-x-2">
+            @{
+                var firstOption = true;
+            }
+            @foreach (var option in SelectOptions)
+            {
+                <div class="@(firstOption ? "pr-2" : "px-2") ">
+                    <div class="rounded text-xl px-1 shadow-md  bg-@option.Color ">
+                        <p>@option.VoteOption</p>
+                    </div>
                 </div>
-            </div>
-            firstOption = false;
-        }
+                firstOption = false;
+            }
+        </div>
     </div>
 </div>
 @if (HasAnswered)
 {
-    <p class="mb-5 text-xl font-semibold text-success-darkest">Du har allerede indsendt et svar på dette event</p>
+    <div class="flex items-center content-center justify-center w-full mb-5">
+        <div class="border shadow w-fit p-3">
+            <p class="text-2xl font-bold text-success-darkest">Du har allerede indsendt et svar på dette event</p>
+        </div>
+    </div>
 }
 <div class="space-y-5">
     @{
-            var isFirst = true;
-        }
+        var isFirst = true;
+    }
     <Virtualize Items="_showtimesByMovieList" Context="showtimesByMovie" OverscanCount="3">
         <ItemContent>
             @{ var movie = showtimesByMovie.First().Movie; }
@@ -44,7 +50,7 @@
                     </Placeholder>
                 </Virtualize>
             </ShowtimeSelectorHeading>
-            @{ isFirst = false;}
+            @{ isFirst = false; }
         </ItemContent>
         <Placeholder>
             <LoadingCircle/>
@@ -82,7 +88,7 @@
     [Parameter] public EventCallback<ICollection<ParticipantVote>> VotesChanged { get; set; }
 
     [Parameter] public required List<SelectOption> SelectOptions { get; set; }
-    
+
     [Parameter] public bool HasAnswered { get; set; }
 
     private List<IGrouping<int, Showtime>> _showtimesByMovieList = [];

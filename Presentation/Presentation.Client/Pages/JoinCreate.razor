@@ -28,24 +28,24 @@
     <EditForm OnValidSubmit="context => ValidateAndOpenConfirmationDialog()"  model="@_joinEvent">
         <DataAnnotationsValidator  />
         <p class="text-lg font-semibold mb-0.5">Event Titel</p>
-        <InputText class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-4 md:w-96"
+        <InputText class="mb-2 w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:ring-2 focus:border-transparent focus:outline-none md:w-96"
                type="text" placeholder="Titel" required
                @bind-Value="_joinEvent.Title"/>
 
         <p class="text-lg font-semibold mb-0.5">Event Beskrivelse</p>
-        <InputTextArea  class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-4 md:w-96"
+        <InputTextArea  class="mb-2 w-full rounded-3xl border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
                   placeholder="Beskrivelse (valgfrit)" 
                   @bind-Value="@_joinEvent.Description"></InputTextArea>
 
         <p class="text-lg font-semibold mb-0.5">Deadline</p>
-        <input class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-4 md:w-96"
+        <input class="mb-2 w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
                type="date" placeholder="Deadline" value="@_joinEvent.Deadline.ToString("yyyy-MM-dd")" @oninput="@(v => { if (DateTime.TryParse(v.Value?.ToString(), CultureInfo.InvariantCulture, out var parsedDate)) _joinEvent.Deadline = parsedDate; })"/>
        <div class="text-error">
                <ValidationSummary />
                </div>
-        <div class="flex justify-end space-x-3">
-            <button type="button" @onclick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog"))" class="rounded-full px-4 py-2 text-white bg-error hover:bg-error-dark focus:outline-none focus:ring-2">Annuller</button>
-            <button type="submit" class="rounded-full px-4 py-2 text-white bg-success hover:bg-success-dark focus:outline-none focus:ring-2 focus:ring-green-400">Opret</button>
+        <div class="mt-5 mb-5 flex justify-end space-x-3">
+            <button type="button" @onclick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog"))" class="w-fit p-4 px-6 rounded-full border border-black shadow transition duration-300 font-label hover:bg-gray-700 hover:text-white">Annuller</button>
+            <button type="submit" class="w-fit p-4 px-6 rounded-full border border-transparent text-white shadow-sm font-label bg-secondary text-nowrap hover:bg-gray-800">Opret</button>
         </div>
     </EditForm>
 
@@ -81,8 +81,8 @@
     @if (!_uploadingEvent)
     {
         <div class="flex justify-end space-x-3">
-            <button @onclick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog"))" class="rounded-full px-4 py-2 text-white bg-error hover:bg-error-dark">Rediger videre</button>
-            <button @onclick="FinishJoinEvent" class="rounded-full px-4 py-2 text-white bg-success hover:bg-success-dark">Opret</button>
+            <button @onclick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog"))" class="w-fit p-4 px-6 rounded-full border border-black shadow transition duration-300 font-label hover:bg-gray-700 hover:text-white">Rediger videre</button>
+            <button @onclick="FinishJoinEvent" class="w-fit p-4 px-6 rounded-full border border-transparent text-white shadow-sm font-label bg-secondary text-nowrap hover:bg-gray-800">Opret</button>
         </div>
     }
     else
@@ -182,12 +182,12 @@
     <p>Der er ingen forestillinger for de valgte filtre</p>
 }
 
-<ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de tider du vil have med i dit event" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_availableShowtimeVotes" VotesChanged="OnVoteChange" SelectOptions="_hostSelectOptions"/>
+<ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de spilletider du vil have med i dit event" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_availableShowtimeVotes" VotesChanged="OnVoteChange" SelectOptions="_hostSelectOptions"/>
 
-<button class="fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center gap-1 rounded-full shadow-lg bg-primary hover:bg-primary-dark md:right-12 md:bottom-12 md:h-auto md:w-auto md:px-4 md:py-2" @onclick="OpenEventDetailsDialog">
+<button class="fixed right-6 bottom-6 z-50 flex items-center justify-center gap-1 rounded-full shadow-lg bg-primary hover:bg-primary-dark md:right-12 md:bottom-12 h-auto w-auto px-4 py-2" @onclick="OpenEventDetailsDialog">
     <CreateIcon Class="stroke-white fill-white"/>
-    <span class="hidden py-1 text-white md:block">
-        Opret Event
+    <span class="py-1 text-white">
+        Opret og del
     </span>
 </button>
 

@@ -2,6 +2,7 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
+@inject SqidsEncoder<int> SqidsEncoder
 
 <PageTitle>JoinEvent</PageTitle>
 
@@ -103,10 +104,10 @@
             <div class="w-full rounded border p-3 space-y-1 md:w-fit md:max-w-md">
                 <p class="text-lg font-semibold mb-0.5">Send et link til eventet til dine venner.</p>
                 <div class="flex items-center">
-                    <a href="@(_baseUrl + "filling/" + _event.Id)" class="text-lg text-blue-600 hover:text-blue-700">
-                        @(_baseUrl + "filling/" + _event.Id)
+                    <a href="@(_baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id))" class="text-lg text-blue-600 hover:text-blue-700">
+                        @(_baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id))
                     </a>
-                    <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", (_baseUrl + "filling/" + _event.Id)); })">
+                    <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)); })">
                         <CopyIcon Class="hover:bg-gray-200 p-2 rounded-full"/>
                     </button>
                     <button @onclick="ShareEvent" class="rounded-full p-1 text-white bg-secondary hover:bg-gray-700 lg:hidden">
@@ -120,7 +121,7 @@
     </div>
 </div>
 
-<ShowtimeSelector HasAnswered="@(_alreadyAnswered || _justAnswered)" SelectOptions="@_event.SelectOptions" Showtimes="@_event.Showtimes" LegendTitle="Tryk på de tider du kan" Votes="@_currentParticipant.VotedFor" VotesChanged="OnVotesChanged"/>
+<ShowtimeSelector HasAnswered="@(_alreadyAnswered || _justAnswered)" SelectOptions="@_event.SelectOptions" DefaultSelectOption="@_event.DefaultSelectOption" Showtimes="@_event.Showtimes" LegendTitle="Tryk på de tider du kan" Votes="@_currentParticipant.VotedFor" VotesChanged="OnVotesChanged"/>
 
 <RegisterParticipantVote Event="_event" OnAnswerSaved="OnAnswerSaved" @bind-Nickname="@_currentParticipant.Nickname" AlreadyAnswered="_alreadyAnswered" VotedFor="@_currentParticipant.VotedFor" LoggedInUserId="@_currentParticipant.AuthId"/>
 
@@ -161,21 +162,27 @@
     protected override async Task OnInitializedAsync()
     {
         _baseUrl = NavigationManager.BaseUri;
-        int id = int.Parse(JoinEventId);
-        var response = await KinoJoinHttpClient.GetJoinEventAsync(id);
-        if (response != null)
+        var id = SqidsEncoder.Decode(JoinEventId).FirstOrDefault();
+        if (SqidsEncoder.Encode(id) == JoinEventId) //avoid false positives
         {
-            _event = response;
+            _event = await KinoJoinHttpClient.GetJoinEventAsync(id);
+        }
+        else
+        {
+            _event = null;
         }
 
-        if (_event is { Showtimes: not null })
+        if (_event is null)
         {
-            _currentParticipant.VotedFor = _event.Showtimes.Select(st =>
-                new ParticipantVote
-                {
-                    ShowtimeId = st.Id, SelectedOptionId = _event.DefaultSelectOptionId, SelectedOption = _event.DefaultSelectOption
-                }).ToList(); // a default vote for each showtime
+            _loading = false;
+            return;
         }
+
+        _currentParticipant.VotedFor = _event.Showtimes.Select(st =>
+            new ParticipantVote
+            {
+                ShowtimeId = st.Id, SelectedOptionId = _event.DefaultSelectOptionId, SelectedOption = _event.DefaultSelectOption
+            }).ToList(); // a default vote for each showtime
 
 
         //check if user is host
@@ -234,7 +241,7 @@
         {
             title = _event.Title,
             text = _event.Description,
-            url = _baseUrl + "filling/" + _event.Id
+            url = _baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)
         };
 
         await JsRuntime.InvokeVoidAsync("navigator.share", data);

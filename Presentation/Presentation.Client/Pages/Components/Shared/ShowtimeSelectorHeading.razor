@@ -16,7 +16,7 @@
             </a>
             <!--Læs mere og trailer-->
             <div class="hidden flex-col items-center px-3 space-y-1 md:flex">
-                <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank" class="w-full  rounded-full py-[14px] px-[17px]  text-nowrap flex items-center justify-center  bg-transparent text-black font-label border border-[#c4c4c4]  transition duration-200  hover:bg-black hover:border-black hover:text-white">Læs mere</a>
+                <Button Variant="Button.ButtonVariant.White" Href="@($"https://kino.dk{Movie.KinoUrl}")" Target="_blank" Class="font-label w-full">Læs mere</Button>
                 <Button Variant="Button.ButtonVariant.White" Class="font-label w-full" OnClick="@(async () => await ShowMovieTrailer(Movie))">Se trailer</Button>
             </div>
         </div>
@@ -70,7 +70,7 @@
 
                 <div class="block md:hidden">
                     <!--Læs mere og trailer mobile-->
-                    <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank" class="bg-transparent text-black border border-[#c4c4c4]  transition duration-200  hover:bg-black hover:border-black hover:text-white rounded-full py-[14px] px-[17px]  text-nowrap flex items-center justify-center font-label">Læs mere</a>
+                    <Button Variant="Button.ButtonVariant.White" Class="font-label" Href="@($"https://kino.dk{Movie.KinoUrl}")" Target="_blank">Læs mere</Button>
                 </div>
                 <div class="block md:hidden">
                     <Button Variant="Button.ButtonVariant.White" Class="font-label" OnClick="@(async () => await ShowMovieTrailer(Movie))">Se trailer</Button>

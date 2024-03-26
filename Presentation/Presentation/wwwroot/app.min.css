@@ -1231,11 +1231,6 @@ video {
   border-top-right-radius: 1.5rem;
 }
 
-.rounded-t-lg {
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
-}
-
 .border {
   border-width: 1px;
 }
@@ -1282,7 +1277,7 @@ video {
   border-color: transparent;
 }
 
-.bg-background {
+.bg-\[\#f1f1f1\] {
   --tw-bg-opacity: 1;
   background-color: rgb(241 241 241 / var(--tw-bg-opacity));
 }
@@ -1408,9 +1403,9 @@ video {
   background-image: linear-gradient(to right, var(--tw-gradient-stops));
 }
 
-.from-background {
-  --tw-gradient-from: #f1f1f1 var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(241 241 241 / 0) var(--tw-gradient-to-position);
+.from-white {
+  --tw-gradient-from: #fff var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 

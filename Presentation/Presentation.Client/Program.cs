@@ -1,9 +1,10 @@
+using Application.Interfaces;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddScoped<FilterApiHandler>();
+builder.Services.AddScoped<IFilterApiHandler,FilterApiHandler>();
 
 builder.Services.AddHttpClient<IKinoJoinHttpClient, KinoJoinHttpClient>(client =>
 {

@@ -1,6 +1,5 @@
 ﻿@page "/"
 @page "/create-event/{FilterString?}"
-@using Infrastructure.Services
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
@@ -9,7 +8,9 @@
 
 @if (_loadingPage)
 {
-    <LoadingTextAndCircle/>
+    <div class="flex justify-center">
+        <LoadingIndicator/>
+    </div>
     return;
 }
 
@@ -26,24 +27,25 @@
 
 @* Dialog where user enters title and other event details *@
 <dialog id="eventDetailsDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
-    <EditForm OnValidSubmit="context => ValidateAndOpenConfirmationDialog()"  model="@_joinEvent">
-        <DataAnnotationsValidator  />
+    <EditForm OnValidSubmit="context => ValidateAndOpenConfirmationDialog()" model="@_joinEvent">
+        <DataAnnotationsValidator/>
         <p class="text-lg font-semibold mb-0.5">Event Titel</p>
         <InputText class="mb-2 w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:ring-2 focus:border-transparent focus:outline-none md:w-96"
-               type="text" placeholder="Titel" required
-               @bind-Value="_joinEvent.Title"/>
+                   type="text" placeholder="Titel" required
+                   @bind-Value="_joinEvent.Title"/>
 
         <p class="text-lg font-semibold mb-0.5">Event Beskrivelse</p>
-        <InputTextArea  class="mb-2 w-full rounded-3xl border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
-                  placeholder="Beskrivelse (valgfrit)" 
-                  @bind-Value="@_joinEvent.Description"></InputTextArea>
+        <InputTextArea class="mb-2 w-full rounded-3xl border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
+                       placeholder="Beskrivelse (valgfrit)"
+                       @bind-Value="@_joinEvent.Description">
+        </InputTextArea>
 
         <p class="text-lg font-semibold mb-0.5">Deadline</p>
         <input class="mb-2 w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
                type="date" placeholder="Deadline" value="@_joinEvent.Deadline.ToString("yyyy-MM-dd")" @oninput="@(v => { if (DateTime.TryParse(v.Value?.ToString(), CultureInfo.InvariantCulture, out var parsedDate)) _joinEvent.Deadline = parsedDate; })"/>
-       <div class="text-error">
-               <ValidationSummary />
-               </div>
+        <div class="text-error">
+            <ValidationSummary/>
+        </div>
         <div class="mt-5 mb-5 flex justify-end space-x-3">
             <button type="button" @onclick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog"))" class="w-fit p-4 px-6 rounded-full border border-black shadow transition duration-300 font-label hover:bg-gray-700 hover:text-white">Annuller</button>
             <button type="submit" class="w-fit p-4 px-6 rounded-full border border-transparent text-white shadow-sm font-label bg-secondary text-nowrap hover:bg-gray-800">Opret</button>
@@ -88,7 +90,7 @@
     }
     else
     {
-        <LoadingTextAndCircle Text="Opretter"/>
+        <LoadingIndicator Text="Opretter"/>
     }
 </dialog>
 
@@ -296,7 +298,7 @@
             if (_loadingShowtimes)
             {
                 <div class="mt-5">
-                    <LoadingTextAndCircle Text="Indlæser spilletider"/>
+                    <LoadingIndicator Text="Indlæser spilletider"/>
                 </div>
             }
             else if (_selectedCinemas.Count == 0 && _selectedMovies.Count == 0 && _selectedGenres.Count == 0)
@@ -583,3 +585,4 @@
     }
 
 }
+

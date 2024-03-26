@@ -64,7 +64,7 @@
                         {
                             var vote = Votes.FirstOrDefault(v => v.ShowtimeId == showtime.Id);
                             vote ??= new ParticipantVote { SelectedOption = SelectOptions.First() }; //because of lazy loading there may be a split second where the votes haven't been initialized
-                            <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center  select-none rounded shadow-inset bg-@vote.SelectedOption.Color @(HasAnswered ? "" : "hover:border hover:border-gray-300 cursor-pointer")" value="@showtime.Playtime.StartTime" @onclick="@(() => HandleShowtimeClick(vote))">
+                            <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center  select-none rounded shadow-inset bg-@vote.SelectedOption.Color @(HasAnswered ? "" : "hover:bg-opacity-50 cursor-pointer")" value="@showtime.Playtime.StartTime" @onclick="@(() => HandleShowtimeClick(vote))">
                                 <div class="mb-1 text-center text-sm line-clamp-1"> @showtime.Room.Name </div >
                                 <div class="text-lg font-bold"> @showtime.Playtime.StartTime.ToString("HH:mm", CultureInfo.InvariantCulture) </div > <!--showtime - time-->
                             </div>

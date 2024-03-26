@@ -3,7 +3,9 @@
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <Authorizing>
-                    <LoadingTextAndCircle/>
+                    <div class="flex justify-center">
+                        <LoadingIndicator/>
+                    </div>
                 </Authorizing>
                 <NotAuthorized>
                     <h1>Sorry</h1>

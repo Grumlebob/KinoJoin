@@ -10,9 +10,9 @@
     <!-- PosterImage -->
     @if (_shouldRender)
     {
-        <div class="row-span-2 space-y-2 md:min-w-48 md:sticky md:top-16 md:row-span-3 md:self-start">
+        <div class="row-span-2 space-y-2 md:min-w-48 md:sticky md:top-20 md:row-span-3 md:self-start">
             <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank">
-                <img src="@( Movie.ImageUrl is not null ? _imageBasePath + Movie.ImageUrl : _fallbackImageUrl )" alt="Movie Poster" class="max-h-full w-full rounded-sm shadow"/>
+                <img src="@( Movie.ImageUrl is not null ? _imageBasePath + Movie.ImageUrl : _fallbackImageUrl )" alt="Movie Poster" class="hover:opacity-50 max-h-full w-full rounded-sm shadow"/>
             </a>
             <!--Læs mere og trailer-->
             <div class="hidden flex-col items-center px-3 space-y-1 md:flex">
@@ -29,8 +29,7 @@
         <div class="flex flex-col space-y-2">
             <div class="flex justify-between">
                 <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank" class="block text-black no-underline divide-y-8">
-
-                    <h2 class="text-2xl font-bold md:text-4xl">@Movie.Title</h2>
+                    <h2 class="text-2xl font-bold md:text-4xl hover:underline">@Movie.Title</h2>
                 </a>
                 <button @onclick="ToggleCollapse" class="translate-x-8">
                     <svg class="transition-transform" style="@(_shouldRender ? "transform: rotate(0deg)" : "transform: rotate(-180deg)")" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 20 20" fill="currentColor">

@@ -94,11 +94,6 @@ public class KinoJoinEndpoints : ICarterModule
         try
         {
             var cinemas = await kinoKinoJoinService.GetAllCinemas();
-
-            if (cinemas.Count == 0)
-            {
-                return TypedResults.NotFound();
-            }
             return TypedResults.Ok(cinemas);
         }
         catch (Exception)
@@ -114,10 +109,6 @@ public class KinoJoinEndpoints : ICarterModule
         try
         {
             var movies = await kinoKinoJoinService.GetAllMovies();
-            if (movies.Count == 0)
-            {
-                return TypedResults.NotFound();
-            }
             return TypedResults.Ok(movies);
         }
         catch (Exception)
@@ -133,10 +124,6 @@ public class KinoJoinEndpoints : ICarterModule
         try
         {
             var genres = await kinoKinoJoinService.GetAllGenres();
-            if (genres.Count == 0)
-            {
-                return TypedResults.NotFound();
-            }
             return TypedResults.Ok(genres);
         }
         catch (Exception)

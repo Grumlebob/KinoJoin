@@ -32,7 +32,8 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Censorship")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("Id");
 
@@ -49,7 +50,8 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
 
                     b.HasKey("Id");
 
@@ -63,7 +65,8 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
 
                     b.HasKey("Id");
 
@@ -73,14 +76,17 @@ namespace Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Domain.Entities.Host", b =>
                 {
                     b.Property<string>("AuthId")
-                        .HasColumnType("text");
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
 
                     b.Property<string>("Email")
-                        .HasColumnType("text");
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
 
                     b.HasKey("AuthId");
 
@@ -106,15 +112,18 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("HostId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
 
                     b.HasKey("Id");
 
@@ -137,17 +146,21 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("ImageUrl")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("KinoUrl")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("PremiereDate")
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.HasKey("Id");
 
@@ -165,20 +178,24 @@ namespace Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AuthId")
-                        .HasColumnType("text");
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
 
                     b.Property<string>("Email")
-                        .HasColumnType("text");
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
 
                     b.Property<int>("JoinEventId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Nickname")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
 
                     b.Property<string>("Note")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.HasKey("Id");
 
@@ -233,7 +250,8 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
 
                     b.HasKey("Id");
 
@@ -250,11 +268,13 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Color")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
 
                     b.Property<string>("VoteOption")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
 
                     b.HasKey("Id");
 
@@ -309,7 +329,8 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
 
                     b.HasKey("Id");
 

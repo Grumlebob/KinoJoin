@@ -262,7 +262,7 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public async Task UpdateAll_ShouldReturnOk_IfUpdateSucceeds()
     {
-        //The tests main focus is getting the static data from kino.dk - should take about 2 minutes
+        //The tests main focus is getting the static data from kino.dk - should take about 2 minutes 
         var response = await _client.PostAsync("api/kino-data/update-all", null);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 

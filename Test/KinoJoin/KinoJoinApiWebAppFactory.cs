@@ -61,6 +61,8 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
         _dbConnection = new NpgsqlConnection(_dbContainer.GetConnectionString());
 
         HttpClient = CreateClient();
+        //Seeding data can take a long time, so we set a longer timeout
+        HttpClient.Timeout = TimeSpan.FromMinutes(5);
 
         //THIS IS WHERE YOU CAN ADD SEED DATA
         using var scope = Services.CreateScope();

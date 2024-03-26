@@ -24,10 +24,9 @@ public class KinoJoinEndpoints : ICarterModule
         kinoDataGroup.MapGet("cinemas", GetCinemas);
         kinoDataGroup.MapGet("movies", GetMovies);
         kinoDataGroup.MapGet("genres", GetGenres);
-        kinoDataGroup.MapGet("all", UpdateBaseDataFromKinoDk);
+        kinoDataGroup.MapPost("update-all", UpdateAllBaseDataFromKinoDk);
     }
 
-    //Result<> is a union type, that can be all the different responses we can return, so it is easier to test.
     private static async Task<Results<Ok<int>, BadRequest<string>>> UpsertJoinEvent(
         [FromBody] JoinEvent joinEvent,
         [FromServices] IKinoJoinDbService kinoJoinDbService
@@ -95,6 +94,11 @@ public class KinoJoinEndpoints : ICarterModule
         try
         {
             var cinemas = await kinoKinoJoinService.GetAllCinemas();
+
+            if (cinemas.Count == 0)
+            {
+                return TypedResults.NotFound();
+            }
             return TypedResults.Ok(cinemas);
         }
         catch (Exception)
@@ -110,6 +114,10 @@ public class KinoJoinEndpoints : ICarterModule
         try
         {
             var movies = await kinoKinoJoinService.GetAllMovies();
+            if (movies.Count == 0)
+            {
+                return TypedResults.NotFound();
+            }
             return TypedResults.Ok(movies);
         }
         catch (Exception)
@@ -125,6 +133,10 @@ public class KinoJoinEndpoints : ICarterModule
         try
         {
             var genres = await kinoKinoJoinService.GetAllGenres();
+            if (genres.Count == 0)
+            {
+                return TypedResults.NotFound();
+            }
             return TypedResults.Ok(genres);
         }
         catch (Exception)
@@ -155,7 +167,7 @@ public class KinoJoinEndpoints : ICarterModule
         }
     }
 
-    private static async Task<Results<Ok, BadRequest<string>>> UpdateBaseDataFromKinoDk(
+    private static async Task<Results<Ok, BadRequest<string>>> UpdateAllBaseDataFromKinoDk(
         [FromServices] IFetchNewestKinoDkDataService service
     )
     {
@@ -164,7 +176,7 @@ public class KinoJoinEndpoints : ICarterModule
             await service.UpdateBaseDataFromKinoDk(1, 71);
             return TypedResults.Ok();
         }
-        catch (Exception)
+        catch (Exception e)
         {
             return TypedResults.BadRequest(DefaultErrorMessage);
         }

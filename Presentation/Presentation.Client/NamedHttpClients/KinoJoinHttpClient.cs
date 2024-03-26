@@ -64,6 +64,6 @@ public class KinoJoinHttpClient : IKinoJoinHttpClient
 
     public async Task<HttpResponseMessage> UpdateBaseDataFromKinoDkAsync()
     {
-        return await _httpClient.GetAsync("api/kino-data/all");
+        return await _httpClient.PostAsync("api/kino-data/update-all", null);
     }
 }

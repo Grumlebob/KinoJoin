@@ -5,17 +5,6 @@ using Newtonsoft.Json;
 
 namespace Infrastructure.Services;
 
-public interface IFilterApiHandler
-{
-    Task<(List<Showtime> showtimes, List<Movie> moviesWithoutShowtimes)> GetShowtimesFromFilters(
-        ICollection<int>? cinemaIds = null,
-        ICollection<int>? movieIds = null,
-        ICollection<int>? genreIds = null,
-        DateTime? fromDate = null,
-        DateTime? toDate = null
-    );
-}
-
 public class FilterApiHandler : IFilterApiHandler
 {
     private readonly HttpClient _httpClient = new();

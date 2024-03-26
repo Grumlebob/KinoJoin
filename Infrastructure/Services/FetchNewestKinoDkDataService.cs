@@ -111,7 +111,7 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                                     .ShowtimeApiFieldPoster
                                     .FieldMediaImage
                                     .Sources[0]
-                                    ?.Srcset;
+                                    ?.Srcset.Replace("https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/","");
                             }
 
                             movieObject = new Movie

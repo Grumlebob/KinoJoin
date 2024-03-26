@@ -1,4 +1,5 @@
 ﻿using System.Data.Common;
+using System.Security.Cryptography;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -14,6 +15,12 @@ namespace Test.KinoJoin;
 //WebApplicationFactory is a class that allows us to create a test server for our application in memory, but setup with real dependencies.
 public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    /// The entire test environment uses a single connection to the database. This means that all the tests have to be done by the time
+    /// the connection is closed. <seealso cref="UpdateAllBaseDataFromKinoDk_ShouldReturnOk_IfUpdateSucceeds">hejsa</seealso>
+    /// The reason why this is necessary is because preseeding of the database is slow and will end up being cancelled
+    /// if the connection is closed before terminating
+    private const int MaxWaittimeMinutes = 5;
+
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder()
         .WithImage("postgres:latest")
         .Build();
@@ -62,7 +69,7 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
 
         HttpClient = CreateClient();
         //Seeding data can take a long time, so we set a longer timeout
-        HttpClient.Timeout = TimeSpan.FromMinutes(5);
+        HttpClient.Timeout = TimeSpan.FromMinutes(MaxWaittimeMinutes);
 
         //THIS IS WHERE YOU CAN ADD SEED DATA
         using var scope = Services.CreateScope();

@@ -2,6 +2,7 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
+@inject SqidsEncoder<int> SqidsEncoder
 
 <PageTitle>JoinEvent</PageTitle>
 
@@ -161,21 +162,27 @@
     protected override async Task OnInitializedAsync()
     {
         _baseUrl = NavigationManager.BaseUri;
-        int id = int.Parse(JoinEventId);
-        var response = await KinoJoinHttpClient.GetJoinEventAsync(id);
-        if (response != null)
+        var id = SqidsEncoder.Decode(JoinEventId).FirstOrDefault();
+        if (SqidsEncoder.Encode(id) == JoinEventId) //avoid false positives
         {
-            _event = response;
+            _event = await KinoJoinHttpClient.GetJoinEventAsync(id);
+        }
+        else
+        {
+            _event = null;
         }
 
-        if (_event is { Showtimes: not null })
+        if (_event is null)
         {
-            _currentParticipant.VotedFor = _event.Showtimes.Select(st =>
-                new ParticipantVote
-                {
-                    ShowtimeId = st.Id, SelectedOptionId = _event.DefaultSelectOptionId, SelectedOption = _event.DefaultSelectOption
-                }).ToList(); // a default vote for each showtime
+            _loading = false;
+            return;
         }
+
+        _currentParticipant.VotedFor = _event.Showtimes.Select(st =>
+            new ParticipantVote
+            {
+                ShowtimeId = st.Id, SelectedOptionId = _event.DefaultSelectOptionId, SelectedOption = _event.DefaultSelectOption
+            }).ToList(); // a default vote for each showtime
 
 
         //check if user is host

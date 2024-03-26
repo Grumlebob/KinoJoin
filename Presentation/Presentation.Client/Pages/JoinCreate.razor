@@ -1,9 +1,11 @@
 ﻿@page "/"
 @page "/create-event/{FilterString?}"
+
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
 @inject IFilterApiHandler FilterHandler
+@inject SqidsEncoder<int> SqidsEncoder
 
 @if (_loadingPage)
 {
@@ -96,15 +98,18 @@
 </dialog>
 
 @* Dialog which shows the share link *@
+@{
+    var hashedId = SqidsEncoder.Encode(_joinEvent.Id);
+}
 <dialog id="eventShareDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl md:min-w-96">
     <div class="space-y-1">
         <p class="text-lg font-semibold mb-0.5">Dit event er nu oprettet</p>
         <p class="font-semibold">Send dette link til dine venner (Du kan også se resultater på denne side)</p>
         <div class="flex items-center gap-1">
-            <a href="@(_baseUrl + "filling/" + _joinEvent.Id)" class="text-lg text-blue-600 hover:text-blue-700">
-                @(_baseUrl + "filling/" + _joinEvent.Id)
+            <a href="@(_baseUrl + "filling/" + hashedId)" class="text-lg text-blue-600 hover:text-blue-700">
+                @(_baseUrl + "filling/" + hashedId)
             </a>
-            <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", (_baseUrl + "filling/" + _joinEvent.Id)); await ShowSnackbar("Link kopieret", "success"); })">
+            <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + hashedId); await ShowSnackbar("Link kopieret", "success"); })">
                 <CopyIcon Class="hover:bg-gray-200 p-2 rounded-full"/>
             </button>
             <button @onclick="ShareEvent" class="rounded-full p-2 text-white bg-secondary hover:bg-gray-700 lg:hidden">
@@ -490,7 +495,7 @@
         {
             title = _joinEvent.Title,
             text = _joinEvent.Description,
-            url = _baseUrl + "filling/" + _joinEvent.Id
+            url = _baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id)
         };
 
         await JsRuntime.InvokeVoidAsync("navigator.share", data);
@@ -564,7 +569,7 @@
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog");
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog");
 
-        NavigationManager.NavigateTo("filling/" + _joinEvent.Id);
+        NavigationManager.NavigateTo("filling/" + SqidsEncoder.Encode(_joinEvent.Id));
     }
 
     private void OnVoteChange(ICollection<ParticipantVote> votes)

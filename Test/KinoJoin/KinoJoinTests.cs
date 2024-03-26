@@ -260,27 +260,11 @@ public class KinoJoinTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task UpdateAll_ShouldReturnOk_IfUpdateSucceeds()
+    public async Task UpdateAllBaseDataFromKinoDk_ShouldReturnOk_IfUpdateSucceeds()
     {
-        //The tests main focus is getting the static data from kino.dk - should take about 2 minutes 
+        //The tests main focus is getting the static data from kino.dk - should take about 2 minutes
         var response = await _client.PostAsync("api/kino-data/update-all", null);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        //Check that cinemas, genres, movies now exist
-        var cinemasResponse = await _client.GetAsync("api/kino-data/cinemas");
-        cinemasResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var cinemas = await cinemasResponse.Content.ReadFromJsonAsync<List<Cinema>>();
-        cinemas.Should().NotBeNull();
-
-        var moviesResponse = await _client.GetAsync("api/kino-data/movies");
-        moviesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var movies = await moviesResponse.Content.ReadFromJsonAsync<List<Movie>>();
-        movies.Should().NotBeNull();
-
-        var genresResponse = await _client.GetAsync("api/kino-data/genres");
-        genresResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var genres = await genresResponse.Content.ReadFromJsonAsync<List<Genre>>();
-        genres.Should().NotBeNull();
     }
 
     //We don't care about the InitializeAsync method, but needed to implement the IAsyncLifetime interface

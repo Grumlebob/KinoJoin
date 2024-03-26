@@ -162,7 +162,9 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
             }
             catch (Exception)
             {
-                throw new Exception("preseeding failed for cinema " + i);
+                Console.WriteLine(
+                    $"Failed to fetch data for cinema {i}. Skipping to next. Usually Kino.dk is down 5% of the day."
+                );
             }
         }
     }

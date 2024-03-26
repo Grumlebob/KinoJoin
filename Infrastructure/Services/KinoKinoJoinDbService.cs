@@ -3,9 +3,41 @@ using Infrastructure.Persistence;
 
 namespace Infrastructure.Services;
 
-public class JoinEventService(KinoContext context) : IJoinEventService
+public class KinoKinoJoinDbService(KinoContext context) : IKinoJoinDbService
 {
-    //optimized db calls
+    public async Task<ICollection<Cinema>> GetAllCinemas(Func<Cinema, bool>? filter = null)
+    {
+        var query = context.Cinemas.AsNoTracking();
+        if (filter != null)
+        {
+            query = query.AsEnumerable().Where(filter).AsQueryable();
+        }
+
+        return await query.ToListAsync();
+    }
+
+    public async Task<ICollection<Movie>> GetAllMovies(Func<Movie, bool>? filter = null)
+    {
+        var query = context.Movies.AsNoTracking();
+        if (filter != null)
+        {
+            query = query.AsEnumerable().Where(filter).AsQueryable();
+        }
+
+        return await query.ToListAsync();
+    }
+
+    public async Task<ICollection<Genre>> GetAllGenres(Func<Genre, bool>? filter = null)
+    {
+        var query = context.Genres.AsNoTracking();
+        if (filter != null)
+        {
+            query = query.AsEnumerable().Where(filter).AsQueryable();
+        }
+
+        return await query.ToListAsync();
+    }
+
     public async Task<JoinEvent?> GetAsync(int id)
     {
         var result = await context
@@ -31,7 +63,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         return result;
     }
 
-    //optimized db calls
     public async Task<List<JoinEvent>> GetAllAsync(Expression<Func<JoinEvent, bool>>? filter = null)
     {
         IQueryable<JoinEvent> query = context.JoinEvents.AsNoTracking();
@@ -64,7 +95,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         return joinEvents;
     }
 
-    //OPTIMIZED DB CALLS
     public async Task DeleteParticipantAsync(int eventId, int participantId)
     {
         // Find the participant directly without loading the entire JoinEvent and Participants
@@ -198,7 +228,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         return addedId;
     }
 
-    //Optimized DB calls except playtimes.
     /// <summary>
     ///  Handles independent data that came from Kino.dk, like cinemas, movies, playtimes...
     /// </summary>
@@ -282,7 +311,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         await context.SaveChangesAsync();
     }
 
-    //OPTIMIZED DB CALLS
     private async Task HandleMovies(JoinEvent joinEvent)
     {
         // Collect all distinct movie IDs from the joinEvent's showtimes
@@ -336,7 +364,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         await context.SaveChangesAsync();
     }
 
-    //OPTIMIZED DB CALLS
     private async Task HandleHost(JoinEvent joinEvent)
     {
         var existingHost = await context.Hosts.FindAsync(joinEvent.Host.AuthId);
@@ -352,7 +379,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         await context.SaveChangesAsync();
     }
 
-    //OPTIMIZED DB CALLS
     private async Task HandleShowtimes(JoinEvent joinEvent)
     {
         var showtimeIds = joinEvent.Showtimes.Select(s => s.Id).ToList();
@@ -418,7 +444,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         joinEvent.SelectOptions = upsertedSelectOptions;
     }
 
-    //OPTIMIZED DB CALLS
     //It will first check the joinEvent.SelectOptions, as that list has been processed in previous method and includes references to DB entities
     private async Task HandleDefaultSelectOptions(JoinEvent joinEvent)
     {
@@ -459,7 +484,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         }
     }
 
-    //OPTIMIZED DB CALLS
     private async Task<int> HandleJoinEvent(JoinEvent joinEvent)
     {
         var newJoinEvent = new JoinEvent

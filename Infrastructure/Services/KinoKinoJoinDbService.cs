@@ -156,14 +156,15 @@ public class KinoKinoJoinDbService(KinoContext context) : IKinoJoinDbService
 
     private async Task<int> UpdateJoinEventAsync(JoinEvent updatedJoinEvent)
     {
-        await context.JoinEvents.Where(b => b.Id == updatedJoinEvent.Id).ExecuteUpdateAsync(setters =>
-            
-            setters
-                .SetProperty(b => b.Title, updatedJoinEvent.Title)
-                .SetProperty(b => b.Description, updatedJoinEvent.Description)
-                .SetProperty(b => b.ChosenShowtimeId, updatedJoinEvent.ChosenShowtimeId)
-                .SetProperty(b => b.Deadline, updatedJoinEvent.Deadline)
-        );
+        await context
+            .JoinEvents.Where(b => b.Id == updatedJoinEvent.Id)
+            .ExecuteUpdateAsync(setters =>
+                setters
+                    .SetProperty(b => b.Title, updatedJoinEvent.Title)
+                    .SetProperty(b => b.Description, updatedJoinEvent.Description)
+                    .SetProperty(b => b.ChosenShowtimeId, updatedJoinEvent.ChosenShowtimeId)
+                    .SetProperty(b => b.Deadline, updatedJoinEvent.Deadline)
+            );
 
         context.ChangeTracker.Clear();
         // Fetch existing participants from the database

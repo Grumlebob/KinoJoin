@@ -265,7 +265,7 @@
         var authenticationState = await AuthenticationStateTask;
         var user = authenticationState.User;
         var email = user.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
-        if (email == "johndoe@novo.dk")
+        if (email == "johndoe@novo.com")
         {
             _isLoggedInUserAdmin = true;
         }

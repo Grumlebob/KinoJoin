@@ -26,8 +26,8 @@
                 <h2 class="text-xl font-bold">@_event.Host.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h2>
                 <div class="flex md:items-end md:justify-end">
                     <div class="flex w-full flex-col gap-2 md:w-fit md:flex-row">
-                        <button class="rounded-full border px-3 py-2 shadow transition duration-300 border-secondary font-label hover:bg-neutral-950 hover:text-white" onclick="@(() => { _showFirstLoginDialog = false; })">Uden login</button>
-                        <button class="rounded-full px-3 py-2 text-white shadow font-label bg-primary hover:bg-primary-dark" onclick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + _event?.Id }); })">Anvend dit kino login</button>
+                        <Button Variant="Button.ButtonVariant.White" OnClick="@(() => { _showFirstLoginDialog = false; })">Uden login</Button>
+                        <Button Variant="Button.ButtonVariant.Red" OnClick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + _event?.Id }); })"> Anvend dit Kino login</Button>
                     </div>
                 </div>
             </div>
@@ -50,31 +50,28 @@
 
                     @if (_isHost)
                     {
-                        <button @onclick="async () => { if (_isEditing) await UpdateJoinEvent(); _isEditing = !_isEditing; }">
-
-                            @if (_isEditing)
-                            {
-                                <div class="rounded-full border px-2 py-1 shadow transition duration-100 duration-300 border-secondary hover:bg-secondary hover:text-white">
-                                    <p>Gem ændringer</p>
-                                </div>
-                            }
-                            else
-                            {
+                        @if (_isEditing)
+                        {
+                            <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => { await UpdateJoinEvent(); _isEditing = false; })">Gem ændringer</Button>
+                        }
+                        else
+                        {
+                            <button onclick="@(() => { _isEditing = true; })">
                                 <EditIcon Class="fill-black hover:bg-gray-200 rounded p-1"/>
-                            }
-                        </button>
+                            </button>
+                        }
                     }
                 </div>
 
                 @if (_isEditing)
                 {
-                    <textarea  class="w-full rounded-2xl border p-1 md:w-60" type="text" cols="5" placeholder="Beskrivelse"  @bind="_event.Description"></textarea>
+                    <textarea class="w-full rounded-2xl border p-1 md:w-60" type="text" cols="5" placeholder="Beskrivelse"  @bind="_event.Description"></textarea>
                 }
                 else
                 {
                     if (_event.Description != "")
                     {
-                        <p >@_event.Description</p>
+                        <p>@_event.Description</p>
                         <br/>
                     }
                 }
@@ -96,7 +93,7 @@
                 <span class="font-medium">Tidsinterval:</span>
                 <span> @_event.Showtimes.Min(s => s.Playtime.StartTime).ToString("dd. MMM") - @_event.Showtimes.Max(s => s.Playtime.StartTime).ToString("dd. MMM")</span>
                 <br/>
-                <button class="rounded-full border border-black px-2 py-1 shadow transition duration-100 duration-300 font-label hover:bg-neutral-950 hover:text-white" @onclick="ScrollToBottom">Se resultater</button>
+                <Button Variant="Button.ButtonVariant.White" OnClick="@ScrollToBottom" Class="font-label">Se Resultater</Button>
             </div>
         </div>
         @if (_isHost)

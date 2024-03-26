@@ -104,13 +104,13 @@ public class FilterApiHandler : IFilterApiHandler
                                 {
                                     Censorship = jsonMovie.Content.FieldCensorshipIcon
                                 },
-                        ImageUrl = jsonMovie
-                            .Content
-                            .ShowtimeApiFieldPoster
-                            .FieldMediaImage
-                            ?.Sources
-                            ?[0]
-                            .Srcset.Replace("https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/",""),
+                        ImageUrl =
+                            jsonMovie.Content.ShowtimeApiFieldPoster.FieldMediaImage?.Sources?[
+                                0
+                            ].Srcset.Replace(
+                                "https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/",
+                                ""
+                            ),
                         Duration = duration,
                     };
                     existingMovies.Add(movieObject.Id, movieObject);
@@ -225,7 +225,12 @@ public class FilterApiHandler : IFilterApiHandler
                     movie.Content.FieldCensorshipIcon == null
                         ? null
                         : new AgeRating { Censorship = movie.Content.FieldCensorshipIcon },
-                ImageUrl = movie.Content.ShowtimeApiFieldPoster.FieldMediaImage?.Sources?[0].Srcset.Replace("https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/",""),
+                ImageUrl = movie.Content.ShowtimeApiFieldPoster.FieldMediaImage?.Sources?[
+                    0
+                ].Srcset.Replace(
+                    "https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/",
+                    ""
+                ),
                 Duration = duration
             };
             missingMovies.Add(movieObject);

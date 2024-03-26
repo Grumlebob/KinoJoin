@@ -93,20 +93,13 @@
             <div class="flex h-fit w-full justify-end items-end md:justify-start md:items-start gap-1 w-full">
                 @if (!Desktop)
                 {
-                    <button @onclick="ShowVotes" class="flex items-center gap-1 rounded-full border-2 border-gray-300 bg-white px-2 py-1 hover:bg-gray-300">
-
-                        <p class="whitespace-nowrap">
-                            Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)))
-                        </p>
-                    </button>
+                    <Button OnClick="@ShowVotes">Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)))</Button>
                 }
 
 
                 @if (IsHost)
                 {
-                    <button class="w-fit whitespace-nowrap rounded-full px-3 py-2 text-white bg-primary hover:bg-primary-dark" @onclick="() => OpenConfirmationDialog(Showtime.Id)">
-                        Bekræft event
-                    </button>
+                    <Button Variant="Button.ButtonVariant.Red" OnClick="@(() => OpenConfirmationDialog(Showtime.Id))">Bekræft event</Button>
                 }
             </div>
         </div>
@@ -138,20 +131,24 @@
     <div class="flex flex-col items-end gap-4">
         <h2 class="text-xl font-bold">Ønsker du at bekræfte forestillingen for dette event?</h2>
         <div class="flex gap-1">
-            <button class="w-fit p-4 px-6 rounded-full border border-black shadow transition duration-300 font-label hover:bg-gray-700 hover:text-white" @onclick="() => CloseDialog(Showtime.Id)">Nej</button>
-            <button class="w-fit p-4 px-6 rounded-full border border-transparent text-white shadow-sm font-label bg-secondary text-nowrap hover:bg-gray-800" @onclick="@(async () => { await OpenDetailsDialog(Showtime, Showtime.Id);  await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog","confirmEvent" + Showtime.Id + Desktop);})">Ja</button>
+            <Button Variant="Button.ButtonVariant.White" OnClick="@(() => CloseDialog(Showtime.Id))">Nej</Button>
+            <Button Variant="Button.ButtonVariant.Black" OnClick="@(async () => { await OpenDetailsDialog(Showtime, Showtime.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + Showtime.Id + Desktop); })">Ja</Button>
         </div>
     </div>
 </dialog>
 <dialog class="rounded p-5" id="@("confirmDetails" + Showtime.Id + Desktop)">
     <div class="flex flex-col items-center gap-4">
         <h2 class="text-xl font-bold">Event valgt</h2>
-        <div class="flex @(Desktop ? "" : "flex-col") gap-2 md:gap-1">
-            <button class="bg-primary rounded-full p-3 py-1   @(Desktop ? "" : "w-full") text-white hover:bg-primary-dark" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("open", $"https://kino.dk/ticketflow/showtimes/{Showtime.Id}", "_blank"); })">Bestil billetter</button>
-            <button class="border border-secondary px-3 py-1 shadow duration-300 transition transition duration-100  rounded-full hover:bg-secondary hover:text-white @(Desktop ? "" : "w-full")" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "calendar-dialog" + Desktop); })">Tilføj til egen kalender</button>
-            <button class="border border-secondary px-3 py-1 shadow duration-300 transition transition duration-100  rounded-full hover:bg-secondary hover:text-white @(Desktop ? "" : "w-full")" onclick="@(async () => await GoToMailToLink(Showtime))">Send mail til deltagere</button>
-            <button class="border border-secondary px-3 py-1 shadow duration-300 transition transition duration-100  rounded-full hover:bg-secondary hover:text-white @(Desktop ? "" : "w-full")" @onclick="ShareEvent">Del</button>
-            <button class="bg-error rounded-full p-3 py-1 @(Desktop ? "" : "w-full") text-white hover:bg-error-dark" @onclick="() => CloseDialog(Showtime.Id)">Luk</button>
+        <div class="space-y-3">
+            <div class="flex flex-col gap-2 md:gap-1">
+                <Button Variant="Button.ButtonVariant.Red" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("open", $"https://kino.dk/ticketflow/showtimes/{Showtime.Id}", "_blank"))" Class="@(Desktop ? "" : "w-full")">Bestil Billetter</Button>
+                <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "calendar-dialog" + Desktop))">Tilføj til egen kalender</Button>
+                <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => await GoToMailToLink(Showtime))">Send mail til deltagere</Button>
+                <Button Variant="Button.ButtonVariant.White" OnClick="@ShareEvent">Del</Button>
+            </div>
+            <div class="w-full flex justify-end">
+                <Button Variant="Button.ButtonVariant.Black" OnClick="@(() => CloseDialog(Showtime.Id))">Luk</Button>
+            </div>
         </div>
     </div>
 </dialog>

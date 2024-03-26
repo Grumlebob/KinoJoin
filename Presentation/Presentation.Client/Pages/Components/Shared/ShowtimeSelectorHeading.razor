@@ -10,7 +10,7 @@
     <!-- PosterImage -->
     @if (_shouldRender)
     {
-        <div class="row-span-2 space-y-2 md:min-w-48 md:sticky md:top-20 md:row-span-3 md:self-start">
+        <div class="row-span-2 space-y-2 md:min-w-48 md:sticky md:top-4 md:row-span-3 md:self-start">
             <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank">
                 <img src="@( Movie.ImageUrl is not null ? _imageBasePath + Movie.ImageUrl : _fallbackImageUrl )" alt="Movie Poster" class="hover:opacity-50 max-h-full w-full rounded-sm shadow"/>
             </a>

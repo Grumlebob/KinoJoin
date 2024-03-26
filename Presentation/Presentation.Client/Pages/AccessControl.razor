@@ -3,22 +3,24 @@
 
 <AuthorizeView>
     <Authorized>
-        <p class="mr-2">
-            Hej, @context.User.Identity.Name!
-        </p>
-        <a href="#" @onclick="BeginSignOut">
-            <button>
-                Log out
-            </button>
-        </a>
+        <div class="flex items-center">
+            <p class="mr-2">
+                Hej, @context.User.Identity.Name!
+            </p>
+            <a href="#" @onclick="BeginSignOut">
+                <Button Variant="Button.ButtonVariant.White">
+                    Log ud
+                </Button>
+            </a>
+        </div>
     </Authorized>
     <NotAuthorized>
         @if (Navigation.BaseUri.Contains("https"))
         {
             <a href="authentication/login">
-                <button>
-                    Log in
-                </button>
+                <Button Variant="Button.ButtonVariant.Black">
+                    Log ind
+                </Button>
             </a>
         }
     </NotAuthorized>

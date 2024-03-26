@@ -2,10 +2,9 @@
 @inject NavigationManager NavigationManager
 @inject IKinoJoinHttpClient KinoJoinHttpClient
 
-
 <div class="flex flex-col gap-2">
     <div class="flex justify-between">
-        <h2 class="text-2xl text-bold">Andres svar</h2>
+        <h2 class="text-2xl text-bold">Resultater</h2>
         <Button Variant="Button.ButtonVariant.Black" OnClick="@ShowParticipantDialog" Class="flex justify-center items-center gap-1 md:hidden">
             <ParticipantsIcon Class="fill-white"/>
             <span>Deltagere</span>
@@ -13,14 +12,16 @@
     </div>
 
     <label>
-        <div class="w-fit rounded border p-3">
+        <div class="w-fit rounded border bg-gray-100 p-3">
             Sortér efter:
-            <select onchange="@((ChangeEventArgs e) => { SetSortOption(e.Value.ToString()); })">
+            <select class="bg-transparent" onchange="@((ChangeEventArgs e) => { SetSortOption(e.Value.ToString()); })">
                 <option value="@VotesString">@VotesString</option>
                 <option value="@TimeString">@TimeString</option>
             </select>
         </div>
     </label>
+
+
 
     <div class="hidden md:block">
         <DesktopResults Event="Event" IsHost="IsHost" OnDeleteParticipant="OpenDeleteDialog" OrderedShowtimes="_orderedShowtimes"/>

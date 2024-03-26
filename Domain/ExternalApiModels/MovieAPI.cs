@@ -5,7 +5,8 @@
 /// </summary>
 public class MovieApiRoot
 {
-    [JsonProperty("content")] public required MovieApiContentLevel ApiContent;
+    [JsonProperty("content")]
+    public required MovieApiContentLevel ApiContent;
 }
 
 public class MovieApiContentLevel

@@ -34,7 +34,9 @@ public class KinoJoinHttpClient : IKinoJoinHttpClient
     public async Task<JoinEvent?> GetJoinEventAsync(int id)
     {
         var result = await _httpClient.GetAsync($"/api/events/{id}");
-        return result.IsSuccessStatusCode ? await result.Content.ReadFromJsonAsync<JoinEvent>() : null;
+        return result.IsSuccessStatusCode
+            ? await result.Content.ReadFromJsonAsync<JoinEvent>()
+            : null;
     }
 
     public async Task<HttpResponseMessage> PutJoinEventAsync(JoinEvent joinEvent)

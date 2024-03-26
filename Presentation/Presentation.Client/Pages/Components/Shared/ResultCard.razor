@@ -1,6 +1,8 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
+@inject IKinoJoinHttpClient KinoJoinHttpClient
 <div class="flex  flex-col justify-start text-start items-start gap-2 bg-slate-50   rounded p-5 shadow-md  text-wrap  ">
+
 
     <div class="@(Desktop ? "" : "gap-1") md:h-24">
         <div class="flex w-full items-center gap-2 ">
@@ -8,17 +10,11 @@
             <div class="flex w-full items-center gap-1">
 
                 <p class="font-bold ">
-                    @*<MovieIcon Class="fill-black" ></MovieIcon>*@
                     @Showtime.Movie.Title
                 </p>
             </div>
 
-            @if (Event.ChosenShowtimeId == Showtime.Id)
-            {
-                <div class="rounded-full bg-opacity-25 p-1 py-0 text-xs font-normal bg-success text-nowrap text-success-darkest">
-                    <p >Aftalt tid</p>
-                </div>
-            }
+
         </div>
 
 
@@ -36,7 +32,6 @@
     <hr class="h-px w-full rounded-full bg-gray-300"/>
     <div class="gap-1 md:h-24">
         <div class="flex w-full items-center gap-1 ">
-            @* <CinemaIcon Class="fill-black "/>*@
             <p class=" font-normal">
                 @Showtime.Cinema.Name
             </p>
@@ -97,7 +92,17 @@
                 }
 
 
-                @if (IsHost)
+                @if (Event.ChosenShowtimeId == Showtime.Id)
+                {
+                    <div class="  flex justify-center py-[14px] px-[15px] rounded-full bg-opacity-25  font-normal bg-success text-nowrap text-success-darkest">
+                        <p >Aftalt tid</p>
+                        <button class="p-1 rounded-full  hover:bg-success" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + Showtime.Id + Desktop); })">
+                            <ThreeDotIcon/>
+                        </button>
+                    </div>
+                }
+
+                @if (IsHost && Event.ChosenShowtimeId != Showtime.Id)
                 {
                     <Button Variant="Button.ButtonVariant.Red" OnClick="@(() => OpenConfirmationDialog(Showtime.Id))">Bekræft event</Button>
                 }
@@ -144,7 +149,10 @@
                 <Button Variant="Button.ButtonVariant.Red" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("open", $"https://kino.dk/ticketflow/showtimes/{Showtime.Id}", "_blank"))" Class="@(Desktop ? "" : "w-full")">Bestil Billetter</Button>
                 <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "calendar-dialog" + Desktop))">Tilføj til egen kalender</Button>
                 <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => await GoToMailToLink(Showtime))">Send mail til deltagere</Button>
-                <Button Variant="Button.ButtonVariant.White" OnClick="@ShareEvent">Del</Button>
+                @if (!Desktop)
+                {
+                    <Button Variant="Button.ButtonVariant.White" OnClick="@ShareEvent">Del</Button>
+                }
             </div>
             <div class="w-full flex justify-end">
                 <Button Variant="Button.ButtonVariant.Black" OnClick="@(() => CloseDialog(Showtime.Id))">Luk</Button>
@@ -170,6 +178,8 @@
 
     [Parameter] public bool IsHost { get; set; }
 
+    [Parameter] public EventCallback OnEventConfirmed { get; set; }
+
 
     private async Task ShowVotes()
     {
@@ -179,9 +189,8 @@
     private async Task OpenDetailsDialog(Showtime showtime, int index)
     {
         Event.ChosenShowtimeId = showtime.Id;
-        var httpClient = new HttpClient();
-        var response = await httpClient.PutAsJsonAsync($"{NavigationManager.BaseUri}putJoinEvent", Event);
-        var id = await response.Content.ReadAsStringAsync();
+        await KinoJoinHttpClient.PutJoinEventAsync(Event);
+        OnEventConfirmed.InvokeAsync();
         await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + index + Desktop);
     }
 

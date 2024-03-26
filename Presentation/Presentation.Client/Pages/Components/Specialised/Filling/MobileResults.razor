@@ -4,7 +4,7 @@
 <div class="space-y-3">
     @foreach (var showtime in OrderedShowtimes)
     {
-        <ResultCard IsHost="IsHost" Event="Event" Showtime="showtime" HasVoted="@(CurrentParticipant != null)" Vote="@(CurrentParticipant?.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id))"/>
+        <ResultCard IsHost="IsHost" Event="Event" Showtime="showtime" HasVoted="@(CurrentParticipant != null)" Vote="@(CurrentParticipant?.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id))" OnEventConfirmed="StateHasChanged"/>
     }
 </div>
 

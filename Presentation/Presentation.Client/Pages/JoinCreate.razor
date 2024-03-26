@@ -1,6 +1,5 @@
 ﻿@page "/"
 @page "/create-event/{FilterString?}"
-@using Infrastructure.Services
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
@@ -8,7 +7,9 @@
 
 @if (_loadingPage)
 {
-    <LoadingTextAndCircle/>
+    <div class="flex justify-center">
+        <LoadingIndicator/>
+    </div>
     return;
 }
 
@@ -26,10 +27,9 @@
 @* Dialog where user enters title and other event details *@
 <dialog id="eventDetailsDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
     <EditForm OnValidSubmit="context => ValidateAndOpenConfirmationDialog()" model="@_joinEvent">
-
         <DataAnnotationsValidator/>
         <p class="text-lg font-semibold mb-0.5">Event Titel</p>
-        <InputText class="mb-2 w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
+        <InputText class="mb-2 w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:ring-2 focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
                    type="text" placeholder="Titel" required
                    @bind-Value="_joinEvent.Title"/>
 
@@ -90,7 +90,7 @@
     }
     else
     {
-        <LoadingTextAndCircle Text="Opretter"/>
+        <LoadingIndicator Text="Opretter"/>
     }
     </form>
 </dialog>
@@ -208,7 +208,7 @@
     {
         SelectOptions =
         [
-            new() { VoteOption = "Kan ikke", Color = "gray-200" },
+            new() { VoteOption = "Kan ikke", Color = "gray-300" },
             new() { VoteOption = "Kan godt", Color = "success" },
             new() { VoteOption = "Hvis Nødvendigt (Klik to gange)", Color = "warning" }
         ],
@@ -229,7 +229,7 @@
     List<Movie> _moviesWithoutShowtimes = [];
     ICollection<ParticipantVote> _availableShowtimeVotes = []; //used to keep track of which showtimes are selected and not selected
 
-    readonly List<SelectOption> _hostSelectOptions = [new SelectOption { VoteOption = "Ikke valgt", Color = "gray-200" }, new SelectOption { VoteOption = "Valgt", Color = "success" }];
+    readonly List<SelectOption> _hostSelectOptions = [new SelectOption { VoteOption = "Ikke valgt", Color = "gray-300" }, new SelectOption { VoteOption = "Valgt", Color = "success" }];
     const int NoVoteIndex = 0; //when you vote no
     const int YesVoteIndex = 1;
 
@@ -295,7 +295,7 @@
             if (_loadingShowtimes)
             {
                 <div class="mt-5">
-                    <LoadingTextAndCircle Text="Indlæser spilletider"/>
+                    <LoadingIndicator Text="Indlæser spilletider"/>
                 </div>
             }
             else if (_selectedCinemas.Count == 0 && _selectedMovies.Count == 0 && _selectedGenres.Count == 0)
@@ -591,3 +591,4 @@
     }
 
 }
+

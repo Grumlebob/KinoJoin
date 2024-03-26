@@ -1,8 +1,8 @@
 @inject IJSRuntime JsRuntime
 
 <div class="relative">
-    <!-- Blur left edge (100%-50px to not cover scroll bar) -->
-    <div id="@UniqueId-blur-left" class="absolute rounded h-[calc(100%-50px)] w-16 bg-gradient-to-r from-background flex items-center justify-start">
+    <!-- Blur left edge (100%-30px to not cover scroll bar) -->
+    <div id="@UniqueId-blur-left" class="absolute rounded h-[calc(100%-30px)] translate-x-[-2px] w-16 bg-gradient-to-r from-background flex items-center justify-start">
         <button>
             <svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#000000" stroke-width="0.00024000000000000003" transform="rotate(180)">
                 <g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g>
@@ -14,7 +14,7 @@
     </div>
 
     <!-- Blur right edge -->
-    <div id="@UniqueId-blur-right" class="absolute rounded right-0 h-[calc(100%-50px)] w-16 bg-gradient-to-l from-background flex items-center justify-end">
+    <div id="@UniqueId-blur-right" class="absolute rounded right-0 translate-x-[2px] h-[calc(100%-30px)] w-16 bg-gradient-to-l from-background flex items-center justify-end">
         <button>
             <svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#000000" stroke-width="0.00024000000000000003">
                 <g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -64,7 +64,7 @@
                         {
                             var vote = Votes.FirstOrDefault(v => v.ShowtimeId == showtime.Id);
                             vote ??= new ParticipantVote { SelectedOption = SelectOptions.First() }; //because of lazy loading there may be a split second where the votes haven't been initialized
-                            <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center  select-none rounded shadow-inset bg-@vote.SelectedOption.Color @(HasAnswered ? "" : "hover:border hover:border-gray-300 cursor-pointer")" value="@showtime.Playtime.StartTime" @onclick="@(() => HandleShowtimeClick(vote))">
+                            <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center  select-none rounded shadow-inset bg-@vote.SelectedOption.Color @(HasAnswered ? "" : "hover:bg-opacity-50 cursor-pointer")" value="@showtime.Playtime.StartTime" @onclick="@(() => HandleShowtimeClick(vote))">
                                 <div class="mb-1 text-center text-sm line-clamp-1"> @showtime.Room.Name </div >
                                 <div class="text-lg font-bold"> @showtime.Playtime.StartTime.ToString("HH:mm", CultureInfo.InvariantCulture) </div > <!--showtime - time-->
                             </div>
@@ -89,7 +89,7 @@
     [Parameter] public ICollection<ParticipantVote> Votes { get; set; } = [];
 
     //Fallback values provided
-    [Parameter] public List<SelectOption> SelectOptions { get; set; } = [new SelectOption { VoteOption = "Kan ikke", Color = "gray-200" }, new SelectOption { VoteOption = "Kan godt", Color = "success" }];
+    [Parameter] public List<SelectOption> SelectOptions { get; set; } = [new SelectOption { VoteOption = "Kan ikke", Color = "gray-300" }, new SelectOption { VoteOption = "Kan godt", Color = "success" }];
 
     [Parameter] public EventCallback<ICollection<ParticipantVote>> VotesChanged { get; set; }
 

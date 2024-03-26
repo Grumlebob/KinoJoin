@@ -3,21 +3,35 @@
 
 <AuthorizeView>
     <Authorized>
-        Hello, @context.User.Identity.Name!
-        <a href="#" @onclick="BeginSignOut">Log out</a>
+        <div class="flex items-center">
+            <p class="mr-2">
+                Hej, @context.User.Identity.Name!
+            </p>
+            <a href="#" @onclick="BeginSignOut">
+                <Button Variant="Button.ButtonVariant.White">
+                    Log ud
+                </Button>
+            </a>
+        </div>
     </Authorized>
     <NotAuthorized>
         @if (Navigation.BaseUri.Contains("https"))
         {
-            <a href="authentication/login">Log in</a>
+            <a href="authentication/login">
+                <Button Variant="Button.ButtonVariant.Black">
+                    Log ind
+                </Button>
+            </a>
         }
     </NotAuthorized>
 </AuthorizeView>
 
 @code{
+
     private async Task BeginSignOut(MouseEventArgs args)
     {
         await SignOutManager.SetSignOutState();
         Navigation.NavigateTo("authentication/logout");
     }
+
 }

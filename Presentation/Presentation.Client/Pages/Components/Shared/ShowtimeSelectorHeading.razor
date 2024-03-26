@@ -79,10 +79,10 @@
     </div>
 
     @*TODO Opacity should only be set for the showtime buttons *@
-    <div class="col-span-3 md:col-start-2 md:row-start-2 md:row-end-3 @(HasAnswered ? "opacity-50" : "")">
+    <div class="col-span-3 md:col-start-2 md:row-start-2 md:row-end-3">
         @if (_shouldRender)
         {
-            @if (ChildContent is not null)
+            if (ChildContent is not null)
             {
                 @ChildContent
             }

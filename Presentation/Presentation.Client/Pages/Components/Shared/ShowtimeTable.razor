@@ -1,6 +1,6 @@
 @inject IJSRuntime JsRuntime
 
-<div class="relative">
+<div class="relative @(HasAnswered ? "opacity-25" : "")">
     <!-- Blur left edge (100%-30px to not cover scroll bar) -->
     <div id="@UniqueId-blur-left" class="absolute rounded h-[calc(100%-30px)] translate-x-[-2px] w-16 bg-gradient-to-r from-background flex items-center justify-start">
         <button>

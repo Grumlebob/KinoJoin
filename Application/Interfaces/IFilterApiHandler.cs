@@ -1,6 +1,6 @@
 ﻿namespace Application.Interfaces;
 
-public interface IKinoDkService
+public interface IFilterApiHandler
 {
     Task<(List<Showtime> showtimes, List<Movie> moviesWithoutShowtimes)> GetShowtimesFromFilters(
         ICollection<int>? cinemaIds = null,

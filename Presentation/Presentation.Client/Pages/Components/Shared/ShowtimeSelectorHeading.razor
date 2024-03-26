@@ -12,7 +12,7 @@
     {
         <div class="row-span-2 space-y-2 md:min-w-48 md:sticky md:top-16 md:row-span-3 md:self-start">
             <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank">
-                <img src="@Movie.ImageUrl" alt="Movie Poster" class="max-h-full w-full rounded-sm shadow"/>
+                <img src="@( Movie.ImageUrl is not null ? _imageBasePath + Movie.ImageUrl : _fallbackImageUrl )" alt="Movie Poster" class="max-h-full w-full rounded-sm shadow"/>
             </a>
             <!--Læs mere og trailer-->
             <div class="hidden flex-col items-center px-3 space-y-1 md:flex">
@@ -112,11 +112,14 @@
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public bool HasAnswered { get; set; }
     [Parameter] public bool ShowDivider { get; set; } = true;
-
-
     private string? _trailerUrl;
 
     private bool _shouldRender = true;
+    
+    private string _imageBasePath = "https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/";
+
+    private string _fallbackImageUrl = "https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/2023-05/Kino-fallback-poster.webp?h=6c02f54b&itok=efsQLlFH½";
+        
 
     private async Task ShowMovieTrailer(Movie movie)
     {

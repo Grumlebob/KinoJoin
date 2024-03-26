@@ -36,7 +36,7 @@
                     {
                         if (showtimesByDate.Key != previousDate.AddDays(1)) //if gap
                         {
-                            <th class="w-10 overflow-hidden text-ellipsis whitespace-nowrap border-b border-gray-200 p-2 text-center align-top">...</th>
+                            <th class="w-6 pt-2 overflow-hidden text-ellipsis whitespace-nowrap border-b border-gray-200 text-center align-top">...</th>
                         }
 
                         var dateLabel = CaptitalizeStart(showtimesByDate.Key.ToString("ddd, dd/MM").Replace('.', '/'));
@@ -56,9 +56,6 @@
                     {
                         <!-- gap -->
                         <td class="p-2 align-top">
-                            <div class="mb-1 h-16 max-h-16 w-fit p-2">
-                                <p>...</p>
-                            </div>
                         </td>
                     }
 

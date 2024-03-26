@@ -12,13 +12,13 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
     {
         for (int i = lowestCinemaId; i <= highestCinemaId; i++)
         {
-            var apiString =
-                $"https://api.kino.dk/ticketflow/showtimes?sort=most_purchased&cinemas={i}&region=content&format=json";
-
-            var json = await _httpClient.GetStringAsync(apiString);
-
             try
             {
+                var apiString =
+                    $"https://api.kino.dk/ticketflow/showtimes?sort=most_purchased&cinemas={i}&region=content&format=json";
+
+                var json = await _httpClient.GetStringAsync(apiString);
+
                 var apiResultObject = JsonConvert.DeserializeObject<ShowtimeApiRoot>(json);
 
                 var facets = apiResultObject!.ShowtimeApiContent.ShowtimeApiFacets;
@@ -160,9 +160,11 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                     await context.SaveChangesAsync();
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine("Preseed error on cinema id: " + i);
+                Console.WriteLine(
+                    $"Failed to fetch data for cinema {i}. Skipping to next. Usually Kino.dk is down 5% of the day."
+                );
             }
         }
     }

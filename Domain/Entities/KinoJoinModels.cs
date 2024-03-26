@@ -63,13 +63,13 @@ public class Movie
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int Id { get; set; }
 
-    [MaxLength(260, ErrorMessage = "Title kan højst være 260 tegn.")]
+    [MaxLength(500, ErrorMessage = "Title kan højst være 260 tegn.")]
     public required string Title { get; set; }
 
-    [MaxLength(100, ErrorMessage = "Image url kan højst være 260 tegn.")]
+    [MaxLength(500, ErrorMessage = "Image url kan højst være 260 tegn.")]
     public string? ImageUrl { get; set; }
 
-    [MaxLength(100, ErrorMessage = "Kino's info url kan højst være 260 tegn.")]
+    [MaxLength(500, ErrorMessage = "Kino's info url kan højst være 260 tegn.")]
     public string? KinoUrl { get; set; } = string.Empty;
     public int? Duration { get; set; }
 

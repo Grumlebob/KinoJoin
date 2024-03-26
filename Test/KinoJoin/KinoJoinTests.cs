@@ -158,9 +158,8 @@ public class KinoJoinTests : IAsyncLifetime
         var participant = joinEventFromApiUpdatedParticipantName!.Participants!.First();
         participant.Nickname.Should().Be("Updated");
 
-        //Test DeleteParticipantAsync. eventGroup.MapDelete("{eventId}/participants/{participantId}", DeleteParticipant);
+        //Checking delete - find joinEventWithAtleast 1 participant
         JoinEvent joinEventToDelete = new();
-        //find joinEventWithAtleast 1 participant
         for (var i = casesToInsert - 1; i >= 0; i--)
         {
             var getResponse = await _client.GetAsync($"api/events/{i}");
@@ -171,11 +170,8 @@ public class KinoJoinTests : IAsyncLifetime
                 break;
             }
         }
-        //Get count of participants
         var participantCountBeforeDelete = joinEventToDelete.Participants!.Count;
-        //Get the last participant
         var participantToDelete = joinEventToDelete.Participants.Last();
-        //Delete the participant
         var deleteParticipantResponse = await _client.DeleteAsync(
             $"api/events/{joinEventToDelete.Id}/participants/{participantToDelete.Id}"
         );
@@ -196,13 +192,79 @@ public class KinoJoinTests : IAsyncLifetime
             .BeFalse();
     }
 
-    //UpsertJoinEvent should return BadRequest if validation fails
     [Fact]
     public async Task UpsertJoinEvent_ShouldReturnBadRequest_IfValidationFails()
     {
         var joinEvent = new JoinEvent();
         var response = await _client.PutAsJsonAsync("api/events", joinEvent);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetMovies_ShouldReturnOk_IfMoviesExistElseReturnsNotFound()
+    {
+        //No movies exist initially
+        var response = await _client.GetAsync("api/kino-data/movies");
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        //Insert a movie
+        var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
+        var createResponse = await _client.PutAsJsonAsync("api/events", joinEvent);
+        createResponse.EnsureSuccessStatusCode();
+
+        //Movie should now exist
+        var getResponse = await _client.GetAsync("api/kino-data/movies");
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var movies = await getResponse.Content.ReadFromJsonAsync<List<Movie>>();
+        movies.Should().NotBeNull();
+        movies!.Count.Should().BeGreaterThanOrEqualTo(1);
+    }
+
+    [Fact]
+    public async Task GetCinemas_ShouldReturnOk_IfCinemasExistElseReturnsNotFound()
+    {
+        //No cinemas exist initially
+        var response = await _client.GetAsync("api/kino-data/cinemas");
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        //Insert a join event (with a cinema)
+        var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
+        var createResponse = await _client.PutAsJsonAsync("api/events", joinEvent);
+        createResponse.EnsureSuccessStatusCode();
+
+        //Cinema should now exist
+        var getResponse = await _client.GetAsync("api/kino-data/cinemas");
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var cinemas = await getResponse.Content.ReadFromJsonAsync<List<Cinema>>();
+        cinemas.Should().NotBeNull();
+        cinemas!.Count.Should().BeGreaterThanOrEqualTo(1);
+    }
+
+    //We only fetch genres from kino.dk, and never insert them ourselves.
+    //So after inserting a join event, we should have genres.
+    [Fact]
+    public async Task GetGenres_ShouldReturnOk_IfGenresExistElseReturnsNotFound()
+    {
+        //No genres exist initially
+        var response = await _client.GetAsync("api/kino-data/genres");
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        //Insert a join event with all its nested properites
+        var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
+        var createResponse = await _client.PutAsJsonAsync("api/events", joinEvent);
+        createResponse.EnsureSuccessStatusCode();
+
+        //After inserting a join event, genres should still not exist.
+        var getResponse = await _client.GetAsync("api/kino-data/genres");
+        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task UpdateAllBaseDataFromKinoDk_ShouldReturnOk_IfUpdateSucceeds()
+    {
+        //The tests main focus is getting the static data from kino.dk - should take about 2 minutes
+        var response = await _client.PostAsync("api/kino-data/update-all", null);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     //We don't care about the InitializeAsync method, but needed to implement the IAsyncLifetime interface

@@ -1,6 +1,5 @@
 ﻿@page "/"
 @page "/create-event/{FilterString?}"
-@using Infrastructure.Services
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
@@ -8,7 +7,9 @@
 
 @if (_loadingPage)
 {
-    <LoadingTextAndCircle/>
+    <div class="flex justify-center">
+        <LoadingIndicator/>
+    </div>
     return;
 }
 
@@ -90,7 +91,7 @@
     }
     else
     {
-        <LoadingTextAndCircle Text="Opretter"/>
+        <LoadingIndicator Text="Opretter"/>
     }
     </form>
 </dialog>
@@ -295,7 +296,7 @@
             if (_loadingShowtimes)
             {
                 <div class="mt-5">
-                    <LoadingTextAndCircle Text="Indlæser spilletider"/>
+                    <LoadingIndicator Text="Indlæser spilletider"/>
                 </div>
             }
             else if (_selectedCinemas.Count == 0 && _selectedMovies.Count == 0 && _selectedGenres.Count == 0)

@@ -5,20 +5,33 @@
     return;
 }
 
-<div class="flex flex-col items-center justify-center content-center  mt-16 ">
+<div class="flex flex-col items-center justify-center content-center  mt-16 gap-1 ">
     <p class="font-bold text-3xl">@LegendTitle</p>
-    <div class=" @(HasAnswered ? "mb-5" : "mb-7") w-fit space-y-1 ">
-        <div class="mb-2 flex w-fit divide-x-2">
+    <div class=" @(HasAnswered ? "mb-5" : "mb-7") w-fit space-y-1  ">
+        <div class="mb-2 flex items-center w-fit divide-x-2">
             @{
                 var firstOption = true;
             }
             @foreach (var option in SelectOptions)
             {
-                <div class="@(firstOption ? "pr-2" : "px-2") ">
-                    <div class="rounded text-xl px-1 shadow-md  bg-@option.Color ">
+                var pClass = "px-2";
+                
+                if (firstOption)
+                {
+                    pClass = "pr-2";
+                }
+                else if (option == SelectOptions.Last())
+                {
+                    pClass = "pl-2";
+                }
+                
+                <div class="@pClass">
+                    <div class="rounded text-base md:text-xl px-1 shadow-md  bg-@option.Color ">
                         <p>@option.VoteOption</p>
                     </div>
                 </div>
+               
+                
                 firstOption = false;
             }
         </div>
@@ -27,7 +40,7 @@
 @if (HasAnswered)
 {
     <div class="flex items-center content-center justify-center w-full mb-5">
-        <div class="border shadow w-fit p-3">
+        <div class="bg-gray-100 shadow w-fit p-3">
             <p class="text-2xl font-bold text-success-darkest">Du har allerede indsendt et svar på dette event</p>
         </div>
     </div>

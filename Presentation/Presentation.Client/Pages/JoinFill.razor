@@ -39,7 +39,7 @@
 }
 <div class="flex justify-center">
     <div class="my-2 flex flex-col gap-2 md:flex-row">
-        <div class="w-full rounded border p-3 md:w-fit md:max-w-md">
+        <div class="w-full rounded bg-gray-50 shadow-md p-3 md:w-fit md:max-w-md">
             <div class="space-y-3">
                 <div class="flex flex-row gap-1">
                     @if (_isEditing)
@@ -96,16 +96,16 @@
                 <span class="font-medium">Tidsinterval:</span>
                 <span> @_event.Showtimes.Min(s => s.Playtime.StartTime).ToString("dd. MMM") - @_event.Showtimes.Max(s => s.Playtime.StartTime).ToString("dd. MMM")</span>
                 <br/>
-                <Button Variant="Button.ButtonVariant.White" OnClick="@ScrollToBottom" Class="font-label">Se Resultater</Button>
+                <Button Variant="Button.ButtonVariant.White" OnClick="@ScrollToBottom" Href="@(NavigationManager.Uri + "#results")" Class="font-label">Se Resultater</Button>
             </div>
         </div>
         @if (_isHost)
         {
-            <div class="w-full rounded border p-3 space-y-1 md:w-fit md:max-w-md">
+            <div class="w-full rounded border p-3 space-y-1 bg-gray-50 shadow-md md:w-fit md:max-w-md">
                 <p class="text-lg font-semibold mb-0.5">Send et link til eventet til dine venner.</p>
                 <div class="flex items-center">
                     <a href="@(_baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id))" class="text-lg text-blue-600 hover:text-blue-700">
-                        @(_baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id))
+                        @((_baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)).Replace("https://", ""))
                     </a>
                     <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)); })">
                         <CopyIcon Class="hover:bg-gray-200 p-2 rounded-full"/>
@@ -123,11 +123,13 @@
 
 <ShowtimeSelector HasAnswered="@(_alreadyAnswered || _justAnswered)" SelectOptions="@_event.SelectOptions" DefaultSelectOption="@_event.DefaultSelectOption" Showtimes="@_event.Showtimes" LegendTitle="Tryk på de tider du kan" Votes="@_currentParticipant.VotedFor" VotesChanged="OnVotesChanged"/>
 
+
 <RegisterParticipantVote Event="_event" OnAnswerSaved="OnAnswerSaved" @bind-Nickname="@_currentParticipant.Nickname" AlreadyAnswered="_alreadyAnswered" VotedFor="@_currentParticipant.VotedFor" LoggedInUserId="@_currentParticipant.AuthId"/>
 
 <br/>
 <br/>
 
+<div id="results" class="pt-2"></div>
 <JoinEventResults @ref="_joinEventResults"CurrentParticipant="_currentParticipant" Event="_event" IsHost="_isHost"/>
 
 @code {

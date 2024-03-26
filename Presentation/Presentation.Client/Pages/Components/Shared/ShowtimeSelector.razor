@@ -69,7 +69,7 @@
 
                                     <div class="mb-4 max-w-screen-md">
                                         <div class="w-fit">
-                                            <p class="bg-gray-200 px-2 py-1 font-label">@showtimesByVersionTag.Key</p>
+                                            <p class="bg-gray-300 px-2 py-1 font-label">@showtimesByVersionTag.Key</p>
                                         </div>
                                         <ShowtimeTable SelectOptions="SelectOptions" UniqueId="@uniqueId" Votes="Votes" VotesChanged="VotesChanged" Showtimes="@showtimesByVersionTag.ToList()" HasAnswered="HasAnswered" StartDate="@Showtimes.Min(s => s.Playtime.StartTime.Date)"/>
                                     </div>

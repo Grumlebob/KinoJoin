@@ -209,7 +209,7 @@
     {
         SelectOptions =
         [
-            new() { VoteOption = "Kan ikke", Color = "gray-200" },
+            new() { VoteOption = "Kan ikke", Color = "gray-300" },
             new() { VoteOption = "Kan godt", Color = "success" },
             new() { VoteOption = "Hvis Nødvendigt (Klik to gange)", Color = "warning" }
         ],
@@ -230,7 +230,7 @@
     List<Movie> _moviesWithoutShowtimes = [];
     ICollection<ParticipantVote> _availableShowtimeVotes = []; //used to keep track of which showtimes are selected and not selected
 
-    readonly List<SelectOption> _hostSelectOptions = [new SelectOption { VoteOption = "Ikke valgt", Color = "gray-200" }, new SelectOption { VoteOption = "Valgt", Color = "success" }];
+    readonly List<SelectOption> _hostSelectOptions = [new SelectOption { VoteOption = "Ikke valgt", Color = "gray-300" }, new SelectOption { VoteOption = "Valgt", Color = "success" }];
     const int NoVoteIndex = 0; //when you vote no
     const int YesVoteIndex = 1;
 

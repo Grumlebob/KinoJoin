@@ -1,0 +1,121 @@
+@inject IJSRuntime JsRuntime
+
+<div class="relative">
+    <!-- Blur left edge (100%-50px to not cover scroll bar) -->
+    <div id="@UniqueId-blur-left" class="absolute rounded h-[calc(100%-50px)] w-16 bg-gradient-to-r from-white flex items-center justify-start">
+        <button>
+            <svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#000000" stroke-width="0.00024000000000000003" transform="rotate(180)">
+                <g stroke-width="0"></g><g stroke-linecap="round" stroke-linejoin="round"></g>
+                <g >
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M8.29289 4.29289C8.68342 3.90237 9.31658 3.90237 9.70711 4.29289L16.7071 11.2929C17.0976 11.6834 17.0976 12.3166 16.7071 12.7071L9.70711 19.7071C9.31658 20.0976 8.68342 20.0976 8.29289 19.7071C7.90237 19.3166 7.90237 18.6834 8.29289 18.2929L14.5858 12L8.29289 5.70711C7.90237 5.31658 7.90237 4.68342 8.29289 4.29289Z" fill="#000000"></path>
+                </g>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Blur right edge -->
+    <div id="@UniqueId-blur-right" class="absolute rounded right-0 h-[calc(100%-50px)] w-16 bg-gradient-to-l from-white flex items-center justify-end">
+        <button>
+            <svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#000000" stroke-width="0.00024000000000000003">
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                <g id="SVGRepo_iconCarrier">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M8.29289 4.29289C8.68342 3.90237 9.31658 3.90237 9.70711 4.29289L16.7071 11.2929C17.0976 11.6834 17.0976 12.3166 16.7071 12.7071L9.70711 19.7071C9.31658 20.0976 8.68342 20.0976 8.29289 19.7071C7.90237 19.3166 7.90237 18.6834 8.29289 18.2929L14.5858 12L8.29289 5.70711C7.90237 5.31658 7.90237 4.68342 8.29289 4.29289Z" fill="#000000"></path>
+                </g>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Showtimes (padding x and inline-block makes room for blurs to disappear when scrolled all the way left or right)-->
+    <div id="@UniqueId" class="overflow-x-auto px-16">
+        <table class="border-collapse inline-block">
+            <tr>
+                @{
+                    var previousDate = StartDate?.Date ?? Showtimes.Min(s => s.Playtime.StartTime.Date); //may have a gap from start to first showtime
+                    previousDate = previousDate.AddDays(-1); //each date checks if previous date is one day lower. Else add dots
+                    foreach (var showtimesByDate in Showtimes.GroupBy(s => s.Playtime.StartTime.Date))
+                    {
+                        if (showtimesByDate.Key != previousDate.AddDays(1)) //if gap
+                        {
+                            <th class="w-6 pt-2 overflow-hidden text-ellipsis whitespace-nowrap border-b border-gray-200 text-center align-top">...</th>
+                        }
+
+                        var dateLabel = CaptitalizeStart(showtimesByDate.Key.ToString("ddd, dd/MM").Replace('.', '/'));
+                        <th class="w-10 overflow-hidden text-ellipsis whitespace-nowrap border-b border-gray-200 p-2 text-center align-top">@dateLabel</th>
+                        previousDate = showtimesByDate.Key;
+                    }
+                }
+            </tr>
+            <tr>
+                @{
+                    previousDate = StartDate?.Date ?? Showtimes.Min(s => s.Playtime.StartTime.Date); //may have a gap from start to first showtime
+                    previousDate = previousDate.AddDays(-1); //each date checks if previous date is one day lower. Else add dots
+                }
+                @foreach (var showtimesByDate in Showtimes.GroupBy(s => s.Playtime.StartTime.Date))
+                {
+                    if (showtimesByDate.Key != previousDate.AddDays(1)) //if gap
+                    {
+                        <!-- gap -->
+                        <td class="p-2 align-top">
+                        </td>
+                    }
+
+                    <td class="p-2 align-top">
+                        @foreach (var showtime in showtimesByDate)
+                        {
+                            var vote = Votes.FirstOrDefault(v => v.ShowtimeId == showtime.Id);
+                            vote ??= new ParticipantVote { SelectedOption = SelectOptions.First() }; //because of lazy loading there may be a split second where the votes haven't been initialized
+                            <div id="@showtime.Id" class="w-24 h-16 max-h-16 p-1 mb-1 flex flex-col items-center justify-center  select-none rounded shadow-inset bg-@vote.SelectedOption.Color @(HasAnswered ? "" : "hover:border hover:border-gray-300 cursor-pointer")" value="@showtime.Playtime.StartTime" @onclick="@(() => HandleShowtimeClick(vote))">
+                                <div class="mb-1 text-center text-sm line-clamp-1"> @showtime.Room.Name </div >
+                                <div class="text-lg font-bold"> @showtime.Playtime.StartTime.ToString("HH:mm", CultureInfo.InvariantCulture) </div > <!--showtime - time-->
+                            </div>
+                        }
+                    </td>
+
+                    previousDate = showtimesByDate.Key;
+                }
+            </tr>
+        </table >
+    </div >
+</div>
+
+@code {
+
+    [Parameter] public required string UniqueId { get; set; }
+
+    [Parameter] public DateTime? StartDate { get; set; }
+
+    [Parameter] public List<Showtime> Showtimes { get; set; } = [];
+
+    [Parameter] public ICollection<ParticipantVote> Votes { get; set; } = [];
+
+    //Fallback values provided
+    [Parameter] public List<SelectOption> SelectOptions { get; set; } = [new SelectOption { VoteOption = "Kan ikke", Color = "gray-200" }, new SelectOption { VoteOption = "Kan godt", Color = "success" }];
+
+    [Parameter] public EventCallback<ICollection<ParticipantVote>> VotesChanged { get; set; }
+
+    [Parameter] public bool HasAnswered { get; set; }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JsRuntime.InvokeVoidAsync("setScrollButtons", UniqueId);
+    }
+
+    private async Task HandleShowtimeClick(ParticipantVote voteToIncrement)
+    {
+        if (HasAnswered) return;
+
+        //find index of select option in order to increment it
+        var next = (SelectOptions.FindIndex(
+                       s => (s.VoteOption, s.Color) == (voteToIncrement.SelectedOption.VoteOption, voteToIncrement.SelectedOption.Color)) + 1)
+                   % SelectOptions.Count;
+        voteToIncrement.SelectedOption = SelectOptions[next];
+        voteToIncrement.SelectedOptionId = SelectOptions[next].Id;
+
+        await VotesChanged.InvokeAsync(Votes);
+    }
+
+    private string CaptitalizeStart(string s)
+        => char.ToUpper(s[0]) + s[1..];
+
+}

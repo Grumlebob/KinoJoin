@@ -1,12 +1,23 @@
-<button class="@GetVariant() rounded-full py-[14px] px-[17px]  text-nowrap flex items-center justify-center @Class" onclick="@OnClick" type="@Type">@ChildContent</button>
+
+@if (Href is not null)
+{
+    <a href="@Href" target="@Target" class="@GetVariant()  rounded-full py-[14px] px-[17px] md:text-sm  text-xs text-nowrap flex items-center justify-center @Class">@ChildContent</a>
+}
+else
+{
+    <button class="@GetVariant() rounded-full py-[14px] px-[17px] md:text-sm  text-xs text-nowrap flex items-center justify-center @Class" onclick="@OnClick" type="@Type"> @ChildContent </button>
+}
+
 
 @code {
 
     [Parameter] public required RenderFragment ChildContent { get; set; }
     [Parameter] public ButtonVariant Variant { get; set; } = ButtonVariant.White;
-    [Parameter] public required EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
     [Parameter] public string? Class { get; set; }
-    [Parameter] public string Type { get; set; } = "button";
+    [Parameter] public string? Type { get; set; }
+    [Parameter] public string? Href { get; set; }
+    [Parameter] public string? Target { get; set; }
 
     public enum ButtonVariant
     {

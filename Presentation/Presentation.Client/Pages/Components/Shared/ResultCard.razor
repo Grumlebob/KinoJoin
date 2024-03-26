@@ -1,71 +1,114 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
+<div class="flex  flex-col justify-start text-start items-start gap-2 bg-slate-50   rounded p-5 shadow-md  text-wrap  ">
 
-<div class="flex flex-col justify-center items-start gap-2 bg-slate-50 @(Desktop ? "w-70 ..." : "w-full")   rounded p-5 shadow-md">
+    <div class="@(Desktop ? "" : "gap-1") md:h-24">
+        <div class="flex w-full items-center gap-2 ">
 
-    <div class="gap-1">
-        <div class="flex w-full items-center gap-2">
-            <p class="truncate font-bold ...">
-                @Showtime.Movie.Title
-            </p>
+            <div class="flex w-full items-center gap-1">
+
+                <p class="font-bold ">
+                    @*<MovieIcon Class="fill-black" ></MovieIcon>*@
+                    @Showtime.Movie.Title
+                </p>
+            </div>
 
             @if (Event.ChosenShowtimeId == Showtime.Id)
             {
-                <div class="rounded-full bg-opacity-25 p-1 py-0 text-xs font-normal bg-success text-success-darkest">
+                <div class="rounded-full bg-opacity-25 p-1 py-0 text-xs font-normal bg-success text-nowrap text-success-darkest">
                     <p >Aftalt tid</p>
                 </div>
             }
-
         </div>
-        <div class="flex w-full items-center gap-1">
-            <p class="truncate text-xs font-normal text-gray-700 ...">@Showtime.VersionTag.Type</p>
-        </div>
-    </div>
 
-    <div class="flex w-full items-center gap-1">
-        <CinemaIcon Class="fill-black "/>
-        <p class="truncate font-normal ...">
-            @Showtime.Cinema.Name - @Showtime.Room.Name
-        </p>
-    </div>
 
-    <div class="flex w-full items-center gap-1">
-        <DateIcon Class="fill-black"></DateIcon>
-        <p class="truncate font-normal ...">
-            @Showtime.Playtime.StartTime.ToString("dd. MMM") - kl. @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes((double)Showtime.Movie.Duration).ToString("HH:mm")
-        </p>
-    </div>
-    <div class="flex w-full items-center gap-1">
-        @if (!Desktop)
-        {
-            if (HasVoted)
+        <p class=" md:hidden  text-xs font-normal text-gray-700 ">@Showtime.VersionTag.Type</p>
+
+        <div class="flex flex-col  hidden md:block">
+            @foreach (var version in Showtime.VersionTag.Type.Split("-"))
             {
-                <div class="flex w-full items-center gap-1">
-                    @if (Vote != null && Vote.SelectedOptionId != Event.DefaultSelectOptionId)
-                    {
-                        <SingleCheckIcon Class="@("stroke-" + Vote.SelectedOption.Color)"/>
-                    }
-                </div>
+                <p class="  text-xs font-normal text-gray-700 ">@version.Trim()</p>
             }
+        </div>
+
+    </div>
+
+    <hr class="h-px w-full rounded-full bg-gray-300"/>
+    <div class="gap-1 md:h-24">
+        <div class="flex w-full items-center gap-1 ">
+            @* <CinemaIcon Class="fill-black "/>*@
+            <p class=" font-normal">
+                @Showtime.Cinema.Name
+            </p>
+        </div>
+
+        <div class="flex w-full items-center gap-1">
+            <p class=" text-xs font-normal text-gray-700 ">@Showtime.Room.Name</p>
+        </div>
+    </div>
+
+    <hr class=" h-px w-full rounded-full bg-gray-300"/>
+
+    <div class="flex flex-col h-full w-full justify-end gap-2">
+        <div class="gap-1 h-full flex flex-col justify-end">
+            <div class="flex w-full items-center gap-1">
+                <DateIcon Class="fill-black"></DateIcon>
+                <p class=" font-normal ">
+                    @Showtime.Playtime.StartTime.ToString("dd. MMM").
+
+                </p>
+                @if (!Desktop)
+                {
+                    <p> - @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes((double)Showtime.Movie.Duration).ToString("HH:mm") </p>
+                }
+
+            </div>
+
+            <div class="flex w-full items-center gap-1 hidden md:block">
+                <p class="  text-sm font-normal  ">
+                    @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes((double)Showtime.Movie.Duration).ToString("HH:mm")
+                </p>
+            </div>
+        </div>
+
+        @if (!Desktop || IsHost)
+        {
+            <hr class=" h-px w-full rounded-full bg-gray-300"/>
         }
-        <div class="flex h-fit w-full justify-end gap-1">
+        <div class="flex w-full items-center gap-1 ">
+
+
             @if (!Desktop)
             {
-                <button @onclick="ShowVotes" class="flex items-center gap-1 rounded-full border-2 border-gray-300 bg-white px-2 py-1 hover:bg-gray-300">
-
-                    <p class="whitespace-nowrap">
-                        Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)))
-                    </p>
-                </button>
+                if (HasVoted)
+                {
+                    <div class="flex w-full items-center gap-1">
+                        @if (Vote != null && Vote.SelectedOptionId != Event.DefaultSelectOptionId)
+                        {
+                            <SingleCheckIcon Class="@("stroke-" + Vote.SelectedOption.Color)"/>
+                        }
+                    </div>
+                }
             }
+            <div class="flex h-fit w-full justify-end items-end md:justify-start md:items-start gap-1 w-full">
+                @if (!Desktop)
+                {
+                    <button @onclick="ShowVotes" class="flex items-center gap-1 rounded-full border-2 border-gray-300 bg-white px-2 py-1 hover:bg-gray-300">
+
+                        <p class="whitespace-nowrap">
+                            Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)))
+                        </p>
+                    </button>
+                }
 
 
-            @if (IsHost)
-            {
-                <button class="w-fit whitespace-nowrap rounded-full px-3 py-2 text-white bg-primary hover:bg-primary-dark" @onclick="() => OpenConfirmationDialog(Showtime.Id)">
-                    Bekræft event
-                </button>
-            }
+                @if (IsHost)
+                {
+                    <button class="w-fit whitespace-nowrap rounded-full px-3 py-2 text-white bg-primary hover:bg-primary-dark" @onclick="() => OpenConfirmationDialog(Showtime.Id)">
+                        Bekræft event
+                    </button>
+                }
+            </div>
         </div>
     </div>
 

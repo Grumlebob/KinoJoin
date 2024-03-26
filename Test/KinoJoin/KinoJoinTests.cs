@@ -205,7 +205,7 @@ public class KinoJoinTests : IAsyncLifetime
     {
         //No movies exist initially
         var response = await _client.GetAsync("api/kino-data/movies");
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.Content.ReadAsStringAsync().Result.Should().Be("[]");
 
         //Insert a movie
         var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
@@ -225,7 +225,7 @@ public class KinoJoinTests : IAsyncLifetime
     {
         //No cinemas exist initially
         var response = await _client.GetAsync("api/kino-data/cinemas");
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.Content.ReadAsStringAsync().Result.Should().Be("[]");
 
         //Insert a join event (with a cinema)
         var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
@@ -247,7 +247,7 @@ public class KinoJoinTests : IAsyncLifetime
     {
         //No genres exist initially
         var response = await _client.GetAsync("api/kino-data/genres");
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.Content.ReadAsStringAsync().Result.Should().Be("[]");
 
         //Insert a join event with all its nested properites
         var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
@@ -256,7 +256,7 @@ public class KinoJoinTests : IAsyncLifetime
 
         //After inserting a join event, genres should still not exist.
         var getResponse = await _client.GetAsync("api/kino-data/genres");
-        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        getResponse.Content.ReadAsStringAsync().Result.Should().Be("[]");
     }
 
     [Fact]

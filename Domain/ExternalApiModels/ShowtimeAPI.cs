@@ -39,7 +39,7 @@ public class ShowtimeApiContentLevel3
 public class ShowtimeApiMovie
 {
     [JsonProperty("id")]
-    public int Id { get; set; }
+    public int Id { get; init; }
 
     [JsonProperty("versions")]
     public required List<ShowtimeApiVersion> Versions { get; set; }

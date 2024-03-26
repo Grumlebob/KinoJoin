@@ -1,24 +1,24 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
 
-<div class="mb-2 w-full overflow-auto rounded-md border p-3 bg-gray-100">
+<div class="mb-2 w-full overflow-auto rounded-md border py-3 bg-gray-100">
     <table class="border-separate border-spacing-2">
         <tr >
             <th></th>@*Empty cell above the participant names*@
 
             @foreach (var showtime in OrderedShowtimes)
             {
-                <th class="max-w-48 min-w-48">
+                <th class="max-w-48 min-w-48 ">
                     <ResultCard Event="Event" Showtime="showtime" Desktop="true" IsHost="IsHost" OnEventConfirmed="StateHasChanged"></ResultCard>
-                    </th>
+                </th>
             }
         </tr>
 
         @foreach (var participant in Event.Participants ?? new List<Participant>())
         {
             <tr>
-                <td>
-                    <div class="flex gap-1 rounded p-5 shadow-md w-50">
+                <td class="sticky left-0 rounded  bg-slate-50 items-end">
+                    <div class=" flex gap-1 rounded p-5 shadow-md w-50">
                         <div class="flex">
                             @if (IsHost && participant.Id != 0)
                         {

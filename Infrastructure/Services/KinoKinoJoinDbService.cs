@@ -156,7 +156,8 @@ public class KinoKinoJoinDbService(KinoContext context) : IKinoJoinDbService
 
     private async Task<int> UpdateJoinEventAsync(JoinEvent updatedJoinEvent)
     {
-        await context.JoinEvents.ExecuteUpdateAsync(setters =>
+        await context.JoinEvents.Where(b => b.Id == updatedJoinEvent.Id).ExecuteUpdateAsync(setters =>
+            
             setters
                 .SetProperty(b => b.Title, updatedJoinEvent.Title)
                 .SetProperty(b => b.Description, updatedJoinEvent.Description)

@@ -16,10 +16,8 @@
             </a>
             <!--Læs mere og trailer-->
             <div class="hidden flex-col items-center px-3 space-y-1 md:flex">
-
-                <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank" class="w-full rounded-full border border-black px-3 py-2 text-center shadow transition duration-300 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
-
-                <button class="w-full rounded-full border border-black px-3 py-2 shadow transition duration-300 font-label hover:bg-neutral-950 hover:text-white" @onclick="async () => { await ShowMovieTrailer(Movie); }">Se trailer</button>
+                <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank" class="w-full  rounded-full py-[14px] px-[17px]  text-nowrap flex items-center justify-center  bg-transparent text-black font-label border border-[#c4c4c4]  transition duration-200  hover:bg-black hover:border-black hover:text-white">Læs mere</a>
+                <Button Variant="Button.ButtonVariant.White" Class="font-label w-full" OnClick="@(async () => await ShowMovieTrailer(Movie))">Se trailer</Button>
             </div>
         </div>
     }
@@ -71,10 +69,10 @@
 
                 <div class="block md:hidden">
                     <!--Læs mere og trailer mobile-->
-                    <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank" class="inline-block w-32 rounded-full border border-black px-3 py-2 text-center transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Læs mere</a>
+                    <a href=@($"https://kino.dk{Movie.KinoUrl}") target="_blank" class="bg-transparent text-black border border-[#c4c4c4]  transition duration-200  hover:bg-black hover:border-black hover:text-white rounded-full py-[14px] px-[17px]  text-nowrap flex items-center justify-center font-label">Læs mere</a>
                 </div>
                 <div class="block md:hidden">
-                    <button @onclick="async () => { await ShowMovieTrailer(Movie); }" class="inline-block w-32 rounded-full border border-black px-3 py-2 transition duration-100 font-label hover:bg-neutral-950 hover:text-white">Se trailer</button>
+                    <Button Variant="Button.ButtonVariant.White" Class="font-label" OnClick="@(async () => await ShowMovieTrailer(Movie))">Se trailer</Button>
                 </div>
             </div>
         }

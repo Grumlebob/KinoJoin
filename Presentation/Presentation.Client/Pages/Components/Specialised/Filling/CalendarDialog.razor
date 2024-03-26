@@ -1,30 +1,28 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
 
-<dialog class="rounded p-5" id=@("calendar-dialog"+Desktop) >
+<dialog class="rounded p-5" id=@("calendar-dialog" + Desktop)>
     <div class="flex flex-col items-center gap-4">
-    <h2 class="text-2xl text-bold">Tilføj til kalender</h2>
-   
-    <div class="flex items-center gap-1">
+        <h2 class="text-2xl text-bold">Tilføj til kalender</h2>
 
-        <button class="rounded-full border px-3 py-1 shadow transition duration-100 duration-300 border-secondary hover:bg-secondary hover:text-white" onclick="@(async () => await OpenGoogleCalendar())">Tilføj til google kalender</button>
-        <button class="rounded-full border px-3 py-1 shadow transition duration-100 duration-300 border-secondary hover:bg-secondary hover:text-white" onclick="@(async () => await DownloadCalendarFile())">Download til andre kalendre</button>
-        <button class="rounded-full px-3 py-1 text-white bg-error hover:bg-error-dark" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog"+Desktop); })" >Luk</button>
-    </div>
+        <div class="flex flex-col items-center gap-1 md:flex-row">
+            <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => await OpenGoogleCalendar())" Class="w-full md:w-fit">Tilføj til google kalender</Button>
+            <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => await DownloadCalendarFile())" Class="w-full md:w-fit">Download til andre kalendre</Button>
+        </div>
+        <div class="flex w-full justify-end">
+            <Button Variant="Button.ButtonVariant.Black" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog" + Desktop))">Luk</Button>
+        </div>
     </div>
 
 </dialog>
 
 @code {
 
-    [Parameter]
-    public required Showtime Showtime { get; set; }
+    [Parameter] public required Showtime Showtime { get; set; }
 
-    [Parameter]
-    public required JoinEvent Event { get; set; }
-    
-    [Parameter]
-    public bool Desktop { get; set; }
+    [Parameter] public required JoinEvent Event { get; set; }
+
+    [Parameter] public bool Desktop { get; set; }
 
     private async Task OpenGoogleCalendar()
     {
@@ -46,17 +44,17 @@
         var location = Showtime.Cinema.Name;
         var description = Event.Description + "\n Film: " + Showtime.Movie.Title + ", " + Showtime.Room.Name + ", " + Showtime.VersionTag.Type;
 
-    //create a new stringbuilder instance
+        //create a new stringbuilder instance
         var sb = new StringBuilder();
 
-    //start the calendar item
+        //start the calendar item
         sb.AppendLine("BEGIN:VCALENDAR");
         sb.AppendLine("VERSION:2.0");
         sb.AppendLine("PRODID:stackoverflow.com");
         sb.AppendLine("CALSCALE:GREGORIAN");
         sb.AppendLine("METHOD:PUBLISH");
 
-    //create a time zone if needed, TZID to be used in the event itself
+        //create a time zone if needed, TZID to be used in the event itself
         sb.AppendLine("BEGIN:VTIMEZONE");
         sb.AppendLine("TZID:Europe/Amsterdam");
         sb.AppendLine("BEGIN:STANDARD");
@@ -65,13 +63,13 @@
         sb.AppendLine("END:STANDARD");
         sb.AppendLine("END:VTIMEZONE");
 
-    //add the event
+        //add the event
         sb.AppendLine("BEGIN:VEVENT");
 
-    //with time zone specified
+        //with time zone specified
         sb.AppendLine("DTSTART;TZID=Europe/Amsterdam:" + dateStart.ToString("yyyyMMddTHHmm00"));
         sb.AppendLine("DTEND;TZID=Europe/Amsterdam:" + dateEnd.ToString("yyyyMMddTHHmm00"));
-    //or without
+        //or without
         sb.AppendLine("DTSTART:" + dateStart.ToString("yyyyMMddTHHmm00"));
         sb.AppendLine("DTEND:" + dateEnd.ToString("yyyyMMddTHHmm00"));
 
@@ -81,10 +79,10 @@
         sb.AppendLine("PRIORITY:3");
         sb.AppendLine("END:VEVENT");
 
-    //end calendar item
+        //end calendar item
         sb.AppendLine("END:VCALENDAR");
 
-    //create a string from the stringbuilder
+        //create a string from the stringbuilder
         var calendarItem = sb.ToString();
 
 
@@ -96,7 +94,6 @@
         await JsRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
     }
-
 
 
 }

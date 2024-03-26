@@ -186,7 +186,7 @@
     <p>Der er ingen forestillinger for de valgte filtre</p>
 }
 
-<ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de spilletider du vil have med i dit event" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_availableShowtimeVotes" VotesChanged="OnVoteChange" SelectOptions="_hostSelectOptions"/>
+<ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de spilletider du vil have med i dit event" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_availableShowtimeVotes" VotesChanged="OnVoteChange" SelectOptions="_hostSelectOptions" DefaultSelectOption="@_hostSelectOptions.First()"/>
 
 <Button Variant="Button.ButtonVariant.Red" OnClick="OpenEventDetailsDialog" Class="fixed right-6 text-sm bottom-6 z-50 flex gap-1">
     <CreateIcon Class="stroke-white fill-white"/>

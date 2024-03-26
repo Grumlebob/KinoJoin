@@ -104,10 +104,10 @@
             <div class="w-full rounded border p-3 space-y-1 md:w-fit md:max-w-md">
                 <p class="text-lg font-semibold mb-0.5">Send et link til eventet til dine venner.</p>
                 <div class="flex items-center">
-                    <a href="@(_baseUrl + "filling/" + _event.Id)" class="text-lg text-blue-600 hover:text-blue-700">
-                        @(_baseUrl + "filling/" + _event.Id)
+                    <a href="@(_baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id))" class="text-lg text-blue-600 hover:text-blue-700">
+                        @(_baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id))
                     </a>
-                    <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", (_baseUrl + "filling/" + _event.Id)); })">
+                    <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)); })">
                         <CopyIcon Class="hover:bg-gray-200 p-2 rounded-full"/>
                     </button>
                     <button @onclick="ShareEvent" class="rounded-full p-1 text-white bg-secondary hover:bg-gray-700 lg:hidden">
@@ -241,7 +241,7 @@
         {
             title = _event.Title,
             text = _event.Description,
-            url = _baseUrl + "filling/" + _event.Id
+            url = _baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)
         };
 
         await JsRuntime.InvokeVoidAsync("navigator.share", data);

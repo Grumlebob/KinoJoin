@@ -1,9 +1,10 @@
 ﻿@page "/"
 @page "/create-event/{FilterString?}"
+@using Infrastructure.Services
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
-@inject IKinoDkService KinoDkService
+@inject FilterApiHandler FilterHandler
 
 
 @if (_loadingPage)
@@ -321,7 +322,7 @@
         }
 
         //load all show times from filter
-        (_availableShowtimes, _moviesWithoutShowtimes) = await KinoDkService.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
+        (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
         _availableShowtimeVotes = _availableShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _hostSelectOptions[NoVoteIndex] }).ToList();
 
         //if KinoDKService yields any data not in database, handle it
@@ -433,7 +434,7 @@
         var newUrl = _baseUrl + "create-event/" + filterStringBuilder;
         NavigationManager.NavigateTo(newUrl); //change url so a page reload will save the filters
 
-        (_availableShowtimes, _moviesWithoutShowtimes) = await KinoDkService.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate.AddHours(23).AddMinutes(59));
+        (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate.AddHours(23).AddMinutes(59));
 
         // Save votes for show times that were there before update 
         var stillAvailableShowtimeIds = new HashSet<int>(_availableShowtimeVotes

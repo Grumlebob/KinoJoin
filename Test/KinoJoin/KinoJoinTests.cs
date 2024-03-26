@@ -1,9 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Net.Http.Json;
 using Domain.Entities;
 using FluentAssertions;
 
 namespace Test.KinoJoin;
+
+[CollectionDefinition("KinoJoinCollection")]
+public class KinoTestCollection : ICollectionFixture<KinoJoinApiWebAppFactory> { }
 
 [Collection("KinoJoinCollection")]
 public class KinoJoinTests : IAsyncLifetime
@@ -50,7 +54,7 @@ public class KinoJoinTests : IAsyncLifetime
             var joinEventFromApi = await getResponse.Content.ReadFromJsonAsync<JoinEvent>();
 
             joinEventFromApi.Should().NotBeNull();
-            joinEventFromApi.Title.Should().Be(joinEvent.Title);
+            joinEventFromApi!.Title.Should().Be(joinEvent.Title);
         }
 
         //check count
@@ -63,7 +67,7 @@ public class KinoJoinTests : IAsyncLifetime
         var joinEventToCheck = joinEventsFromApi.FirstOrDefault();
         //These properties are always present
         joinEventToCheck.Should().NotBeNull();
-        joinEventToCheck!.SelectOptions!.Count.Should().BeGreaterThan(0);
+        joinEventToCheck!.SelectOptions.Count.Should().BeGreaterThan(0);
         joinEventToCheck.Showtimes.Count.Should().BeGreaterThan(0);
         joinEventToCheck.DefaultSelectOption.Should().NotBeNull();
         joinEventToCheck.Host.Should().NotBeNull();
@@ -93,7 +97,7 @@ public class KinoJoinTests : IAsyncLifetime
         var joinEventFromApiUpdated =
             await getResponseUpdated.Content.ReadFromJsonAsync<JoinEvent>();
         joinEventFromApiUpdated.Should().NotBeNull();
-        joinEventFromApiUpdated.Title.Should().Be(joinEventToUpdate.Title);
+        joinEventFromApiUpdated!.Title.Should().Be(joinEventToUpdate.Title);
 
         //Add nested participant in JoinEvent
         var joinEventToUpdateParticipant = await _client.GetAsync(
@@ -101,7 +105,7 @@ public class KinoJoinTests : IAsyncLifetime
         );
         var joinEventToUpdateParticipantFromApi =
             await joinEventToUpdateParticipant.Content.ReadFromJsonAsync<JoinEvent>();
-        joinEventToUpdateParticipantFromApi.Participants.Add(
+        joinEventToUpdateParticipantFromApi!.Participants!.Add(
             new Participant
             {
                 AuthId = "New",
@@ -131,13 +135,13 @@ public class KinoJoinTests : IAsyncLifetime
         var joinEventFromApiUpdatedParticipant =
             await getResponseUpdatedParticipant.Content.ReadFromJsonAsync<JoinEvent>();
         joinEventFromApiUpdatedParticipant.Should().NotBeNull();
-        joinEventFromApiUpdatedParticipant
-            .Participants.Any(p => p.AuthId == "New")
+        joinEventFromApiUpdatedParticipant!
+            .Participants!.Any(p => p.AuthId == "New")
             .Should()
             .BeTrue();
 
         //Update the participant we just added to a new name
-        joinEventFromApiUpdatedParticipant.Participants.First().Nickname = "Updated";
+        joinEventFromApiUpdatedParticipant.Participants!.First().Nickname = "Updated";
         var updateResponseParticipantName = await _client.PutAsJsonAsync(
             "api/events",
             joinEventFromApiUpdatedParticipant
@@ -151,7 +155,7 @@ public class KinoJoinTests : IAsyncLifetime
         var joinEventFromApiUpdatedParticipantName =
             await getResponseUpdatedParticipantName.Content.ReadFromJsonAsync<JoinEvent>();
         joinEventFromApiUpdatedParticipantName.Should().NotBeNull();
-        var participant = joinEventFromApiUpdatedParticipantName.Participants.First();
+        var participant = joinEventFromApiUpdatedParticipantName!.Participants!.First();
         participant.Nickname.Should().Be("Updated");
 
         //Test DeleteParticipantAsync. eventGroup.MapDelete("{eventId}/participants/{participantId}", DeleteParticipant);
@@ -161,14 +165,14 @@ public class KinoJoinTests : IAsyncLifetime
         {
             var getResponse = await _client.GetAsync($"api/events/{i}");
             var joinEventFromApi = await getResponse.Content.ReadFromJsonAsync<JoinEvent>();
-            if (joinEventFromApi.Participants.Count > 0)
+            if (joinEventFromApi!.Participants!.Count > 0)
             {
                 joinEventToDelete = joinEventFromApi;
                 break;
             }
         }
         //Get count of participants
-        var participantCountBeforeDelete = joinEventToDelete.Participants.Count;
+        var participantCountBeforeDelete = joinEventToDelete.Participants!.Count;
         //Get the last participant
         var participantToDelete = joinEventToDelete.Participants.Last();
         //Delete the participant
@@ -183,13 +187,22 @@ public class KinoJoinTests : IAsyncLifetime
         );
         var joinEventFromApiDeletedParticipant =
             await getResponseDeletedParticipant.Content.ReadFromJsonAsync<JoinEvent>();
-        var participantCountAfterDelete = joinEventFromApiDeletedParticipant.Participants.Count;
+        var participantCountAfterDelete = joinEventFromApiDeletedParticipant!.Participants!.Count;
         participantCountAfterDelete.Should().Be(participantCountBeforeDelete - 1);
         //check that participantToDelete is not in the list of participants
         joinEventFromApiDeletedParticipant
             .Participants.Any(p => p.Id == participantToDelete.Id)
             .Should()
             .BeFalse();
+    }
+
+    //UpsertJoinEvent should return BadRequest if validation fails
+    [Fact]
+    public async Task UpsertJoinEvent_ShouldReturnBadRequest_IfValidationFails()
+    {
+        var joinEvent = new JoinEvent();
+        var response = await _client.PutAsJsonAsync("api/events", joinEvent);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     //We don't care about the InitializeAsync method, but needed to implement the IAsyncLifetime interface

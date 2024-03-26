@@ -7,7 +7,7 @@ namespace Application.Interfaces;
  * Handles the interaction with the database for join events.
  * </summary>
  **/
-public interface IJoinEventService
+public interface IKinoJoinDbService
 {
     /**
      * <summary>
@@ -49,4 +49,8 @@ public interface IJoinEventService
 
     //Delete participant
     Task DeleteParticipantAsync(int joinEventId, int participantId);
+
+    Task<ICollection<Cinema>> GetAllCinemas(Func<Cinema, bool>? filter = null);
+    Task<ICollection<Movie>> GetAllMovies(Func<Movie, bool>? filter = null);
+    Task<ICollection<Genre>> GetAllGenres(Func<Genre, bool>? filter = null);
 }

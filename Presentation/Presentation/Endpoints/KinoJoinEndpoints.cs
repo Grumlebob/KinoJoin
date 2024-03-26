@@ -30,15 +30,13 @@ public class KinoJoinEndpoints : ICarterModule
     //Result<> is a union type, that can be all the different responses we can return, so it is easier to test.
     private static async Task<Results<Ok<int>, BadRequest<string>>> UpsertJoinEvent(
         [FromBody] JoinEvent joinEvent,
-        [FromServices] IJoinEventService joinEventService
+        [FromServices] IKinoJoinDbService kinoJoinDbService
     )
     {
-        //Validate joinEvent
         var validator = new DataAnnotationsValidator.DataAnnotationsValidator();
         var validationResults = new List<ValidationResult>();
         validator.TryValidateObjectRecursive(joinEvent, validationResults);
 
-        //If validation fails, return BadRequest with error messages
         if (validationResults.Any())
         {
             var errorMessage = String.Join(
@@ -50,7 +48,7 @@ public class KinoJoinEndpoints : ICarterModule
 
         try
         {
-            var result = await joinEventService.UpsertJoinEventAsync(joinEvent);
+            var result = await kinoJoinDbService.UpsertJoinEventAsync(joinEvent);
             return TypedResults.Ok(result);
         }
         catch (Exception)
@@ -61,11 +59,11 @@ public class KinoJoinEndpoints : ICarterModule
 
     private static async Task<
         Results<Ok<List<JoinEvent>>, NotFound, BadRequest<string>>
-    > GetJoinEvents([FromServices] IJoinEventService joinEventService)
+    > GetJoinEvents([FromServices] IKinoJoinDbService kinoJoinDbService)
     {
         try
         {
-            var joinEvents = await joinEventService.GetAllAsync();
+            var joinEvents = await kinoJoinDbService.GetAllAsync();
             return TypedResults.Ok(joinEvents);
         }
         catch (Exception)
@@ -76,12 +74,12 @@ public class KinoJoinEndpoints : ICarterModule
 
     private static async Task<Results<NotFound, Ok<JoinEvent>, BadRequest<string>>> GetJoinEvent(
         [FromRoute] int id,
-        [FromServices] IJoinEventService joinEventService
+        [FromServices] IKinoJoinDbService kinoJoinDbService
     )
     {
         try
         {
-            var joinEvent = await joinEventService.GetAsync(id);
+            var joinEvent = await kinoJoinDbService.GetAsync(id);
             return joinEvent == null ? TypedResults.NotFound() : TypedResults.Ok(joinEvent);
         }
         catch (Exception)
@@ -92,11 +90,11 @@ public class KinoJoinEndpoints : ICarterModule
 
     private static async Task<
         Results<Ok<ICollection<Cinema>>, NotFound, BadRequest<string>>
-    > GetCinemas([FromServices] IKinoJoinService kinoJoinService)
+    > GetCinemas([FromServices] IKinoJoinDbService kinoKinoJoinService)
     {
         try
         {
-            var cinemas = await kinoJoinService.GetAllCinemas();
+            var cinemas = await kinoKinoJoinService.GetAllCinemas();
             return TypedResults.Ok(cinemas);
         }
         catch (Exception)
@@ -107,11 +105,11 @@ public class KinoJoinEndpoints : ICarterModule
 
     private static async Task<
         Results<Ok<ICollection<Movie>>, NotFound, BadRequest<string>>
-    > GetMovies([FromServices] IKinoJoinService kinoJoinService)
+    > GetMovies([FromServices] IKinoJoinDbService kinoKinoJoinService)
     {
         try
         {
-            var movies = await kinoJoinService.GetAllMovies();
+            var movies = await kinoKinoJoinService.GetAllMovies();
             return TypedResults.Ok(movies);
         }
         catch (Exception)
@@ -122,11 +120,11 @@ public class KinoJoinEndpoints : ICarterModule
 
     private static async Task<
         Results<Ok<ICollection<Genre>>, NotFound, BadRequest<string>>
-    > GetGenres([FromServices] IKinoJoinService kinoJoinService)
+    > GetGenres([FromServices] IKinoJoinDbService kinoKinoJoinService)
     {
         try
         {
-            var genres = await kinoJoinService.GetAllGenres();
+            var genres = await kinoKinoJoinService.GetAllGenres();
             return TypedResults.Ok(genres);
         }
         catch (Exception)
@@ -135,16 +133,20 @@ public class KinoJoinEndpoints : ICarterModule
         }
     }
 
-    //Delete participant
     private static async Task<Results<Ok, NotFound>> DeleteParticipant(
         [FromRoute] int eventId,
         [FromRoute] int participantId,
-        [FromServices] IJoinEventService joinEventService
+        [FromServices] IKinoJoinDbService kinoJoinDbService
     )
     {
+        if (eventId <= 0 || participantId <= 0)
+        {
+            return TypedResults.NotFound();
+        }
+
         try
         {
-            await joinEventService.DeleteParticipantAsync(eventId, participantId);
+            await kinoJoinDbService.DeleteParticipantAsync(eventId, participantId);
             return TypedResults.Ok();
         }
         catch (Exception)

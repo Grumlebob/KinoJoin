@@ -53,7 +53,8 @@ public class Showtime
     [ForeignKey("CinemaId")]
     public Cinema Cinema { get; set; } = null!;
 
-    [ForeignKey("PlaytimeId")] public Playtime Playtime { get; set; } = null!;
+    [ForeignKey("PlaytimeId")]
+    public Playtime Playtime { get; set; } = null!;
 }
 
 public class Movie

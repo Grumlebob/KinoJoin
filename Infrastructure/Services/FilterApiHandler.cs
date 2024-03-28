@@ -260,7 +260,7 @@ public class FilterApiHandler : IFilterApiHandler
     {
         var fromDateString = fromDate.ToString("s"); //format: 2008-04-18T06:30:00
         var toDateString = toDate.ToString("s");
-        
+
         var filterStringBuilder = new StringBuilder("sort=most_purchased");
 
         foreach (var id in movieIds)

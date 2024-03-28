@@ -6,7 +6,12 @@ using Domain.ExternalApiModels;
 using FluentAssertions;
 using Infrastructure.Persistence;
 using Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using Presentation.Client.NamedHttpClients;
 
 namespace Test.KinoJoin;
@@ -47,9 +52,10 @@ public class KinoJoinTests : IAsyncLifetime
         {
             validator.TryValidateObjectRecursive(joinEvent, validationResults);
         }
+
         validationResults.Should().BeEmpty();
 
-        //UPSERTING
+        //UPSERTING correct
         foreach (var joinEvent in joinEvents)
         {
             //Insert
@@ -64,6 +70,11 @@ public class KinoJoinTests : IAsyncLifetime
             joinEventFromApi.Should().NotBeNull();
             joinEventFromApi!.Title.Should().Be(joinEvent.Title);
         }
+
+        //Upsert wrong joinEvent
+        var joinEventWrong = new JoinEvent();
+        var createResponseWrong = await _client.PutAsJsonAsync("api/events", joinEventWrong);
+        createResponseWrong.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         //check count
         joinEvents.Count.Should().Be(casesToInsert);
@@ -89,6 +100,7 @@ public class KinoJoinTests : IAsyncLifetime
             joinEventToCheck.Participants.Count.Should().BeGreaterThan(0);
             joinEventToCheck.Participants.First().VotedFor.Count.Should().BeGreaterThan(0);
         }
+
         if (joinEventToCheck.ChosenShowtimeId is not null)
         {
             joinEventToCheck.ChosenShowtimeId.Should().BeGreaterThan(0);
@@ -178,6 +190,7 @@ public class KinoJoinTests : IAsyncLifetime
                 break;
             }
         }
+
         var participantCountBeforeDelete = joinEventToDelete.Participants!.Count;
         var participantToDelete = joinEventToDelete.Participants.Last();
         var deleteParticipantResponse = await _client.DeleteAsync(
@@ -377,6 +390,45 @@ public class KinoJoinTests : IAsyncLifetime
         var fieldMediaImage = new FieldMediaImageConverter();
         var mediaSingleElement = new ShowtimeApiFieldMediaImage();
         fieldMediaImage.CanConvert(mediaSingleElement.GetType()).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task TestDatabaseMigrations()
+    {
+        try
+        {
+            await _kinoContext.Database.MigrateAsync();
+        }
+        catch (PostgresException postgres)
+        {
+            if (postgres.SqlState == "42P07")
+            {
+                //42P07 is the error code for duplicate_table
+                //This is fine, as it means the database is already migrated
+            }
+        }
+        //A test to ensure that you don't forget to add new migrations
+        var modelDiffer = _kinoContext.GetService<IMigrationsModelDiffer>();
+        var migrationsAssembly = _kinoContext.GetService<IMigrationsAssembly>();
+        var modelInitializer = _kinoContext.GetService<IModelRuntimeInitializer>();
+        var snapshotModel = migrationsAssembly.ModelSnapshot?.Model;
+        if (snapshotModel is IMutableModel mutableModel)
+        {
+            snapshotModel = mutableModel.FinalizeModel();
+        }
+        if (snapshotModel is not null)
+        {
+            snapshotModel = modelInitializer.Initialize(snapshotModel);
+        }
+
+        var designTimeModel = _kinoContext.GetService<IDesignTimeModel>();
+
+        var modelDifferences = modelDiffer.GetDifferences(
+            snapshotModel?.GetRelationalModel(),
+            designTimeModel.Model.GetRelationalModel()
+        );
+
+        modelDifferences.Count.Should().Be(0);
     }
 
     //We don't care about the InitializeAsync method, but needed to implement the IAsyncLifetime interface

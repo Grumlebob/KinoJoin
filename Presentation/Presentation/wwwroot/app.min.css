@@ -1415,10 +1415,6 @@ video {
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
-.fill-black {
-  fill: #000;
-}
-
 .fill-primary {
   fill: #e30613;
 }

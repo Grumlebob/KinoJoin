@@ -49,7 +49,7 @@
 
         <div class="flex w-full justify-between gap-2">
             <p>@participant.Nickname</p>
-            <div>
+            <div class="flex items-center h-8 gap-2">
 
                 @if (!string.IsNullOrWhiteSpace(participant.Note))
                 {
@@ -60,7 +60,7 @@
                 @if (IsHost)
                 {
                     <button onclick="@(async () => { await OpenDeleteDialog(participant); })">
-                        <DeleteIcon Class="stroke-error"/>
+                        <img src="Icons/DeleteIcon.svg" alt="delete" class="h-full"/>
                     </button>
                 }
             </div>

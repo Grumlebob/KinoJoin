@@ -1431,10 +1431,6 @@ video {
   stroke: #000;
 }
 
-.stroke-error {
-  stroke: rgb(226,117,120);
-}
-
 .stroke-success {
   stroke: rgb(101,193,121);
 }

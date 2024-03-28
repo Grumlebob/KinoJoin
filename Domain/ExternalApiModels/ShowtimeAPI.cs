@@ -9,103 +9,103 @@
 public class ShowtimeApiRoot
 {
     [JsonProperty("content")]
-    public required ShowtimeApiContentLevel1 ShowtimeApiContent { get; set; }
+    public required ShowtimeApiContentLevel1 ShowtimeApiContent;
 }
 
 public class ShowtimeApiContentLevel1
 {
     [JsonProperty("content")]
-    public required ShowtimeApiContentLevel2 ShowtimeApiContent { get; set; }
+    public required ShowtimeApiContentLevel2 ShowtimeApiContent;
 
     [JsonProperty("facets")]
-    public required ShowtimeApiFacets ShowtimeApiFacets { get; set; }
+    public required ShowtimeApiFacets ShowtimeApiFacets;
 }
 
 public class ShowtimeApiContentLevel2
 {
     [JsonProperty("content")]
-    public required List<ShowtimeApiContentLevel3> Content { get; set; }
+    public required List<ShowtimeApiContentLevel3> Content;
 }
 
 public class ShowtimeApiContentLevel3
 {
     [JsonProperty("id")]
-    public int Id { get; set; }
+    public int Id;
 
     [JsonProperty("movies")]
-    public required List<ShowtimeApiMovie> Movies { get; set; }
+    public required List<ShowtimeApiMovie> Movies;
 }
 
 public class ShowtimeApiMovie
 {
     [JsonProperty("id")]
-    public int Id { get; init; }
+    public int Id;
 
     [JsonProperty("versions")]
-    public required List<ShowtimeApiVersion> Versions { get; set; }
+    public required List<ShowtimeApiVersion> Versions;
 
     [JsonProperty("content")]
-    public required ShowtimeApiMovieContent Content { get; set; }
+    public required ShowtimeApiMovieContent Content;
 }
 
 public class ShowtimeApiVersion
 {
     [JsonProperty("label")]
-    public required string Label { get; set; }
+    public required string Label;
 
     [JsonProperty("dates")]
-    public required List<ShowtimeApiDate> Dates { get; set; }
+    public required List<ShowtimeApiDate> Dates;
 }
 
 public class ShowtimeApiDate
 {
     [JsonProperty("date")]
-    public required string Date { get; set; }
+    public required string Date;
 
     [JsonProperty("showtimes")]
-    public required List<ShowtimeApiItem> Showtimes { get; set; }
+    public required List<ShowtimeApiItem> Showtimes;
 }
 
 public class ShowtimeApiItem
 {
     [JsonProperty("id")]
-    public int Id { get; set; }
+    public int Id;
 
     [JsonProperty("available_seats")]
-    public int AvailableSeats { get; set; }
+    public int AvailableSeats;
 
     [JsonProperty("time")]
-    public required string Time { get; set; }
+    public required string Time;
 
     [JsonProperty("room")]
-    public required ShowtimeApiRoomContent ShowtimeApiRoomContent { get; set; }
+    public required ShowtimeApiRoomContent ShowtimeApiRoomContent;
 }
 
 public class ShowtimeApiRoomContent
 {
     [JsonProperty("id")]
-    public int Id { get; set; }
+    public int Id;
 
     [JsonProperty("label")]
-    public required string Label { get; set; }
+    public required string Label;
 }
 
 public class ShowtimeApiMovieContent
 {
     [JsonProperty("field_censorship_icon")]
-    public string? FieldCensorshipIcon { get; set; }
+    public string? FieldCensorshipIcon;
 
     [JsonProperty("field_playing_time")]
-    public required string FieldPlayingTime { get; set; }
+    public required string FieldPlayingTime;
 
     [JsonProperty("field_poster")]
-    public required ShowtimeApiFieldPoster ShowtimeApiFieldPoster { get; set; }
+    public required ShowtimeApiFieldPoster ShowtimeApiFieldPoster;
 
     [JsonProperty("field_premiere")]
-    public required string FieldPremiere { get; set; }
+    public required string FieldPremiere;
 
     [JsonProperty("url")]
-    public required string Url { get; set; }
+    public required string Url;
 }
 
 /// <summary>
@@ -146,80 +146,80 @@ public class FieldMediaImageConverter : JsonConverter
 public class ShowtimeApiFieldPoster
 {
     [JsonProperty("field_media_image"), JsonConverter(typeof(FieldMediaImageConverter))]
-    public ShowtimeApiFieldMediaImage? FieldMediaImage { get; set; }
+    public ShowtimeApiFieldMediaImage? FieldMediaImage;
 }
 
 public class ShowtimeApiFieldMediaImage
 {
     [JsonProperty("sources")]
-    public List<ShowtimeApiSourceItem>? Sources { get; set; }
+    public List<ShowtimeApiSourceItem>? Sources;
 }
 
 public class ShowtimeApiSourceItem
 {
     [JsonProperty("srcset")]
-    public string? Srcset { get; set; }
+    public string? Srcset;
 }
 
 public class ShowtimeApiCinemas
 {
     [JsonProperty("options")]
-    public required List<ShowtimeApiCinemaOption> Options { get; set; }
+    public required List<ShowtimeApiCinemaOption> Options;
 }
 
 public class ShowtimeApiCinemaOption
 {
     [JsonProperty("key")]
-    public int Key { get; set; }
+    public int Key;
 
     [JsonProperty("value")]
-    public required string Value { get; set; }
+    public required string Value;
 }
 
 public class ShowtimeApiFacets
 {
     [JsonProperty("cinemas")]
-    public required ShowtimeApiCinemas ShowtimeApiCinemas { get; set; }
+    public required ShowtimeApiCinemas ShowtimeApiCinemas;
 
     [JsonProperty("movies")]
-    public required MovieLookup Movies { get; set; }
+    public required MovieLookup Movies;
 
     [JsonProperty("versions")]
-    public required VersionLookup Versions { get; set; }
+    public required VersionLookup Versions;
 
     [JsonProperty("genres")]
-    public required ShowtimeApiGenresLookup ShowtimeApiGenres { get; set; }
+    public required ShowtimeApiGenresLookup ShowtimeApiGenres;
 }
 
 public class FacetOptionVersion
 {
     [JsonProperty("value")]
-    public required string Value { get; set; }
+    public required string Value;
 }
 
 public class FacetOption
 {
     [JsonProperty("key")]
-    public required int Key { get; set; }
+    public required int Key;
 
     [JsonProperty("value")]
-    public required string Value { get; set; }
+    public required string Value;
 }
 
 public class ShowtimeApiGenresLookup
 {
     [JsonProperty("options")]
-    public required List<FacetOption> Options { get; set; }
+    public required List<FacetOption> Options;
 }
 
 public class MovieLookup
 {
     [JsonProperty("options")]
-    public required List<FacetOption> Options { get; set; }
+    public required List<FacetOption> Options;
 }
 
 public class VersionLookup
 {
     [JsonProperty("options")]
-    public required List<FacetOptionVersion> Options { get; set; }
+    public required List<FacetOptionVersion> Options;
 }

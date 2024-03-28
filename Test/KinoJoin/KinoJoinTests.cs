@@ -2,7 +2,11 @@
 using System.Net;
 using System.Net.Http.Json;
 using Domain.Entities;
+using Domain.ExternalApiModels;
 using FluentAssertions;
+using Infrastructure.Persistence;
+using Microsoft.Extensions.DependencyInjection;
+using Presentation.Client.NamedHttpClients;
 
 namespace Test.KinoJoin;
 
@@ -19,10 +23,15 @@ public class KinoJoinTests : IAsyncLifetime
 
     private readonly DataGenerator _dataGenerator = new();
 
+    private readonly KinoContext _kinoContext;
+
+    private readonly KinoJoinHttpClient _kinoJoinHttpClient;
+
     public KinoJoinTests(KinoJoinApiWebAppFactory factory)
     {
         _client = factory.HttpClient;
         _resetDatabase = factory.ResetDatabaseAsync;
+        _kinoContext = factory.Services.GetRequiredService<KinoContext>();
     }
 
     [Fact]
@@ -241,7 +250,7 @@ public class KinoJoinTests : IAsyncLifetime
     }
 
     //We only fetch genres from kino.dk, and never insert them ourselves.
-    //So after inserting a join event, we should have genres.
+    //So after inserting a join event, we should not have genres.
     [Fact]
     public async Task GetGenres_ShouldReturnOk_IfGenresExistElseReturnsNotFound()
     {
@@ -257,6 +266,17 @@ public class KinoJoinTests : IAsyncLifetime
         //After inserting a join event, genres should still not exist.
         var getResponse = await _client.GetAsync("api/kino-data/genres");
         getResponse.Content.ReadAsStringAsync().Result.Should().Be("[]");
+
+        //Inserting a genrer manually
+        var genre = new Genre { Id = 1, Name = "Test" };
+        _kinoContext.Genres.Add(genre);
+        await _kinoContext.SaveChangesAsync();
+
+        //Genres should now exist
+        var getResponseAfterInsert = await _client.GetAsync("api/kino-data/genres");
+        getResponseAfterInsert.StatusCode.Should().Be(HttpStatusCode.OK);
+        var genres = await getResponseAfterInsert.Content.ReadFromJsonAsync<List<Genre>>();
+        genres.Should().NotBeNull();
     }
 
     [Fact]
@@ -265,6 +285,15 @@ public class KinoJoinTests : IAsyncLifetime
         //The tests main focus is getting the static data from kino.dk - should take about 2 minutes
         var response = await _client.PostAsync("api/kino-data/update-all", null);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    //From our external api Kino.DK, they sometimes have a single element, and sometimes a list of elements, the convert class is used to handle this
+    [Fact]
+    public void FieldMediaImageConvertCanConvertAShowtimeApiFieldMediaImage()
+    {
+        var fieldMediaImage = new FieldMediaImageConverter();
+        var mediaSingleElement = new ShowtimeApiFieldMediaImage();
+        fieldMediaImage.CanConvert(mediaSingleElement.GetType()).Should().BeTrue();
     }
 
     //We don't care about the InitializeAsync method, but needed to implement the IAsyncLifetime interface

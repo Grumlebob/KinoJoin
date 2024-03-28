@@ -12,17 +12,17 @@ public class MovieApiRoot
 public class MovieApiContentLevel
 {
     [JsonProperty("field_trailer")]
-    public required MovieApiFieldTrailer MovieApiFieldTrailer { get; set; }
+    public required MovieApiFieldTrailer MovieApiFieldTrailer;
 }
 
 public class MovieApiFieldTrailer
 {
     [JsonProperty("field_media_oembed_video")]
-    public required MovieApiFieldMediaOembedVideo MovieApiFieldMediaOembedVideo { get; set; }
+    public required MovieApiFieldMediaOembedVideo MovieApiFieldMediaOembedVideo;
 }
 
 public class MovieApiFieldMediaOembedVideo
 {
     [JsonProperty("src")]
-    public string? TrailerUrl { get; set; }
+    public string? TrailerUrl;
 }

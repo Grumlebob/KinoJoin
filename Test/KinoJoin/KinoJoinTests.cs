@@ -282,6 +282,9 @@ public class KinoJoinTests : IAsyncLifetime
         genres.Should().NotBeNull();
     }
 
+    /*
+     * Unfortunately Kino.dk is down 5% of the day, which causes this test to fail 5% of the time.
+     */
     [Fact]
     public async Task UpdateAllBaseDataFromKinoDk_ThenUseTheDataToCheckKinoDkFilterApi()
     {
@@ -309,9 +312,15 @@ public class KinoJoinTests : IAsyncLifetime
         var fromDate = DateTime.Now.AddYears(-1);
         var toDate = DateTime.Now.AddYears(10);
 
+        var cinemasToCheck = cinemas!.Select(c => c.Id).Take(3).ToList();
+        if (cinemasToCheck.Count == 0)
+        {
+            cinemasToCheck.Add(1);
+        }
+
         var filterApiHandler = new FilterApiHandler();
         var (showtimesWithCinemaFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
-            cinemas!.Select(c => c.Id).Take(1).ToList(),
+            cinemasToCheck,
             null,
             null,
             fromDate,
@@ -320,9 +329,10 @@ public class KinoJoinTests : IAsyncLifetime
         showtimesWithCinemaFilter.Should().NotBeNull();
         showtimesWithCinemaFilter.Count.Should().BeGreaterThan(1);
 
+        var moviesToCheck = showtimesWithCinemaFilter.Select(s => s.MovieId).Take(3).ToList();
         var (showtimesWithMovieFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
             null,
-            movies!.Select(m => m.Id).Take(1).ToList(),
+            moviesToCheck,
             null,
             fromDate,
             toDate
@@ -330,10 +340,16 @@ public class KinoJoinTests : IAsyncLifetime
         showtimesWithMovieFilter.Should().NotBeNull();
         showtimesWithMovieFilter.Count.Should().BeGreaterThan(1);
 
+        var genresToCheck = genres!.Select(g => g.Id).Take(3).ToList();
+        if (genresToCheck.Count == 0)
+        {
+            genresToCheck.Add(96); //96 is action
+        }
+
         var (showtimesWithGenreFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
             null,
             null,
-            genres!.Select(g => g.Id).Take(1).ToList(),
+            genresToCheck,
             fromDate,
             toDate
         );

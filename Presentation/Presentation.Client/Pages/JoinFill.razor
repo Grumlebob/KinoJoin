@@ -107,12 +107,14 @@
                     <a href="@(_baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id))" class="text-lg text-blue-600 hover:text-blue-700">
                         @((_baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)).Replace("https://", ""))
                     </a>
-                    <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)); })" class="hover:bg-gray-200 rounded-full h-full min-w-6 p-1">
-                        <img src="Icons/CopyIcon.svg" alt="copy" class="h-full"/>
-                    </button>
-                    <button @onclick="ShareEvent" class="rounded-full p-1 h-full text-white bg-secondary hover:bg-gray-700 lg:hidden min-w-6">
+                    <div class="group">
+                        <Button OnClick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)); })" Variant="Button.ButtonVariant.White" class="min-w-6">
+                            <img src="Icons/CopyIcon.svg" alt="copy" class="h-full rounded-full group-hover:invert"/>
+                        </Button>
+                    </div>
+                    <Button OnClick="@(async () => { await ShareEvent(); })" Variant="Button.ButtonVariant.Black" class="min-w-6">
                         <img src="Icons/ShareIcon.svg" alt="share" class="h-full"/>
-                    </button>
+                    </Button>
                 </div>
             </div>
         }

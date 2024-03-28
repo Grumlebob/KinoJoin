@@ -9,12 +9,12 @@
             @foreach (var showtime in OrderedShowtimes)
             {
                 <th class="max-w-48 min-w-48 ">
-                    <ResultCard Event="Event" Showtime="showtime" Desktop="true" IsHost="IsHost" OnEventConfirmed="StateHasChanged"></ResultCard>
+                    <ResultCard Event="Event" Showtime="showtime" UsingDesktop="true" IsHost="IsHost" OnEventConfirmed="StateHasChanged"/>
                 </th>
             }
         </tr>
 
-        @foreach (var participant in Event.Participants ?? new List<Participant>())
+        @foreach (var participant in Event.Participants ?? [])
         {
             <tr>
                 <td class="sticky left-0 rounded  bg-slate-50 items-end">

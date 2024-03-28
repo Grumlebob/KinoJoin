@@ -4,7 +4,7 @@
 <div class="flex  flex-col justify-start text-start items-start gap-2 bg-slate-50   rounded p-5 shadow-md  text-wrap  ">
 
 
-    <div class="@(Desktop ? "" : "gap-1") md:h-24">
+    <div class="@(UsingDesktop ? "" : "gap-1") md:h-24">
         <div class="flex w-full items-center gap-2 ">
 
             <div class="flex w-full items-center gap-1">
@@ -52,7 +52,7 @@
                     @Showtime.Playtime.StartTime.ToString("dd. MMM").
 
                 </p>
-                @if (!Desktop)
+                @if (!UsingDesktop)
                 {
                     <p> - @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes((double)Showtime.Movie.Duration).ToString("HH:mm") </p>
                 }
@@ -66,14 +66,14 @@
             </div>
         </div>
 
-        @if (!Desktop || IsHost)
+        @if (!UsingDesktop || IsHost)
         {
             <hr class=" h-px w-full rounded-full bg-gray-300"/>
         }
         <div class="flex w-full items-center gap-1 ">
 
 
-            @if (!Desktop)
+            @if (!UsingDesktop)
             {
                 if (HasVoted)
                 {
@@ -86,7 +86,7 @@
                 }
             }
             <div class="flex h-fit w-full justify-end items-end md:justify-start md:items-start gap-1 w-full">
-                @if (!Desktop)
+                @if (!UsingDesktop)
                 {
                     <Button OnClick="@ShowVotes">Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)))</Button>
                 }
@@ -96,7 +96,7 @@
                 {
                     <div class="  flex justify-center py-[14px] px-[15px] rounded-full bg-opacity-25  font-normal bg-success text-nowrap text-success-darkest">
                         <p>Aftalt tid</p>
-                        <button class="p-1 rounded-full  hover:bg-success" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + Showtime.Id + Desktop); })">
+                        <button class="p-1 rounded-full  hover:bg-success" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + Showtime.Id + UsingDesktop); })">
                             <img src="Icons/ThreeDotsIcon.svg" alt="options"/>
                         </button>
                     </div>
@@ -111,7 +111,7 @@
     </div>
 
 </div>
-@if (!Desktop)
+@if (!UsingDesktop)
 {
     <dialog id="@($"votesDialog{Showtime.Id}")" class="fixed w-full max-w-md rounded p-4 bg-slates-300 xs:h-dvh">
 
@@ -132,24 +132,24 @@
     </dialog>
 }
 
-<dialog class="rounded p-5" id="@("confirmEvent" + Showtime.Id + Desktop)">
+<dialog class="rounded p-5" id="@("confirmEvent" + Showtime.Id + UsingDesktop)">
     <div class="flex flex-col items-end gap-4">
         <h2 class="text-xl font-bold">Ønsker du at bekræfte forestillingen for dette event?</h2>
         <div class="flex gap-1">
             <Button Variant="Button.ButtonVariant.White" OnClick="@(() => CloseDialog(Showtime.Id))">Nej</Button>
-            <Button Variant="Button.ButtonVariant.Black" OnClick="@(async () => { await OpenDetailsDialog(Showtime, Showtime.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + Showtime.Id + Desktop); })">Ja</Button>
+            <Button Variant="Button.ButtonVariant.Black" OnClick="@(async () => { await OpenDetailsDialog(Showtime, Showtime.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + Showtime.Id + UsingDesktop); })">Ja</Button>
         </div>
     </div>
 </dialog>
-<dialog class="rounded p-5" id="@("confirmDetails" + Showtime.Id + Desktop)">
+<dialog class="rounded p-5" id="@("confirmDetails" + Showtime.Id + UsingDesktop)">
     <div class="flex flex-col items-center gap-4">
         <h2 class="text-xl font-bold">Event valgt</h2>
         <div class="space-y-3">
             <div class="flex flex-col gap-2 md:gap-1">
-                <Button Variant="Button.ButtonVariant.Red" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("open", $"https://kino.dk/ticketflow/showtimes/{Showtime.Id}", "_blank"))" Class="@(Desktop ? "" : "w-full")">Bestil Billetter</Button>
-                <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "calendar-dialog" + Desktop))">Tilføj til egen kalender</Button>
+                <Button Variant="Button.ButtonVariant.Red" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("open", $"https://kino.dk/ticketflow/showtimes/{Showtime.Id}", "_blank"))" Class="@(UsingDesktop ? "" : "w-full")">Bestil Billetter</Button>
+                <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "calendar-dialog" + UsingDesktop))">Tilføj til egen kalender</Button>
                 <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => await GoToMailToLink(Showtime))">Send mail til deltagere</Button>
-                @if (!Desktop)
+                @if (!UsingDesktop)
                 {
                     <Button Variant="Button.ButtonVariant.White" OnClick="@ShareEvent">Del</Button>
                 }
@@ -162,7 +162,7 @@
 </dialog>
 
 
-<CalendarDialog Event="Event" Desktop="Desktop" Showtime="@Showtime"/>
+<CalendarDialog Event="Event" UsingDesktop="UsingDesktop" Showtime="@Showtime"/>
 
 @code {
 
@@ -174,7 +174,7 @@
 
     [Parameter] public ParticipantVote? Vote { get; set; }
 
-    [Parameter] public bool Desktop { get; set; }
+    [Parameter] public bool UsingDesktop { get; set; }
 
     [Parameter] public bool IsHost { get; set; }
 
@@ -191,18 +191,18 @@
         Event.ChosenShowtimeId = showtime.Id;
         await KinoJoinHttpClient.PutJoinEventAsync(Event);
         OnEventConfirmed.InvokeAsync();
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + index + Desktop);
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + index + UsingDesktop);
     }
 
     private async Task OpenConfirmationDialog(int index)
     {
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmEvent" + index + Desktop);
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmEvent" + index + UsingDesktop);
     }
 
     private async Task CloseDialog(int index)
     {
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + index + Desktop);
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmDetails" + index + Desktop);
+        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + index + UsingDesktop);
+        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmDetails" + index + UsingDesktop);
     }
 
     private async Task GoToMailToLink(Showtime showtime)

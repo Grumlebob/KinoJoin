@@ -53,14 +53,14 @@
 
                     @if (_isHost)
                     {
-                        @if (_isEditing)
+                        if (_isEditing)
                         {
                             <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => { await UpdateJoinEvent(); _isEditing = false; })">Gem ændringer</Button>
                         }
                         else
                         {
                             <button onclick="@(() => { _isEditing = true; })">
-                                <EditIcon Class="fill-black hover:bg-gray-200 rounded p-1"/>
+                                <img src="Icons/EditIcon.svg" alt="edit" Class="hover:bg-gray-200 rounded p-1"/>
                             </button>
                         }
                     }

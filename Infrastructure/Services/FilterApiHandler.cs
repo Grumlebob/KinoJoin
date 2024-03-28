@@ -26,8 +26,11 @@ public class FilterApiHandler : IFilterApiHandler
         cinemaIds ??= [];
         movieIds ??= [];
         genreIds ??= [];
-        fromDate ??= DateTime.Now;
-        toDate ??= DateTime.Now.AddMinutes(1);
+        fromDate ??= DateTime.Today;
+        toDate ??= DateTime.Today.AddYears(1);
+
+        fromDate = fromDate.Value.Date;
+        toDate = toDate.Value.Date.AddHours(23).AddMinutes(59); //inclusive
 
         var filterStringBuilder = new StringBuilder("&sort=most_purchased");
         var cinemaList = cinemaIds.ToList();
@@ -48,8 +51,8 @@ public class FilterApiHandler : IFilterApiHandler
             filterStringBuilder.Append($"&genres[{i}]={genreList[i]}");
         }
 
-        filterStringBuilder.Append($"&date={fromDate.Value.ToString("O")}");
-        filterStringBuilder.Append($"&date={toDate.Value.ToString("O")}");
+        filterStringBuilder.Append($"&date={fromDate.Value.ToString("s")}"); //format: 2008-04-18T06:30:00
+        filterStringBuilder.Append($"&date={toDate.Value.ToString("s")}");
 
         var apiString = BaseUrl + filterStringBuilder;
 

@@ -396,7 +396,7 @@
                         }
                         else
                         {
-                            _endDate = parsedDate.Date.AddHours(23).AddMinutes(59);
+                            _endDate = parsedDate.Date;
                         }
 
                         break;
@@ -459,7 +459,7 @@
         NavigationManager.NavigateTo(newUrl); //change url so a page reload will save the filters
 
         //get the showtimes from kino.dk
-        (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate.Date.AddHours(23).AddMinutes(59));
+        (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
 
         // Save votes for show times that were there before update 
         var stillAvailableShowtimeIds = new HashSet<int>(_availableShowtimeVotes

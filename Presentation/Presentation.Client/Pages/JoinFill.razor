@@ -108,7 +108,7 @@
                         @((_baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)).Replace("https://", ""))
                     </a>
                     <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)); })">
-                        <CopyIcon Class="hover:bg-gray-200 p-2 rounded-full"/>
+                        <img src="Icons/CopyIcon.svg" class="hover:bg-gray-200 p-2 rounded-full" alt="copy"/>
                     </button>
                     <button @onclick="ShareEvent" class="rounded-full p-1 text-white bg-secondary hover:bg-gray-700 lg:hidden">
                         <svg class="fill-white" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="16" height="16" viewBox="0 0 30 30">

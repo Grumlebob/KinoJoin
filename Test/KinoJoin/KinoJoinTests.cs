@@ -439,9 +439,8 @@ public class KinoJoinTests : IAsyncLifetime
         modelDifferences.Count.Should().Be(0);
     }
 
-    //Test getters with a filter
     [Fact]
-    public async Task GetJoinEvents_ShouldReturnOk_IfJoinEventsExistElseReturnsNotFound()
+    public async Task GetJoinEventsByHostFilter()
     {
         var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
         var createResponse = await _client.PutAsJsonAsync("api/events", joinEvent);
@@ -449,6 +448,19 @@ public class KinoJoinTests : IAsyncLifetime
 
         var response = await _client.GetAsync($"api/events/host/{joinEvent.Host.AuthId}");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task MakeParticipantNotExistAsync_ReturnsOkIfParamsAreOk()
+    {
+        //With positive params, the method should return OK, because either the participant is deleted or it doesn't exist.
+        var response = await _client.DeleteAsync("api/events/1/participants/1");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        //If negative params, no DB operation should be done, and the method should return OK,
+        //As no participant with negative ID can exist.
+        var response2 = await _client.DeleteAsync("api/events/-1/participants/-1");
+        response2.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     //We don't care about the InitializeAsync method, but needed to implement the IAsyncLifetime interface

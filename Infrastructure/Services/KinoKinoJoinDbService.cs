@@ -77,7 +77,7 @@ public class KinoKinoJoinDbService(KinoContext context) : IKinoJoinDbService
         return joinEvents;
     }
 
-    public async Task DeleteParticipantAsync(int eventId, int participantId)
+    public async Task MakeParticipantNotExistAsync(int eventId, int participantId)
     {
         // Find the participant directly without loading the entire JoinEvent and Participants
         var participant = await context.Participants.FirstOrDefaultAsync(p =>

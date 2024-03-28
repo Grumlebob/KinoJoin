@@ -152,7 +152,7 @@ public class KinoJoinEndpoints : ICarterModule
         }
     }
 
-    private static async Task<Results<Ok, NotFound>> DeleteParticipant(
+    private static async Task<Results<Ok, NotFound, BadRequest<string>>> DeleteParticipant(
         [FromRoute] int eventId,
         [FromRoute] int participantId,
         [FromServices] IKinoJoinDbService kinoJoinDbService
@@ -160,17 +160,17 @@ public class KinoJoinEndpoints : ICarterModule
     {
         if (eventId <= 0 || participantId <= 0)
         {
-            return TypedResults.NotFound();
+            return TypedResults.Ok();
         }
 
         try
         {
-            await kinoJoinDbService.DeleteParticipantAsync(eventId, participantId);
+            await kinoJoinDbService.MakeParticipantNotExistAsync(eventId, participantId);
             return TypedResults.Ok();
         }
         catch (Exception)
         {
-            return TypedResults.NotFound();
+            return TypedResults.BadRequest(DefaultErrorMessage);
         }
     }
 

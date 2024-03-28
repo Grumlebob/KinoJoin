@@ -1,4 +1,5 @@
 ﻿@page "/filling/{JoinEventId}"
+@using Presentation.Client.Services
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
@@ -30,7 +31,7 @@
                 <div class="flex md:items-end md:justify-end">
                     <div class="flex w-full flex-col gap-2 md:w-fit md:flex-row">
                         <Button Variant="Button.ButtonVariant.White" OnClick="@(() => { _showFirstLoginDialog = false; })">Uden login</Button>
-                        <Button Variant="Button.ButtonVariant.Red" OnClick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + _event?.Id }); })"> Anvend dit Kino login</Button>
+                        <Button Variant="Button.ButtonVariant.Red" OnClick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + JoinEventId }); })"> Anvend dit Kino login</Button>
                     </div>
                 </div>
             </div>
@@ -53,14 +54,14 @@
 
                     @if (_isHost)
                     {
-                        @if (_isEditing)
+                        if (_isEditing)
                         {
                             <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => { await UpdateJoinEvent(); _isEditing = false; })">Gem ændringer</Button>
                         }
                         else
                         {
                             <button onclick="@(() => { _isEditing = true; })">
-                                <EditIcon Class="fill-black hover:bg-gray-200 rounded p-1"/>
+                                <img src="Icons/EditIcon.svg" alt="edit" Class="hover:bg-gray-200 rounded p-1"/>
                             </button>
                         }
                     }
@@ -103,18 +104,18 @@
         {
             <div class="w-full rounded border p-3 space-y-1 bg-gray-50 shadow-md md:w-fit md:max-w-md">
                 <p class="text-lg font-semibold mb-0.5">Send et link til eventet til dine venner.</p>
-                <div class="flex items-center">
+                <div class="flex items-center gap-x-2 h-8">
                     <a href="@(_baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id))" class="text-lg text-blue-600 hover:text-blue-700">
                         @((_baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)).Replace("https://", ""))
                     </a>
-                    <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)); })">
-                        <CopyIcon Class="hover:bg-gray-200 p-2 rounded-full"/>
-                    </button>
-                    <button @onclick="ShareEvent" class="rounded-full p-1 text-white bg-secondary hover:bg-gray-700 lg:hidden">
-                        <svg class="fill-white" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="16" height="16" viewBox="0 0 30 30">
-                            <path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"></path>
-                        </svg>
-                    </button>
+                    <div class="group">
+                        <Button OnClick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)); })" Variant="Button.ButtonVariant.White" class="min-w-6">
+                            <img src="Icons/CopyIcon.svg" alt="copy" class="h-full rounded-full group-hover:invert"/>
+                        </Button>
+                    </div>
+                    <Button OnClick="@(async () => { await ShareEvent(); })" Variant="Button.ButtonVariant.Black" class="min-w-6">
+                        <img src="Icons/ShareIcon.svg" alt="share" class="h-full"/>
+                    </Button>
                 </div>
             </div>
         }
@@ -188,15 +189,15 @@
 
 
         //check if user is host
-        var authState = await AuthenticationStateTask;
-        var user = authState.User;
-        _isLoggedIn = user.Identity!.IsAuthenticated;
+        var userInfo = await  UserInfoService.GetUserInfoAsync(AuthenticationStateTask);
+       
+        _isLoggedIn = userInfo!=null;
+        
         if (_isLoggedIn)
         {
-            var username = user.Identity.Name;
-            _currentParticipant.AuthId = user.FindFirst(c => c.Type == "sub")?.Value;
+            _currentParticipant.AuthId = userInfo!.Value.authId;
             _isHost = _event?.Host?.AuthId == _currentParticipant.AuthId;
-            _currentParticipant.Nickname = username;
+            _currentParticipant.Nickname = userInfo.Value.name;
             if (_event!.Participants!.Any(p => p.AuthId == _currentParticipant.AuthId))
             {
                 _alreadyAnswered = true;

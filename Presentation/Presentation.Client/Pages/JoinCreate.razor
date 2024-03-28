@@ -1,5 +1,6 @@
 ﻿@page "/"
-@page "/create-event/{FilterString?}"
+@page "/create-event/{UrlFilterString?}"
+@using Presentation.Client.Services
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
@@ -14,6 +15,19 @@
     return;
 }
 
+@if (!_isLoggedIn && !GlobalSettings.HostOnNgrokWithNoHttpsAndSetDefaultUser)
+{
+    <div class="flex flex-col w-full h-full h-fit justify-center items-center bg-black bg-opacity-50  fixed inset-0 z-50 flex">
+        <div class="w-fit h-fit shadow-md p-3 bg-gray-50 rounded ">
+            <p class="text-2xl font-semibold">Du skal være logget ind for at oprette et event</p>
+            <div class="w-fit">
+                <Button Variant="Button.ButtonVariant.Black" OnClick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/create-event/" + UrlFilterString }); })">Log ind</Button>
+            </div>
+        </div>
+    </div>
+}
+
+@*Header*@
 <div class="mb-6 flex justify-between">
     <h1 class="text-2xl font-bold leading-tight text-secondary md:text-2xl lg:text-3xl">
         Velkommen til KinoJoin - Planlæg dit biograf event her
@@ -24,11 +38,94 @@
     }
 </div>
 
+@*Show/Hide filter button on mobile*@
+<div class="flex">
+    <button @onclick="() => { _showAllFilters = !_showAllFilters; }" class="rounded-full border border-transparent px-6 py-2 text-base font-medium text-white shadow-sm bg-secondary max-w-40 hover:bg-gray-800 lg:hidden">
+        @(_showAllFilters ? "Skjul filtrer" : "Vis alle filtrer")
+    </button>
+</div>
+
+@*Filters*@
+<div id="ShowAllFilters" class="@(_showAllFilters ? "" : "hidden lg:block")">
+
+    @*Filter checkbox lists*@
+    <div class="flex flex-col lg:space-x-4 lg:flex-row">
+        <div class="mt-4 lg:mt-0 lg:w-1/3">
+            <SearchableCheckboxList @ref="_cinemaCheckBoxList" IconPath="/Icons/CinemaFilterIcon.svg" FilterTitle="Vælg biografer" SelectedItems="_selectedCinemas" IdsToLabels="@_cinemaIdsToNames"/>
+        </div>
+        <div class="lg:w-1/3">
+            <SearchableCheckboxList @ref="_movieCheckBoxList" IconPath="Icons/MovieFilterIcon.svg" FilterTitle="Vælg film" SelectedItems="_selectedMovies" IdsToLabels="@_movieIdsToNames"/>
+        </div>
+        <div class="lg:mt-0 lg:w-1/3">
+            <SearchableCheckboxList @ref="_genreCheckBoxList" IconPath="Icons/GenreFilterIcon.svg" FilterTitle="Vælg genrer" SelectedItems="_selectedGenres" IdsToLabels="@_genreIdsToNames"/>
+        </div>
+    </div>
+
+    @* Date filters *@
+    <div class="mt-0 flex flex-col space-y-4 lg:w-1/3 lg:pr-3">
+        <div class="flex w-full flex-wrap justify-start">
+            <div class="w-1/2 pt-3 pr-1.5">
+                <div class="rounded-lg bg-gray-100 shadow">
+                    <label for="start-date" class="block rounded-t-lg text-center text-sm font-medium text-white bg-secondary">Start dato</label>
+                    <input id="start-date" type="date" @bind="_startDate" class="mt-1 block w-full text-center bg-transparent"/>
+                </div>
+            </div>
+            <div class="w-1/2 pt-3 pl-1.5">
+                <div class="rounded-lg bg-gray-100 shadow">
+                    <label for="end-date" class="block rounded-t-lg text-center text-sm font-medium text-white bg-secondary">Slut dato</label>
+                    <input id="end-date" type="date" @bind="_endDate" class="mt-1 block w-full text-center bg-transparent"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-between">
+
+        @*Filter information box on desktop*@
+        <div class="hidden h-10 md:block">
+            <FilterInformationBox LoadingShowtimes="_loadingShowtimes" NoFiltersSelected="NoFiltersSelected"/>
+        </div>
+
+        @*Filter Buttons*@
+        <div class="mt-4 flex w-full justify-end gap-2 text-no-wrap md:w-auto">
+            <Button Variant="Button.ButtonVariant.White" OnClick="HandleFilterReset">Ryd filtre</Button>
+            <Button Variant="Button.ButtonVariant.Black" OnClick="HandleShowtimeFiltersChanged">Opdater filtre</Button>
+        </div>
+    </div>
+
+</div>
+
+@*Filter information box on mobile*@
+<div class="md:hidden">
+    <FilterInformationBox LoadingShowtimes="_loadingShowtimes" NoFiltersSelected="NoFiltersSelected"/>
+</div>
+
+@*Showtimes*@
+@if (_loadingShowtimes)
+{
+    return;
+}
+
+@if (_availableShowtimes.Count == 0 && (_selectedCinemas.Any() || _selectedMovies.Any() || _selectedGenres.Any()))
+{
+    <p>Der er ingen forestillinger for de valgte filtre</p>
+}
+
+<ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de spilletider du vil have med i dit event" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_showtimeVotes" VotesChanged="OnVoteChange" SelectOptions="@_selectOptionsForCreatePage" DefaultSelectOption="@_selectOptionsForCreatePage.First()"/>
+
+@*Create button*@
+<Button Variant="Button.ButtonVariant.Red" OnClick="OpenEventDetailsDialog" Class="fixed right-6 text-sm bottom-6 z-50 flex gap-1">
+    <img src="Icons/CreateIcon.svg" alt="create"/>
+    <span class="text-white">
+        Opret og del
+    </span>
+</Button>
 
 @* Dialog where user enters title and other event details *@
 <dialog id="eventDetailsDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
-    <EditForm OnValidSubmit="context => ValidateAndOpenConfirmationDialog()" model="@_joinEvent">
+    <EditForm OnValidSubmit="_ => OpenConfirmationDialog()" model="@_joinEvent">
         <DataAnnotationsValidator/>
+
         <p class="text-lg font-semibold mb-0.5">Event Titel</p>
         <InputText class="mb-2 w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:ring-2 focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
                    type="text" placeholder="Titel" required
@@ -43,15 +140,18 @@
         <p class="text-lg font-semibold mb-0.5">Deadline</p>
         <input class="mb-2 w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
                type="date" placeholder="Deadline" value="@_joinEvent.Deadline.ToString("yyyy-MM-dd")" @oninput="@(v => { if (DateTime.TryParse(v.Value?.ToString(), CultureInfo.InvariantCulture, out var parsedDate)) _joinEvent.Deadline = parsedDate; })"/>
+
         <div class="text-error">
             <ValidationSummary/>
         </div>
+
         <div class="mt-5 mb-5 flex justify-end space-x-3">
             <Button Type="button" Variant="Button.ButtonVariant.White" OnClick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog"))">Annuller</Button>
             <Button Type="submit" Variant="Button.ButtonVariant.Black">Opret</Button>
         </div>
     </EditForm>
 
+    @* Summary of selected show times*@
     <div class="mt-2 rounded border p-2">
         <p class="text-lg font-semibold">Valgte spilletider</p>
         @foreach (var showtimesByMovie in _joinEvent.Showtimes.GroupBy(s => s.Movie.Id))
@@ -75,126 +175,28 @@
 @* Dialog to confirm the user is done creating the event *@
 <dialog id="eventConfirmDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl md:min-w-96">
     <form @onsubmit="FinishJoinEvent">
-    <p class="text-lg font-semibold mb-0.5">Bekræft oprettelse</p>
-    <div class="mb-4 flex items-center">
-        <input id="CanAllShowtimes" type="checkbox" @bind="_hostCanAllShowtimes" class="mr-2 accent-secondary"/>
-        <label for="CanAllShowtimes" class="text-md">
-            Jeg kan alle valgte tider
-        </label>
-    </div>
-    @if (!_uploadingEvent)
-    {
-        <div class="flex justify-end space-x-3">
-            <Button Type="button" Variant="Button.ButtonVariant.White" OnClick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog"))">Rediger videre</Button>
-            <Button Type="submit" Variant="Button.ButtonVariant.Black" OnClick="@FinishJoinEvent">Opret</Button>
+        <p class="text-lg font-semibold mb-0.5">Bekræft oprettelse</p>
+        <div class="mb-4 flex items-center">
+            <input id="CanAllShowtimes" type="checkbox" @bind="_hostCanAllShowtimes" class="mr-2 accent-secondary"/>
+            <label for="CanAllShowtimes" class="text-md">
+                Jeg kan alle valgte tider
+            </label>
         </div>
-    }
-    else
-    {
-        <LoadingIndicator Text="Opretter"/>
-    }
+        @if (!_uploadingEvent)
+        {
+            <div class="flex justify-end space-x-3">
+                <Button Type="button" Variant="Button.ButtonVariant.White" OnClick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog"))">Rediger videre</Button>
+                <Button Type="submit" Variant="Button.ButtonVariant.Black" OnClick="@FinishJoinEvent">Opret</Button>
+            </div>
+        }
+        else
+        {
+            <LoadingIndicator Text="Opretter"/>
+        }
     </form>
 </dialog>
 
-@* Dialog which shows the share link *@
-@{
-    var hashedId = SqidsEncoder.Encode(_joinEvent.Id);
-}
-<dialog id="eventShareDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl md:min-w-96">
-    <div class="space-y-1">
-        <p class="text-lg font-semibold mb-0.5">Dit event er nu oprettet</p>
-        <p class="font-semibold">Send dette link til dine venner (Du kan også se resultater på denne side)</p>
-        <div class="flex items-center gap-1">
-            <a href="@(_baseUrl + "filling/" + hashedId)" class="text-lg text-blue-600 hover:text-blue-700">
-                @(_baseUrl + "filling/" + hashedId)
-            </a>
-            <button @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + hashedId); await ShowSnackbar("Link kopieret", "success"); })">
-                <CopyIcon Class="hover:bg-gray-200 p-2 rounded-full"/>
-            </button>
-            <button @onclick="ShareEvent" class="rounded-full p-2 text-white bg-secondary hover:bg-gray-700 lg:hidden">
-                <svg class="h-5 w-5 fill-white" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 30 30">
-                    <path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"></path>
-                </svg>
-            </button>
-        </div>
-        @if (!_hostCanAllShowtimes)
-        {
-            <p>Angiv hvilke tider du selv kan ved at gå ind på linket</p>
-        }
-    </div>
-</dialog>
-
-
-<div class="flex">
-    <Button Variant="Button.ButtonVariant.Black" OnClick="() => _showAllFilters = !_showAllFilters" Class="lg:hidden">
-        @(_showAllFilters ? "Skjul filtrer" : "Vis alle filtrer")
-    </Button>
-</div>
-
-
-<div id="ShowAllFilters" class="@(_showAllFilters ? "" : "hidden lg:block")">
-    <div class="flex flex-col lg:space-x-4 lg:flex-row">
-        <div class="mt-4 lg:mt-0 lg:w-1/3">
-            <SearchableCheckboxList @ref="_cinemaCheckBoxList" IconPath="/Icons/CinemaFilterIcon.svg" FilterTitle="Vælg biografer" SelectedItems="_selectedCinemas" IdsToLabels="@_cinemaIdsToNames"/>
-        </div>
-        <div class="lg:w-1/3">
-            <SearchableCheckboxList @ref="_movieCheckBoxList" IconPath="Icons/MovieFilterIcon.svg" FilterTitle="Vælg film" SelectedItems="_selectedMovies" IdsToLabels="@_movieIdsToNames"/>
-        </div>
-        <div class="lg:mt-0 lg:w-1/3">
-            <SearchableCheckboxList @ref="_genreCheckBoxList" IconPath="Icons/GenreFilterIcon.svg" FilterTitle="Vælg genrer" SelectedItems="_selectedGenres" IdsToLabels="@_genreIdsToNames"/>
-        </div>
-    </div>
-
-    <div class="mt-0 flex flex-col space-y-4 lg:w-1/3 lg:pr-3">
-        <div class="flex w-full flex-wrap justify-start">
-            <div class="w-1/2 pt-3 pr-1.5">
-                <div class="rounded-lg bg-gray-100 shadow">
-                    <label for="start-date" class="block rounded-t-lg text-center text-sm font-medium text-white bg-secondary">Start dato</label>
-                    <input id="start-date" type="date" @bind="_startDate" class="mt-1 block w-full text-center bg-transparent"/>
-                </div>
-            </div>
-            <div class="w-1/2 pt-3 pl-1.5">
-                <div class="rounded-lg bg-gray-100 shadow">
-                    <label for="end-date" class="block rounded-t-lg text-center text-sm font-medium text-white bg-secondary">Slut dato</label>
-                    <input id="end-date" type="date" @bind="_endDate" class="mt-1 block w-full text-center bg-transparent"/>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="flex justify-between">
-        <div class="hidden h-10 md:block">
-            @_filterInformationBox
-        </div>
-        <div class="mt-4 flex w-full justify-end gap-2 text-no-wrap md:w-auto">
-            <Button Variant="Button.ButtonVariant.White" OnClick="HandleFilterReset">Ryd filtre</Button>
-            <Button Variant="Button.ButtonVariant.Black" OnClick="HandleShowtimeFiltersChanged">Vis Resultater</Button>
-        </div>
-    </div>
-
-</div>
-<div class="md:hidden">
-    @_filterInformationBox
-</div>
-
-@if (_loadingShowtimes)
-{
-    return;
-}
-
-@if (_availableShowtimes.Count == 0 && (_selectedCinemas.Any() || _selectedMovies.Any() || _selectedGenres.Any()))
-{
-    <p>Der er ingen forestillinger for de valgte filtre</p>
-}
-
-<ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de spilletider du vil have med i dit event" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_availableShowtimeVotes" VotesChanged="OnVoteChange" SelectOptions="_hostSelectOptions" DefaultSelectOption="@_hostSelectOptions.First()"/>
-
-<Button Variant="Button.ButtonVariant.Red" OnClick="OpenEventDetailsDialog" Class="fixed right-6 text-sm bottom-6 z-50 flex gap-1">
-    <CreateIcon Class="stroke-white fill-white"/>
-    <span class="text-white">
-        Opret og del
-    </span>
-</Button>
-
+@*Snackbar*@
 @if (_snackbarMessage != null)
 {
     <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-@_snackbarColor text-white p-2.5 rounded-md">
@@ -202,12 +204,24 @@
     </div>
 }
 
-
 @code {
+
+    /**
+    * <summary>
+    * The filter string taken from the url, used to set the filters on the page
+    * </summary>
+    */
+    [Parameter]
+    public string UrlFilterString { get; set; } = "";
+
+    //Used to get info on the current user
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = null!;
 
-    [Parameter] public string FilterString { get; set; } = "";
+    private bool _isLoggedIn;
 
+    private bool _isLoggedInUserAdmin;
+
+    //Event to be created
     private readonly JoinEvent _joinEvent = new()
     {
         SelectOptions =
@@ -219,65 +233,96 @@
         Deadline = DateTime.Today.AddDays(30)
     };
 
-    private string? _snackbarMessage;
-    private string? _snackbarColor;
+    private SearchableCheckboxList _cinemaCheckBoxList = new();
+    private SearchableCheckboxList _movieCheckBoxList = new();
+    private SearchableCheckboxList _genreCheckBoxList = new();
 
-    private bool _hostCanAllShowtimes = true;
+    private Dictionary<int, string> _movieIdsToNames = new();
+    private Dictionary<int, string> _cinemaIdsToNames = new();
+    private Dictionary<int, string> _genreIdsToNames = new();
 
-    private bool _loadingPage = true;
-    private bool _loadingShowtimes = true;
+    //Used to keep track of which movies, cinemas and genres are selected in the filters
+    private HashSet<int> _selectedMovies = [];
+    private HashSet<int> _selectedCinemas = [];
+    private HashSet<int> _selectedGenres = [];
 
-    string _baseUrl = "";
-
-    List<Showtime> _availableShowtimes = [];
-    List<Movie> _moviesWithoutShowtimes = [];
-    ICollection<ParticipantVote> _availableShowtimeVotes = []; //used to keep track of which showtimes are selected and not selected
-
-    readonly List<SelectOption> _hostSelectOptions = [new SelectOption { VoteOption = "Ikke valgt", Color = "gray-300" }, new SelectOption { VoteOption = "Valgt", Color = "success" }];
-    const int NoVoteIndex = 0; //when you vote no
-    const int YesVoteIndex = 1;
-
-    //used for filters
-    SearchableCheckboxList _cinemaCheckBoxList = new();
-    SearchableCheckboxList _movieCheckBoxList = new();
-    SearchableCheckboxList _genreCheckBoxList = new();
-
-    Dictionary<int, string> _movieIdsToNames = new();
-    Dictionary<int, string> _cinemaIdsToNames = new();
-    Dictionary<int, string> _genreIdsToNames = new();
-
-    HashSet<int> _selectedMovies = [];
-    HashSet<int> _selectedCinemas = [];
-    HashSet<int> _selectedGenres = [];
-
+    //Used to keep track of the start and end date that is selected in the filters
     private DateTime _startDate = DateTime.Today;
     private DateTime _endDate = DateTime.Today.AddYears(1);
 
+    //Used by the show all filters button on mobile
     private bool _showAllFilters;
-    //filters end
+
+    private bool NoFiltersSelected => _selectedCinemas.Count == 0 && _selectedMovies.Count == 0 && _selectedGenres.Count == 0;
+
+    //The currently available showtimes, based on the filters
+    List<Showtime> _availableShowtimes = [];
+
+    //The movies that are selected in the filters, but do not have any available showtimes
+    List<Movie> _moviesWithoutShowtimes = [];
+
+    //The select options to be used for the showtime selector on the page
+    readonly List<SelectOption> _selectOptionsForCreatePage = [new SelectOption { VoteOption = "Ikke valgt", Color = "gray-300" }, new SelectOption { VoteOption = "Valgt", Color = "success" }];
+    const int NoVoteIndex = 0; //index in the select options list for "no"
+    const int YesVoteIndex = 1; //index in the select options list for "yes"
+
+    //Used to keep track of what the user has voted for on each available showtime. 
+    /*
+      If there are 1000 unselected showtimes, this list will contain 1000 participantvotes with VoteIndex "no".
+      If the host then selects 7 showtimes, this list will still contain 1000 votes, but now 7 of them with voteIndex "Yes".
+      When saving to Database, we only save the 7 "yes votes"
+    */
+    ICollection<ParticipantVote> _showtimeVotes = [];
+
+    //Is true if the host checked the "I can all showtimes" checkbox
+    private bool _hostCanAllShowtimes = true;
+
+    private bool _loadingPage = true;
+
+    private bool _loadingShowtimes = true;
 
     private bool _uploadingEvent;
 
-    RenderFragment _filterInformationBox;
-
-    private bool _isLoggedInUserAdmin = false;
+    private string? _snackbarMessage;
+    private string? _snackbarColor;
 
     protected override async Task OnInitializedAsync()
     {
-        //Checks if user is admin, without setting up Auth0 Role based authentication, to make it easier for Kino to integrate to their authentication system
-        var authenticationState = await AuthenticationStateTask;
-        var user = authenticationState.User;
-        var email = user.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
-        if (email == "johndoe@novo.com")
+        //Get host information
+        var userInfo = await UserInfoService.GetUserInfoAsync(AuthenticationStateTask);
+
+        var host = new Host();
+        if (userInfo is null)
         {
-            _isLoggedInUserAdmin = true;
+            if (GlobalSettings.HostOnNgrokWithNoHttpsAndSetDefaultUser)
+            {
+                host.AuthId = "1";
+                host.Username = "Ukendt vært";
+            }
+        }
+        else
+        {
+            _isLoggedIn = true;
+
+            host.AuthId = userInfo.Value.authId;
+            host.Username = userInfo.Value.name;
+            host.Email = userInfo.Value.email;
+
+            //Checks if user is admin, without setting up Auth0 Role based authentication,
+            //to make it easier for Kino to integrate to their authentication system
+            if (host.Email == "johndoe@novo.com")
+            {
+                _isLoggedInUserAdmin = true;
+            }
         }
 
-        //Set up the data for the page
-        _baseUrl = NavigationManager.BaseUri;
+        _joinEvent.Host = host;
+
+        //Set default select option to no in the join event
         _joinEvent.DefaultSelectOption = _joinEvent.SelectOptions[NoVoteIndex];
 
-        SetFiltersFromFilterString(FilterString);
+        //Set filters to match the filter string in the url
+        SetFiltersFromUrlFilterString(UrlFilterString);
 
         //get data for filter checklists
         var cinemasTask = KinoJoinHttpClient.GetCinemasAsync();
@@ -294,27 +339,12 @@
         _movieIdsToNames = availableMovies == null ? [] : availableMovies.Select(c => (c.Id, c.Title)).OrderBy(t => t.Title).ToDictionary();
         _genreIdsToNames = availableGenres == null ? [] : availableGenres.Select(c => (c.Id, c.Name)).OrderBy(t => t.Name).ToDictionary();
 
-        _filterInformationBox = (__builder) =>
-        {
-            if (_loadingShowtimes)
-            {
-                <div class="mt-5">
-                    <LoadingIndicator Text="Indlæser spilletider"/>
-                </div>
-            }
-            else if (_selectedCinemas.Count == 0 && _selectedMovies.Count == 0 && _selectedGenres.Count == 0)
-            {
-                <div class="mt-2 w-fit rounded border p-2">
-                    <p class="font-bold-">Vælg mindst én biograf, film eller genre.</p>
-                </div>
-            }
-        };
-
-
         _loadingPage = false;
         StateHasChanged();
 
-        if (_selectedCinemas.Count == 0 && _selectedMovies.Count == 0 && _selectedGenres.Count == 0)
+        //If no filters are selected, we open the filter accordions so the user can pick filters.
+        //We then return since there are no show times to load, due to Kino's API requiring at least one filter
+        if (NoFiltersSelected)
         {
             _loadingShowtimes = false;
             _showAllFilters = true;
@@ -324,11 +354,11 @@
             return;
         }
 
-        //load all show times from filter
         (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
-        _availableShowtimeVotes = _availableShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _hostSelectOptions[NoVoteIndex] }).ToList();
+        _showtimeVotes = _availableShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _selectOptionsForCreatePage[NoVoteIndex] }).ToList();
 
-        //if KinoDKService yields any data not in database, handle it
+        //if KinoDKService yields any data not in database,
+        //add it to the id to name dictionaries used by the filter checkbox lists
         foreach (var cinema in _availableShowtimes.Select(s => s.Cinema).DistinctBy(c => c.Id))
         {
             if (_cinemaIdsToNames.ContainsKey(cinema.Id)) continue;
@@ -345,14 +375,16 @@
     }
 
     /**
-     * <remarks>This will set the selected movies, cinemas etc used for the filters.</remarks>
+     * <summary>
+     * This will set the selected movies, cinemas, and genres used for the filters,
+     * based on the filter string taken from the url.
+     * </summary>
      */
-    private void SetFiltersFromFilterString(string filterString)
+    private void SetFiltersFromUrlFilterString(string filterString)
     {
         var query = "?" + filterString;
         var queryParams = HttpUtility.ParseQueryString(query);
 
-        //&movies=1&movies=2 -> SelectedMovies = [1, 2]
         var firstDate = true;
         foreach (var key in queryParams.AllKeys)
         {
@@ -389,7 +421,8 @@
 
     /**
      * <summary>
-     * This will update the filter string in the url and load new show times that match the updated filters
+     * This will update the filter string in the url and load new showtimes,
+     * based on the filters selected on the page.
      * </summary>
      */
     private async Task HandleShowtimeFiltersChanged()
@@ -399,75 +432,73 @@
         _genreCheckBoxList.SetAccordionOpen(false);
         _loadingShowtimes = true;
         StateHasChanged();
-        var movieIds = _selectedMovies.ToList();
-        var cinemaIds = _selectedCinemas.ToList();
-        var genreIds = _selectedGenres.ToList();
-        var fromDate = _startDate.ToString("s"); //format: 2008-04-18T06:30:00
-        var toDate = _endDate.ToString("s");
 
-        if (movieIds.Count == 0 && cinemaIds.Count == 0 && genreIds.Count == 0)
+        //Kino's API requires one filter minimum, so if no filters are selected, we clear all showtimes and return
+        if (NoFiltersSelected)
         {
             _availableShowtimes.Clear();
             _moviesWithoutShowtimes.Clear();
-            _availableShowtimeVotes.Clear();
+            _showtimeVotes.Clear();
             _loadingShowtimes = false;
             return;
         }
 
-        var filterStringBuilder = new StringBuilder("sort=most_purchased");
-
-        foreach (var id in movieIds)
-        {
-            filterStringBuilder.Append($"&movies={id}");
-        }
-
-        foreach (var id in cinemaIds)
-        {
-            filterStringBuilder.Append($"&cinemas={id}");
-        }
-
-        foreach (var id in genreIds)
-        {
-            filterStringBuilder.Append($"&genres={id}");
-        }
-
-        filterStringBuilder.Append($"&date={fromDate}");
-        filterStringBuilder.Append($"&date={toDate}");
-
-        var newUrl = _baseUrl + "create-event/" + filterStringBuilder;
-        NavigationManager.NavigateTo(newUrl); //change url so a page reload will save the filters
+        //Set the filter string in the url to match the selected filters,
+        //so the page will save filters on reload
+        var urlFilterString = FilterHandler.GetUrlFilterString(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
+        var newUrl = "create-event/" + urlFilterString;
+        NavigationManager.NavigateTo(newUrl);
 
         (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
 
         // Save votes for show times that were there before update 
-        var stillAvailableShowtimeIds = new HashSet<int>(_availableShowtimeVotes
+        var stillAvailableShowtimeIds = new HashSet<int>(_showtimeVotes
             .Select(v => v.ShowtimeId)
             .Intersect(_availableShowtimes.Select(s => s.Id)));
 
         // Remove votes for show times that are no longer available
-        var votesToRemove = _availableShowtimeVotes
+        var votesToRemove = _showtimeVotes
             .Where(v => !stillAvailableShowtimeIds.Contains(v.ShowtimeId))
             .ToList();
-
         foreach (var vote in votesToRemove)
         {
-            _availableShowtimeVotes.Remove(vote);
+            _showtimeVotes.Remove(vote);
         }
 
         // Add new votes for newly available showtimes
         var newVotes = _availableShowtimes
             .Where(s => !stillAvailableShowtimeIds.Contains(s.Id))
-            .Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _hostSelectOptions[NoVoteIndex] })
+            .Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _selectOptionsForCreatePage[NoVoteIndex] })
             .ToList();
-
         foreach (var newVote in newVotes)
         {
-            _availableShowtimeVotes.Add(newVote);
+            _showtimeVotes.Add(newVote);
         }
 
         _loadingShowtimes = false;
     }
 
+    private async Task HandleFilterReset()
+    {
+        _selectedCinemas.Clear();
+        _selectedMovies.Clear();
+        _selectedGenres.Clear();
+        await HandleShowtimeFiltersChanged();
+    }
+
+    //Called when the user clicks on a showtime in the showtime selector
+    private void OnVoteChange(ICollection<ParticipantVote> votes)
+    {
+        _showtimeVotes = votes;
+
+        //Save all showtimes, where voted yes
+        _joinEvent.Showtimes = votes.Where(v => v.SelectedOption.VoteOption == _selectOptionsForCreatePage[YesVoteIndex].VoteOption)
+            .Join(_availableShowtimes, v => v.ShowtimeId, s => s.Id,
+                (_, showtime) => showtime).ToList();
+    }
+
+    //used to open the dialog where the user can enter the event details
+    //(Title, description, deadline etc.)
     private async Task OpenEventDetailsDialog()
     {
         if (_joinEvent.Showtimes.Count < 1)
@@ -480,113 +511,45 @@
         }
     }
 
-    private async Task ShowSnackbar(string message, string color)
+    //used to open the final dialog, where the user can confirm the creation of the event
+    private async Task OpenConfirmationDialog()
     {
-        _snackbarMessage = message;
-        _snackbarColor = color;
-        StateHasChanged();
-        await Task.Delay(3000).ContinueWith(_ => _snackbarMessage = null);
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventConfirmDialog");
     }
 
-    private async Task ShareEvent()
-    {
-        var data = new
-        {
-            title = _joinEvent.Title,
-            text = _joinEvent.Description,
-            url = _baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id)
-        };
-
-        await JsRuntime.InvokeVoidAsync("navigator.share", data);
-    }
-
-    private async Task ValidateAndOpenConfirmationDialog()
-    {
-        if (_joinEvent.Showtimes.Count < 1)
-        {
-            await ShowSnackbar("Vælg mindst en mulig forestilling", "error");
-        }
-        else if (string.IsNullOrEmpty(_joinEvent.Title.Trim()))
-        {
-            _snackbarMessage = "Eventet skal have en titel";
-            await Task.Delay(3000).ContinueWith(_ => _snackbarMessage = null);
-        }
-        else if (_joinEvent.Deadline < DateTime.Now)
-        {
-            _snackbarMessage = "Deadline skal være i fremtiden";
-            StateHasChanged();
-            await Task.Delay(3000).ContinueWith(_ => _snackbarMessage = null);
-        }
-        else
-        {
-            await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventConfirmDialog");
-        }
-    }
-
+    //Used to upload the event to the database, and navigate to the filling page
     private async Task FinishJoinEvent()
     {
         _uploadingEvent = true;
-        var authenticationState = await AuthenticationStateTask;
-
-        var user = authenticationState.User;
-
-        var authorId = user.Claims.FirstOrDefault(c => c.Type == "sub")?.Value!;
-        var name = user.Claims.FirstOrDefault(c => c.Type == "nickname")?.Value!;
-        var email = user.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
-
-        var host = new Host();
-        if (user.Identity is null || !user.Identity.IsAuthenticated)
-        {
-            host.AuthId = "1";
-            host.Username = "Ukendt vært";
-        }
-        else
-        {
-            host.AuthId = authorId;
-            host.Username = name;
-            host.Email = email;
-        }
-
-        _joinEvent.Host = host;
 
         if (_hostCanAllShowtimes)
         {
             _joinEvent.Participants.Add(new Participant
             {
-                AuthId = host.AuthId,
-                Nickname = host.Username, Email = host.Email, Note = null,
+                AuthId = _joinEvent.Host!.AuthId,
+                Nickname = _joinEvent.Host.Username, Email = _joinEvent.Host.Email, Note = null,
                 VotedFor = _joinEvent.Showtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _joinEvent.SelectOptions[YesVoteIndex] }).ToList(),
                 JoinEventId = _joinEvent.Id
             });
         }
 
         var response = await KinoJoinHttpClient.PutJoinEventAsync(_joinEvent);
-        var id = await response.Content.ReadAsStringAsync();
 
+        var id = await response.Content.ReadAsStringAsync();
         _joinEvent.Id = int.Parse(id);
 
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog");
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog");
-
+        //To prevent people guessing the Id of join events they are not invited to, we encode the Id
         NavigationManager.NavigateTo("filling/" + SqidsEncoder.Encode(_joinEvent.Id));
     }
 
-    private void OnVoteChange(ICollection<ParticipantVote> votes)
+    private async Task ShowSnackbar(string message, string color)
     {
-        _availableShowtimeVotes = votes;
-        //Save all show times, where voted yes
-        _joinEvent.Showtimes = votes.Where(v => v.SelectedOption.VoteOption == _hostSelectOptions[YesVoteIndex].VoteOption)
-            .Join(_availableShowtimes, v => v.ShowtimeId, s => s.Id,
-                (_, showtime) => showtime).ToList();
-    }
+        _snackbarMessage = message;
+        _snackbarColor = color;
+        StateHasChanged();
 
-
-    private async Task HandleFilterReset()
-    {
-        _selectedCinemas.Clear();
-        _selectedMovies.Clear();
-        _selectedGenres.Clear();
-        await HandleShowtimeFiltersChanged();
+        //Hide snackbar after 3 seconds
+        await Task.Delay(3000).ContinueWith(_ => _snackbarMessage = null);
     }
 
 }

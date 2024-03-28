@@ -9,6 +9,7 @@ using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Presentation;
+using Presentation.Client;
 using Presentation.Components;
 using _Imports = Presentation.Client._Imports;
 
@@ -51,7 +52,10 @@ else
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+if (!GlobalSettings.HostOnNgrokWithNoHttpsAndSetDefaultUser)
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseStaticFiles();
 app.UseAntiforgery();

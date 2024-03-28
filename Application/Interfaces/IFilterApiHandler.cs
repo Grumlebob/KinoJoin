@@ -9,4 +9,12 @@ public interface IFilterApiHandler
         DateTime? fromDate = null,
         DateTime? toDate = null
     );
+
+    public string GetUrlFilterString(
+        ICollection<int> cinemaIds,
+        ICollection<int> movieIds,
+        ICollection<int> genreIds,
+        DateTime fromDate,
+        DateTime toDate
+    );
 }

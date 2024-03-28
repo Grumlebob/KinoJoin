@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+﻿using System.Linq.Expressions;
+using Application.Interfaces;
 using Carter;
 using Domain.Entities;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -15,9 +16,10 @@ public class KinoJoinEndpoints : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         var eventGroup = app.MapGroup("api/events");
-        eventGroup.MapPut("", UpsertJoinEvent);
-        eventGroup.MapGet("", GetJoinEvents);
+        eventGroup.MapGet("host/{hostId}", GetJoinEventsByHostId);
         eventGroup.MapGet("{id}", GetJoinEvent);
+        eventGroup.MapGet("", GetAllJoinEvent);
+        eventGroup.MapPut("", UpsertJoinEvent);
         eventGroup.MapDelete("{eventId}/participants/{participantId}", DeleteParticipant);
 
         var kinoDataGroup = app.MapGroup("api/kino-data");
@@ -56,13 +58,31 @@ public class KinoJoinEndpoints : ICarterModule
         }
     }
 
-    private static async Task<
-        Results<Ok<List<JoinEvent>>, NotFound, BadRequest<string>>
-    > GetJoinEvents([FromServices] IKinoJoinDbService kinoJoinDbService)
+    private static async Task<Results<Ok<List<JoinEvent>>, BadRequest<string>>> GetAllJoinEvent(
+        [FromServices] IKinoJoinDbService kinoJoinDbService
+    )
     {
         try
         {
             var joinEvents = await kinoJoinDbService.GetAllAsync();
+            return TypedResults.Ok(joinEvents);
+        }
+        catch (Exception)
+        {
+            return TypedResults.BadRequest(DefaultErrorMessage);
+        }
+    }
+
+    private static async Task<
+        Results<Ok<List<JoinEvent>>, NotFound, BadRequest<string>>
+    > GetJoinEventsByHostId(
+        [FromServices] IKinoJoinDbService kinoJoinDbService,
+        [FromRoute] string hostId
+    )
+    {
+        try
+        {
+            var joinEvents = await kinoJoinDbService.GetAllAsync(j => j.HostId == hostId);
             return TypedResults.Ok(joinEvents);
         }
         catch (Exception)
@@ -132,7 +152,7 @@ public class KinoJoinEndpoints : ICarterModule
         }
     }
 
-    private static async Task<Results<Ok, NotFound>> DeleteParticipant(
+    private static async Task<Results<Ok, NotFound, BadRequest<string>>> DeleteParticipant(
         [FromRoute] int eventId,
         [FromRoute] int participantId,
         [FromServices] IKinoJoinDbService kinoJoinDbService
@@ -140,17 +160,17 @@ public class KinoJoinEndpoints : ICarterModule
     {
         if (eventId <= 0 || participantId <= 0)
         {
-            return TypedResults.NotFound();
+            return TypedResults.Ok();
         }
 
         try
         {
-            await kinoJoinDbService.DeleteParticipantAsync(eventId, participantId);
+            await kinoJoinDbService.MakeParticipantNotExistAsync(eventId, participantId);
             return TypedResults.Ok();
         }
         catch (Exception)
         {
-            return TypedResults.NotFound();
+            return TypedResults.BadRequest(DefaultErrorMessage);
         }
     }
 

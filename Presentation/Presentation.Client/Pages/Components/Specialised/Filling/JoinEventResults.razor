@@ -6,7 +6,7 @@
     <div class="flex justify-between">
         <h2 class="text-2xl text-bold">Resultater</h2>
         <Button Variant="Button.ButtonVariant.Black" OnClick="@ShowParticipantDialog" Class="flex justify-center items-center gap-1 md:hidden">
-            <ParticipantsIcon Class="fill-white"/>
+            <img src="Icons/ParticipantsIcon.svg" alt="participants"/>
             <span>Deltagere</span>
         </Button>
     </div>
@@ -36,7 +36,7 @@
     <div class="mb-4 flex justify-between">
         <h4 class="text-lg font-bold">Deltagere</h4>
         <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", $"participantsDialog"))">
-            <CrossIcon/>
+            <img src="Icons/CrossIcon.svg" alt="close"/>
         </button>
     </div>
 
@@ -49,18 +49,18 @@
 
         <div class="flex w-full justify-between gap-2">
             <p>@participant.Nickname</p>
-            <div>
+            <div class="flex items-center h-8 gap-2">
 
                 @if (!string.IsNullOrWhiteSpace(participant.Note))
                 {
                     <button onclick="@(async () => { _showNote[participant] = !_showNote[participant]; StateHasChanged(); })">
-                        <NoteIcon Class="stroke-black"/>
+                        <img src="Icons/NoteIcon.svg" alt="note"/>
                     </button>
                 }
                 @if (IsHost)
                 {
                     <button onclick="@(async () => { await OpenDeleteDialog(participant); })">
-                        <DeleteIcon Class="stroke-error"/>
+                        <img src="Icons/DeleteIcon.svg" alt="delete" class="h-full"/>
                     </button>
                 }
             </div>
@@ -92,7 +92,7 @@
         <div class="mb-4 flex justify-between">
             <p class="font-bold">@_participantToShowNoteFor.Nickname's Note</p>
             <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", $"note-dialog"))">
-                <CrossIcon/>
+                <img src="Icons/CrossIcon.svg" alt="close"/>
             </button>
         </div>
         <p>@_participantToShowNoteFor.Note</p>

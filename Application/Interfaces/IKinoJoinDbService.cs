@@ -48,9 +48,9 @@ public interface IKinoJoinDbService
     Task<List<JoinEvent>> GetAllAsync(Expression<Func<JoinEvent, bool>>? filter = null);
 
     //Delete participant
-    Task DeleteParticipantAsync(int joinEventId, int participantId);
+    Task MakeParticipantNotExistAsync(int joinEventId, int participantId);
 
-    Task<ICollection<Cinema>> GetAllCinemas(Func<Cinema, bool>? filter = null);
-    Task<ICollection<Movie>> GetAllMovies(Func<Movie, bool>? filter = null);
-    Task<ICollection<Genre>> GetAllGenres(Func<Genre, bool>? filter = null);
+    Task<ICollection<Cinema>> GetAllCinemas();
+    Task<ICollection<Movie>> GetAllMovies();
+    Task<ICollection<Genre>> GetAllGenres();
 }

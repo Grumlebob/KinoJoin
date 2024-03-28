@@ -5,7 +5,13 @@ using Domain.Entities;
 using Domain.ExternalApiModels;
 using FluentAssertions;
 using Infrastructure.Persistence;
+using Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using Presentation.Client.NamedHttpClients;
 
 namespace Test.KinoJoin;
@@ -24,8 +30,6 @@ public class KinoJoinTests : IAsyncLifetime
     private readonly DataGenerator _dataGenerator = new();
 
     private readonly KinoContext _kinoContext;
-
-    private readonly KinoJoinHttpClient _kinoJoinHttpClient;
 
     public KinoJoinTests(KinoJoinApiWebAppFactory factory)
     {
@@ -48,9 +52,10 @@ public class KinoJoinTests : IAsyncLifetime
         {
             validator.TryValidateObjectRecursive(joinEvent, validationResults);
         }
+
         validationResults.Should().BeEmpty();
 
-        //UPSERTING
+        //UPSERTING correct
         foreach (var joinEvent in joinEvents)
         {
             //Insert
@@ -65,6 +70,13 @@ public class KinoJoinTests : IAsyncLifetime
             joinEventFromApi.Should().NotBeNull();
             joinEventFromApi!.Title.Should().Be(joinEvent.Title);
         }
+
+        //Upsert wrong joinEvent
+        var joinEventWrong = new JoinEvent();
+        joinEventWrong.Title =
+            "Too looooooooooooooooooooong title here. AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+        var createResponseWrong = await _client.PutAsJsonAsync("api/events", joinEventWrong);
+        createResponseWrong.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         //check count
         joinEvents.Count.Should().Be(casesToInsert);
@@ -90,6 +102,7 @@ public class KinoJoinTests : IAsyncLifetime
             joinEventToCheck.Participants.Count.Should().BeGreaterThan(0);
             joinEventToCheck.Participants.First().VotedFor.Count.Should().BeGreaterThan(0);
         }
+
         if (joinEventToCheck.ChosenShowtimeId is not null)
         {
             joinEventToCheck.ChosenShowtimeId.Should().BeGreaterThan(0);
@@ -148,6 +161,7 @@ public class KinoJoinTests : IAsyncLifetime
             .Participants!.Any(p => p.AuthId == "New")
             .Should()
             .BeTrue();
+        _kinoContext.ParticipantVotes.Count().Should().BeGreaterThan(0);
 
         //Update the participant we just added to a new name
         joinEventFromApiUpdatedParticipant.Participants!.First().Nickname = "Updated";
@@ -179,6 +193,7 @@ public class KinoJoinTests : IAsyncLifetime
                 break;
             }
         }
+
         var participantCountBeforeDelete = joinEventToDelete.Participants!.Count;
         var participantToDelete = joinEventToDelete.Participants.Last();
         var deleteParticipantResponse = await _client.DeleteAsync(
@@ -214,7 +229,8 @@ public class KinoJoinTests : IAsyncLifetime
     {
         //No movies exist initially
         var response = await _client.GetAsync("api/kino-data/movies");
-        response.Content.ReadAsStringAsync().Result.Should().Be("[]");
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("[]");
 
         //Insert a movie
         var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
@@ -234,7 +250,8 @@ public class KinoJoinTests : IAsyncLifetime
     {
         //No cinemas exist initially
         var response = await _client.GetAsync("api/kino-data/cinemas");
-        response.Content.ReadAsStringAsync().Result.Should().Be("[]");
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("[]");
 
         //Insert a join event (with a cinema)
         var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
@@ -256,7 +273,8 @@ public class KinoJoinTests : IAsyncLifetime
     {
         //No genres exist initially
         var response = await _client.GetAsync("api/kino-data/genres");
-        response.Content.ReadAsStringAsync().Result.Should().Be("[]");
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("[]");
 
         //Insert a join event with all its nested properites
         var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
@@ -265,7 +283,8 @@ public class KinoJoinTests : IAsyncLifetime
 
         //After inserting a join event, genres should still not exist.
         var getResponse = await _client.GetAsync("api/kino-data/genres");
-        getResponse.Content.ReadAsStringAsync().Result.Should().Be("[]");
+        var getContent = await getResponse.Content.ReadAsStringAsync();
+        getContent.Should().Be("[]");
 
         //Inserting a genrer manually
         var genre = new Genre { Id = 1, Name = "Test" };
@@ -279,21 +298,169 @@ public class KinoJoinTests : IAsyncLifetime
         genres.Should().NotBeNull();
     }
 
+    /*
+     * Unfortunately Kino.dk is down 5% of the day, which causes this test to fail 5% of the time.
+     */
     [Fact]
-    public async Task UpdateAllBaseDataFromKinoDk_ShouldReturnOk_IfUpdateSucceeds()
+    public async Task UpdateAllBaseDataFromKinoDk_ThenUseTheDataToCheckKinoDkFilterApi()
     {
         //The tests main focus is getting the static data from kino.dk - should take about 2 minutes
         var response = await _client.PostAsync("api/kino-data/update-all", null);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        //Check that the data was inserted
+        var getResponse = await _client.GetAsync("api/kino-data/movies");
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var movies = await getResponse.Content.ReadFromJsonAsync<List<Movie>>();
+        movies.Should().NotBeNull();
+
+        var getResponseCinemas = await _client.GetAsync("api/kino-data/cinemas");
+        getResponseCinemas.StatusCode.Should().Be(HttpStatusCode.OK);
+        var cinemas = await getResponseCinemas.Content.ReadFromJsonAsync<List<Cinema>>();
+        cinemas.Should().NotBeNull();
+
+        var getResponseGenres = await _client.GetAsync("api/kino-data/genres");
+        getResponseGenres.StatusCode.Should().Be(HttpStatusCode.OK);
+        var genres = await getResponseGenres.Content.ReadFromJsonAsync<List<Genre>>();
+        genres.Should().NotBeNull();
+
+        //Check that the kino.dk filter api works
+        var fromDate = DateTime.Now.AddYears(-1);
+        var toDate = DateTime.Now.AddYears(10);
+
+        var cinemasToCheck = cinemas!.Select(c => c.Id).Take(3).ToList();
+        if (cinemasToCheck.Count == 0)
+        {
+            cinemasToCheck.Add(1);
+        }
+
+        var filterApiHandler = new FilterApiHandler();
+        var (showtimesWithCinemaFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
+            cinemasToCheck,
+            null,
+            null,
+            fromDate,
+            toDate
+        );
+        showtimesWithCinemaFilter.Should().NotBeNull();
+        showtimesWithCinemaFilter.Count.Should().BeGreaterThan(1);
+
+        var moviesToCheck = showtimesWithCinemaFilter.Select(s => s.MovieId).Take(3).ToList();
+        var (showtimesWithMovieFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
+            null,
+            moviesToCheck,
+            null,
+            fromDate,
+            toDate
+        );
+        showtimesWithMovieFilter.Should().NotBeNull();
+        showtimesWithMovieFilter.Count.Should().BeGreaterThan(1);
+
+        var genresToCheck = genres!.Select(g => g.Id).Take(3).ToList();
+        if (genresToCheck.Count == 0)
+        {
+            genresToCheck.Add(96); //96 is action
+        }
+
+        var (showtimesWithGenreFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
+            null,
+            null,
+            genresToCheck,
+            fromDate,
+            toDate
+        );
+        showtimesWithGenreFilter.Should().NotBeNull();
+        showtimesWithGenreFilter.Count.Should().BeGreaterThan(1);
+
+        //Test with combined filters
+        var specificshowtime = showtimesWithCinemaFilter.First();
+        var (showtimesWithCombinedFilters, _) = await filterApiHandler.GetShowtimesFromFilters(
+            new List<int> { specificshowtime.CinemaId },
+            new List<int> { specificshowtime.MovieId },
+            null,
+            fromDate,
+            toDate
+        );
+        showtimesWithCombinedFilters.Should().NotBeNull();
+        showtimesWithCombinedFilters.Count.Should().BeGreaterThan(1);
     }
 
-    //From our external api Kino.DK, they sometimes have a single element, and sometimes a list of elements, the convert class is used to handle this
+    //From our external api Kino.DK, they sometimes have a single element,
+    //and sometimes a list of elements, the convert class is used to handle this
     [Fact]
     public void FieldMediaImageConvertCanConvertAShowtimeApiFieldMediaImage()
     {
         var fieldMediaImage = new FieldMediaImageConverter();
         var mediaSingleElement = new ShowtimeApiFieldMediaImage();
         fieldMediaImage.CanConvert(mediaSingleElement.GetType()).Should().BeTrue();
+        try
+        {
+            fieldMediaImage.WriteJson(null!, null!, null!);
+        }
+        catch (Exception) { } //WriteJson is only implemented to satisfy interface and throws an exception
+    }
+
+    [Fact]
+    public async Task TestDatabaseMigrations()
+    {
+        try
+        {
+            await _kinoContext.Database.MigrateAsync();
+        }
+        catch (PostgresException postgres)
+        {
+            if (postgres.SqlState == "42P07")
+            {
+                //42P07 is the error code for duplicate_table
+                //This is fine, as it means the database is already migrated
+            }
+        }
+        //A test to ensure that you don't forget to add new migrations
+        var modelDiffer = _kinoContext.GetService<IMigrationsModelDiffer>();
+        var migrationsAssembly = _kinoContext.GetService<IMigrationsAssembly>();
+        var modelInitializer = _kinoContext.GetService<IModelRuntimeInitializer>();
+        var snapshotModel = migrationsAssembly.ModelSnapshot?.Model;
+        if (snapshotModel is IMutableModel mutableModel)
+        {
+            snapshotModel = mutableModel.FinalizeModel();
+        }
+        if (snapshotModel is not null)
+        {
+            snapshotModel = modelInitializer.Initialize(snapshotModel);
+        }
+
+        var designTimeModel = _kinoContext.GetService<IDesignTimeModel>();
+
+        var modelDifferences = modelDiffer.GetDifferences(
+            snapshotModel?.GetRelationalModel(),
+            designTimeModel.Model.GetRelationalModel()
+        );
+
+        modelDifferences.Count.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetJoinEventsByHostFilter()
+    {
+        var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
+        var createResponse = await _client.PutAsJsonAsync("api/events", joinEvent);
+        createResponse.EnsureSuccessStatusCode();
+
+        var response = await _client.GetAsync($"api/events/host/{joinEvent.Host.AuthId}");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task MakeParticipantNotExistAsync_ReturnsOkIfParamsAreOk()
+    {
+        //With positive params, the method should return OK, because either the participant is deleted or it doesn't exist.
+        var response = await _client.DeleteAsync("api/events/1/participants/1");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        //If negative params, no DB operation should be done, and the method should return OK,
+        //As no participant with negative ID can exist.
+        var response2 = await _client.DeleteAsync("api/events/-1/participants/-1");
+        response2.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     //We don't care about the InitializeAsync method, but needed to implement the IAsyncLifetime interface

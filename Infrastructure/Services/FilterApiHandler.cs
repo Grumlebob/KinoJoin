@@ -78,6 +78,9 @@ public class FilterApiHandler : IFilterApiHandler
 
         foreach (var jsonCinema in apiResultObject.ShowtimeApiContent.ShowtimeApiContent.Content)
         {
+            if (!cinemaIdsToNames.ContainsKey(jsonCinema.Id))
+                continue;
+
             var cinemaObject = new Cinema
             {
                 Id = jsonCinema.Id,
@@ -176,10 +179,15 @@ public class FilterApiHandler : IFilterApiHandler
                             {
                                 Id = jsonShowtime.Id,
                                 Movie = movieObject,
+                                MovieId = movieObject.Id,
                                 Cinema = cinemaObject,
+                                CinemaId = cinemaObject.Id,
                                 VersionTag = versionObject,
+                                VersionTagId = versionObject.Id,
                                 Room = roomObject,
-                                Playtime = playtimeObject
+                                RoomId = roomObject.Id,
+                                Playtime = playtimeObject,
+                                PlaytimeId = playtimeObject.Id,
                             };
                             showtimes.Add(showtimeObject);
                         }

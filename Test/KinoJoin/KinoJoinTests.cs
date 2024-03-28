@@ -287,7 +287,7 @@ public class KinoJoinTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
-    //The
+    //From our external api Kino.DK, they sometimes have a single element, and sometimes a list of elements, the convert class is used to handle this
     [Fact]
     public void FieldMediaImageConvertCanConvertAShowtimeApiFieldMediaImage()
     {

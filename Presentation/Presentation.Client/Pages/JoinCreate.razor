@@ -114,7 +114,7 @@
 <ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de spilletider du vil have med i dit event" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_showtimeVotes" VotesChanged="OnVoteChange" SelectOptions="@_selectOptionsForCreatePage" DefaultSelectOption="@_selectOptionsForCreatePage.First()"/>
 
 @*Create button*@
-<CustomButton Variant="CustomButton.ButtonVariant.Red" OnClick="OpenEventDetailsDialog" Class="fixed right-6 text-sm bottom-6 z-50 flex gap-1">
+<CustomButton Variant="CustomButton.ButtonVariant.Red" OnClick="@OpenEventDetailsDialog" Class="fixed right-6 text-sm bottom-6 z-50 flex gap-1">
     <img src="Icons/CreateIcon.svg" alt="create"/>
     <span class="text-white">
         Opret og del

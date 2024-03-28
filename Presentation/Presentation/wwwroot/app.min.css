@@ -1700,6 +1700,11 @@ video {
   color: rgb(81 154 97 / var(--tw-text-opacity));
 }
 
+.text-warning {
+  --tw-text-opacity: 1;
+  color: rgb(253 185 0 / var(--tw-text-opacity));
+}
+
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));

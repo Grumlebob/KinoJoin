@@ -15,7 +15,7 @@
     return;
 }
 
-@if (_event is null)
+@if (_joinEvent is null)
 {
     <h3>Ingen events fundet</h3>
     <p>Tjek at dit link er korrekt.</p>
@@ -27,7 +27,7 @@
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
         <div class="mx-4 mb-40 rounded-lg bg-white p-6 shadow-xl">
             <div class="flex flex-col justify-center space-y-2">
-                <h2 class="text-xl font-bold">@_event.Host.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h2>
+                <h2 class="text-xl font-bold">@_joinEvent!.Host.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h2>
                 <div class="flex md:items-end md:justify-end">
                     <div class="flex w-full flex-col gap-2 md:w-fit md:flex-row">
                         <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@(() => { _showFirstLoginDialog = false; })">Uden login</CustomButton>
@@ -40,16 +40,16 @@
 }
 <div class="flex justify-center">
     <div class="my-2 flex flex-col gap-2 md:flex-row">
-        <div class="w-full rounded bg-gray-50 shadow-md p-3 md:w-fit md:max-w-md">
+        <div class="w-full rounded bg-gray-50 p-3 shadow-md md:w-fit md:max-w-md">
             <div class="space-y-3">
                 <div class="flex flex-row gap-1">
                     @if (_isEditing)
                     {
-                        <input class="w-full rounded-full border p-1 md:w-60" type="text" @bind="_event!.Title"/>
+                        <input class="w-full rounded-full border p-1 md:w-60" type="text" @bind="_joinEvent!.Title"/>
                     }
                     else
                     {
-                        <h1 class="text-2xl font-label">@_event!.Title</h1>
+                        <h1 class="text-2xl font-label">@_joinEvent!.Title</h1>
                     }
 
                     @if (_isHost)
@@ -69,13 +69,13 @@
 
                 @if (_isEditing)
                 {
-                    <textarea class="w-full rounded-2xl border p-1 md:w-60" type="text" cols="5" placeholder="Beskrivelse"  @bind="_event.Description"></textarea>
+                    <textarea class="w-full rounded-2xl border p-1 md:w-60" type="text" cols="5" placeholder="Beskrivelse"  @bind="_joinEvent.Description"></textarea>
                 }
                 else
                 {
-                    if (_event.Description != "")
+                    if (_joinEvent.Description != "")
                     {
-                        <p>@_event.Description</p>
+                        <p>@_joinEvent.Description</p>
                         <br/>
                     }
                 }
@@ -84,7 +84,7 @@
                     <span class="font-medium">Svarfrist:</span>
                     @if (_isEditing)
                     {
-                        <input class="w-full rounded-2xl border" type="date" placeholder="Deadline" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")" max="@_event!.Showtimes.Max(s => s.Playtime.StartTime).ToString("yyyy-MM-dd")" @bind="@_deadline"/>
+                        <input class="w-full rounded-2xl border" type="date" placeholder="Deadline" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")" max="@_joinEvent!.Showtimes.Max(s => s.Playtime.StartTime).ToString("yyyy-MM-dd")" @bind="@_deadline"/>
                     }
                     else
                     {
@@ -95,21 +95,21 @@
                 </div>
 
                 <span class="font-medium">Tidsinterval:</span>
-                <span> @_event.Showtimes.Min(s => s.Playtime.StartTime).ToString("dd. MMM") - @_event.Showtimes.Max(s => s.Playtime.StartTime).ToString("dd. MMM")</span>
+                <span> @_joinEvent.Showtimes.Min(s => s.Playtime.StartTime).ToString("dd. MMM") - @_joinEvent.Showtimes.Max(s => s.Playtime.StartTime).ToString("dd. MMM")</span>
                 <br/>
                 <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@ScrollToBottom" Href="@(NavigationManager.Uri + "#results")" Class="font-label">Se Resultater</CustomButton>
             </div>
         </div>
         @if (_isHost)
         {
-            <div class="w-full rounded border p-3 space-y-1 bg-gray-50 shadow-md md:w-fit md:max-w-md">
+            <div class="w-full rounded border bg-gray-50 p-3 shadow-md space-y-1 md:w-fit md:max-w-md">
                 <p class="text-lg font-semibold mb-0.5">Send et link til eventet til dine venner.</p>
-                <div class="flex items-center gap-x-2 h-8">
-                    <a href="@(_baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id))" class="text-lg text-blue-600 hover:text-blue-700">
-                        @((_baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)).Replace("https://", ""))
+                <div class="flex h-8 items-center gap-x-2">
+                    <a href="@(_baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id))" class="text-lg text-blue-600 hover:text-blue-700">
+                        @((_baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id)).Replace("https://", ""))
                     </a>
                     <div class="group">
-                        <CustomButton OnClick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)); })" Variant="CustomButton.ButtonVariant.White" class="min-w-6">
+                        <CustomButton OnClick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id)); })" Variant="CustomButton.ButtonVariant.White" class="min-w-6">
                             <img src="Icons/CopyIcon.svg" alt="copy" class="h-full rounded-full group-hover:invert"/>
                         </CustomButton>
                     </div>
@@ -122,31 +122,88 @@
     </div>
 </div>
 
-<ShowtimeSelector HasAnswered="@(_alreadyAnswered || _justAnswered)" SelectOptions="@_event.SelectOptions" DefaultSelectOption="@_event.DefaultSelectOption" Showtimes="@_event.Showtimes" LegendTitle="Tryk på de tider du kan" Votes="@_currentParticipant.VotedFor" VotesChanged="OnVotesChanged"/>
+<ShowtimeSelector HasAnswered="@_currentParticipantAlreadyAnswered" SelectOptions="@_joinEvent.SelectOptions" DefaultSelectOption="@_joinEvent.DefaultSelectOption" Showtimes="@_joinEvent.Showtimes" LegendTitle="Tryk på de tider du kan" Votes="@_currentParticipant.VotedFor" VotesChanged="OnVotesChanged"/>
 
+@if (!_currentParticipantAlreadyAnswered)
+{
+    <div class="flex justify-center">
+        <CustomButton Variant="CustomButton.ButtonVariant.Red" OnClick="@OpenParticipantInfoDialog" Class="p-4">
+            <p class="text-xl font-bold">Send svar</p>
+        </CustomButton>
+    </div>
 
-<ParticipantRegisterForm JoinEvent="_event" OnAnswerSaved="OnAnswerSaved" Participant="@_currentParticipant" AlreadyAnswered="_alreadyAnswered"/>
+    if (_somethingWentWrong)
+    {
+        <p class="text-4xl text-red-700">Noget gik galt. Prøv igen.</p>
+    }
+}
+else
+{
+    <p class="text-2xl font-semibold text-success-darkest md:mt-7">Dit svar er registreret</p>
+}
+
 
 <br/>
 <br/>
+
+
+<dialog class="rounded p-5" id="NoShowtimesDialog">
+    <div class="flex flex-col items-end gap-4 text-center">
+        <h4 class="w-full text-xl font-bold">Obs! Du har ikke valgt nogen tider</h4>
+        <h4 class="font-bold">Vil du indsende et tomt svar, der viser du ikke kan nogen tider?</h4>
+        <div class="flex gap-1">
+            <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"))">Nej</CustomButton>
+            <CustomButton Variant="CustomButton.ButtonVariant.Black" OnClick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"); await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "ParticipantInfoDialog"); })">Ja</CustomButton>
+        </div>
+    </div>
+</dialog>
+
+
+<dialog id="ParticipantInfoDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
+    <EditForm Model="@_currentParticipant" OnValidSubmit="@SaveParticipantAnswer" class="w-full space-y-4 md:mt-7 md:w-80">
+        <DataAnnotationsValidator/>
+
+        <h3 class="font-bold">Dine oplysninger</h3>
+        <div class="text-error">
+            <ValidationSummary/>
+        </div>
+        <InputText class="w-full rounded-full border bg-gray-50 p-2" @bind-Value="@_currentParticipant.Nickname" placeholder="Indtast dit navn" required/>
+        @if (_joinEvent.Participants.Any(p => p.Nickname == _currentParticipant.Nickname))
+        {
+            <p class="text-warning">Bemærk, deltager med samme navn findes allerede</p>
+        }
+        <InputText class="w-full rounded-full border bg-gray-50 p-2" @bind-Value="@_currentParticipant.Email" placeholder="Skriv din email (valgfrit)" type="email"/>
+        @if (_joinEvent.Participants.Any(p => p.Email == _currentParticipant.Email))
+        {
+            <p class="text-warning">Bemærk, deltager med samme email findes allerede</p>
+        }
+
+        <div>
+            <InputTextArea class="h-32 w-full resize-none rounded-3xl border bg-gray-50 p-2" @bind-Value="@_currentParticipant.Note" placeholder="Note (valgfrit)"/>
+        </div>
+        <div class="mt-5 mb-5 flex justify-end space-x-3">
+            <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "ParticipantInfoDialog"))">Annuller</CustomButton>
+            <CustomButton Type="submit" Variant="CustomButton.ButtonVariant.Black">Send svar</CustomButton>
+        </div>
+    </EditForm>
+</dialog>
+
 
 <div id="results" class="pt-2"></div>
-<JoinEventResults @ref="_joinEventResults"CurrentParticipant="_currentParticipant" Event="_event" IsHost="_isHost"/>
+<JoinEventResults @ref="_joinEventResults" CurrentParticipant="_currentParticipant" Event="_joinEvent" IsHost="_isHost"/>
 
 @code {
     [Parameter] public required string JoinEventId { get; set; }
 
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = null!;
 
-    private JoinEvent? _event;
+    private JoinEvent? _joinEvent;
 
     private bool _loading = true;
 
     string _baseUrl = "";
 
-    private bool _alreadyAnswered;
-
-    private bool _justAnswered;
+    private bool _currentParticipantAlreadyAnswered;
 
     private bool _isHost;
 
@@ -160,6 +217,8 @@
 
     private Participant _currentParticipant = new() { VotedFor = [] };
 
+    private bool _somethingWentWrong;
+
     private JoinEventResults _joinEventResults;
 
     protected override async Task OnInitializedAsync()
@@ -168,40 +227,40 @@
         var id = SqidsEncoder.Decode(JoinEventId).FirstOrDefault();
         if (SqidsEncoder.Encode(id) == JoinEventId) //avoid false positives
         {
-            _event = await KinoJoinHttpClient.GetJoinEventAsync(id);
+            _joinEvent = await KinoJoinHttpClient.GetJoinEventAsync(id);
         }
         else
         {
-            _event = null;
+            _joinEvent = null;
         }
 
-        if (_event is null)
+        if (_joinEvent is null)
         {
             _loading = false;
             return;
         }
 
-        _currentParticipant.VotedFor = _event.Showtimes.Select(st =>
+        _currentParticipant.VotedFor = _joinEvent.Showtimes.Select(st =>
             new ParticipantVote
             {
-                ShowtimeId = st.Id, SelectedOptionId = _event.DefaultSelectOptionId, SelectedOption = _event.DefaultSelectOption
+                ShowtimeId = st.Id, SelectedOptionId = _joinEvent.DefaultSelectOptionId, SelectedOption = _joinEvent.DefaultSelectOption
             }).ToList(); // a default vote for each showtime
 
 
         //check if user is host
-        var userInfo = await  UserInfoService.GetUserInfoAsync(AuthenticationStateTask);
-       
-        _isLoggedIn = userInfo!=null;
-        
+        var userInfo = await UserInfoService.GetUserInfoAsync(AuthenticationStateTask);
+
+        _isLoggedIn = userInfo != null;
+
         if (_isLoggedIn)
         {
             _currentParticipant.AuthId = userInfo!.Value.authId;
-            _isHost = _event?.Host?.AuthId == _currentParticipant.AuthId;
+            _isHost = _joinEvent?.Host?.AuthId == _currentParticipant.AuthId;
             _currentParticipant.Nickname = userInfo.Value.name;
-            if (_event!.Participants!.Any(p => p.AuthId == _currentParticipant.AuthId))
+            if (_joinEvent!.Participants.Any(p => p.AuthId == _currentParticipant.AuthId))
             {
-                _alreadyAnswered = true;
-                _currentParticipant = _event.Participants.First(p => p.AuthId == _currentParticipant.AuthId);
+                _currentParticipantAlreadyAnswered = true;
+                _currentParticipant = _joinEvent.Participants.First(p => p.AuthId == _currentParticipant.AuthId);
             }
         }
         else
@@ -210,7 +269,7 @@
             StateHasChanged();
         }
 
-        _deadline = _event!.Deadline;
+        _deadline = _joinEvent!.Deadline;
         _loading = false;
     }
 
@@ -219,11 +278,31 @@
         await JsRuntime.InvokeVoidAsync("customFunctions.scrollToBottom");
     }
 
-    //TODO HVORNÅR BLIVER DEN HER KALDT, TIL FORSKEL FOR DET KALD VI LAVER INDE I "REGISTERPARTICIPANTVOTE"?
     private async Task UpdateJoinEvent()
     {
-        _event!.Deadline = _deadline;
-        var response = await KinoJoinHttpClient.PutJoinEventAsync(_event);
+        _joinEvent!.Deadline = _deadline;
+        await KinoJoinHttpClient.PutJoinEventAsync(_joinEvent);
+    }
+
+    private async Task SaveParticipantAnswer()
+    {
+        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "ParticipantInfoDialog");
+        _currentParticipant.VotedFor = _currentParticipant.VotedFor.Where(v => v.SelectedOptionId != _joinEvent!.DefaultSelectOptionId).ToList();
+        _joinEvent!.Participants.Add(_currentParticipant);
+
+        var response = await KinoJoinHttpClient.PutJoinEventAsync(_joinEvent);
+        if (response.IsSuccessStatusCode)
+        {
+            _currentParticipant.Id = int.Parse(await response.Content.ReadAsStringAsync());
+            _currentParticipantAlreadyAnswered = true;
+            _joinEventResults.UpdateSorting();
+
+            StateHasChanged();
+        }
+        else
+        {
+            _somethingWentWrong = true;
+        }
     }
 
     private void OnVotesChanged(ICollection<ParticipantVote> votes)
@@ -231,22 +310,27 @@
         _currentParticipant.VotedFor = votes;
     }
 
-    private void OnAnswerSaved()
-    {
-        _justAnswered = true;
-        _joinEventResults.UpdateSorting();
-    }
-
     private async Task ShareEvent()
     {
         var data = new
         {
-            title = _event.Title,
-            text = _event.Description,
-            url = _baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)
+            title = _joinEvent!.Title,
+            text = _joinEvent.Description,
+            url = _baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id)
         };
 
         await JsRuntime.InvokeVoidAsync("navigator.share", data);
+    }
+
+    private async Task OpenParticipantInfoDialog()
+    {
+        if (_currentParticipant.VotedFor.All(v => v.SelectedOptionId == _joinEvent!.DefaultSelectOptionId))
+        {
+            await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "NoShowtimesDialog");
+            return;
+        }
+
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "ParticipantInfoDialog");
     }
 
 }

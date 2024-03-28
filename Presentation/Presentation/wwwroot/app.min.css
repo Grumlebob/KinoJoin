@@ -1419,14 +1419,6 @@ video {
   fill: #e30613;
 }
 
-.fill-white {
-  fill: #fff;
-}
-
-.stroke-black {
-  stroke: #000;
-}
-
 .stroke-success {
   stroke: rgb(101,193,121);
 }

@@ -97,7 +97,8 @@
     <p>Der er ingen forestillinger for de valgte filtre</p>
 }
 
-<ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de tider du vil have med i dit event" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_availableShowtimeVotes" VotesChanged="OnVoteChange" SelectOptions="_selectOptionsForCreatePage"/>
+
+<ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de spilletider du vil have med i dit event" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_availableShowtimeVotes" VotesChanged="OnVoteChange" SelectOptions="@_selectOptionsForCreatePage" DefaultSelectOption="@_selectOptionsForCreatePage.First()"/>
 
 @*Create button*@
 <Button Variant="Button.ButtonVariant.Red" OnClick="OpenEventDetailsDialog" Class="fixed right-6 text-sm bottom-6 z-50 flex gap-1">
@@ -110,29 +111,30 @@
 
 @* Dialog where user enters title and other event details *@
 <dialog id="eventDetailsDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
-   <EditForm OnValidSubmit="context => OpenConfirmationDialog()"  model="@_joinEvent">
-           <DataAnnotationsValidator  />
-           <p class="text-lg font-semibold mb-0.5">Event Titel</p>
-           <InputText class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-4 md:w-96"
-                  type="text" placeholder="Titel" required
-                  @bind-Value="_joinEvent.Title"/>
-   
-           <p class="text-lg font-semibold mb-0.5">Event Beskrivelse</p>
-           <InputTextArea  class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-4 md:w-96"
-                     placeholder="Beskrivelse (valgfrit)" 
-                     @bind-Value="@_joinEvent.Description"></InputTextArea>
-   
-           <p class="text-lg font-semibold mb-0.5">Deadline</p>
-           <input class="mb-2 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-4 md:w-96"
-                  type="date" placeholder="Deadline" value="@_joinEvent.Deadline.ToString("yyyy-MM-dd")" @oninput="@(v => { if (DateTime.TryParse(v.Value?.ToString(), CultureInfo.InvariantCulture, out var parsedDate)) _joinEvent.Deadline = parsedDate; })"/>
-          <div class="text-error">
-                  <ValidationSummary />
-                  </div>
-           <div class="flex justify-end space-x-3">
-               <button type="button" @onclick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog"))" class="rounded-full px-4 py-2 text-white bg-error hover:bg-error-dark focus:outline-none focus:ring-2">Annuller</button>
-               <button type="submit" class="rounded-full px-4 py-2 text-white bg-success hover:bg-success-dark focus:outline-none focus:ring-2 focus:ring-green-400">Opret</button>
-           </div>
-       </EditForm>
+    <EditForm OnValidSubmit="context => OpenConfirmationDialog()" model="@_joinEvent">
+        <DataAnnotationsValidator/>
+        <p class="text-lg font-semibold mb-0.5">Event Titel</p>
+        <InputText class="mb-2 w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:ring-2 focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
+                   type="text" placeholder="Titel" required
+                   @bind-Value="_joinEvent.Title"/>
+
+        <p class="text-lg font-semibold mb-0.5">Event Beskrivelse</p>
+        <InputTextArea class="mb-2 w-full rounded-3xl border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
+                       placeholder="Beskrivelse (valgfrit)"
+                       @bind-Value="@_joinEvent.Description">
+        </InputTextArea>
+
+        <p class="text-lg font-semibold mb-0.5">Deadline</p>
+        <input class="mb-2 w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
+               type="date" placeholder="Deadline" value="@_joinEvent.Deadline.ToString("yyyy-MM-dd")" @oninput="@(v => { if (DateTime.TryParse(v.Value?.ToString(), CultureInfo.InvariantCulture, out var parsedDate)) _joinEvent.Deadline = parsedDate; })"/>
+        <div class="text-error">
+            <ValidationSummary/>
+        </div>
+        <div class="mt-5 mb-5 flex justify-end space-x-3">
+            <Button Type="button" Variant="Button.ButtonVariant.White" OnClick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog"))">Annuller</Button>
+            <Button Type="submit" Variant="Button.ButtonVariant.Black">Opret</Button>
+        </div>
+    </EditForm>
 
     <div class="mt-2 rounded border p-2">
         <p class="text-lg font-semibold">Valgte spilletider</p>
@@ -156,6 +158,7 @@
 
 @* Dialog to confirm the user is done creating the event *@
 <dialog id="eventConfirmDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl md:min-w-96">
+    <form @onsubmit="FinishJoinEvent">
     <p class="text-lg font-semibold mb-0.5">Bekræft oprettelse</p>
     <div class="mb-4 flex items-center">
         <input id="CanAllShowtimes" type="checkbox" @bind="_hostCanAllShowtimes" class="mr-2 accent-secondary"/>
@@ -166,14 +169,15 @@
     @if (!_uploadingEvent)
     {
         <div class="flex justify-end space-x-3">
-            <button @onclick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog"))" class="rounded-full px-4 py-2 text-white bg-error hover:bg-error-dark">Rediger videre</button>
-            <button @onclick="FinishJoinEvent" class="rounded-full px-4 py-2 text-white bg-success hover:bg-success-dark">Opret</button>
+            <Button Type="button" Variant="Button.ButtonVariant.White" OnClick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog"))">Rediger videre</Button>
+            <Button Type="submit" Variant="Button.ButtonVariant.Black" OnClick="@FinishJoinEvent">Opret</Button>
         </div>
     }
     else
     {
-        <LoadingTextAndCircle Text="Opretter"/>
+        <LoadingIndicator Text="Opretter"/>
     }
+    </form>
 </dialog>
 
 @*Snackbar*@
@@ -197,8 +201,7 @@
 
     //Used to get info on the current user
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = null!;
-
-    //Used to check if the user is an admin
+    
     private bool _isLoggedInUserAdmin = false;
 
     //Event to be created
@@ -206,7 +209,7 @@
     {
         SelectOptions =
         [
-            new() { VoteOption = "Kan ikke", Color = "gray-300" },
+            new() {  VoteOption = "Kan ikke", Color = "gray-300" },
             new() { VoteOption = "Kan godt", Color = "success" },
             new() { VoteOption = "Hvis Nødvendigt (Klik to gange)", Color = "warning" }
         ],
@@ -223,7 +226,7 @@
     ICollection<ParticipantVote> _availableShowtimeVotes = [];
 
     //The select options to be used for the showtime selector on the page
-    readonly List<SelectOption> _selectOptionsForCreatePage = [new SelectOption { VoteOption = "Ikke valgt", Color = "gray-200" }, new SelectOption { VoteOption = "Valgt", Color = "success" }];
+    readonly List<SelectOption> _selectOptionsForCreatePage = [new SelectOption { VoteOption = "Ikke valgt", Color = "gray-300" }, new SelectOption { VoteOption = "Valgt", Color = "success" }];
     const int NoVoteIndex = 0; //index in the select options list for "no"
     const int YesVoteIndex = 1; //index in the select options list for "yes"
 
@@ -231,8 +234,7 @@
     private SearchableCheckboxList _cinemaCheckBoxList = new();
     private SearchableCheckboxList _movieCheckBoxList = new();
     private SearchableCheckboxList _genreCheckBoxList = new();
-
-    //Maps from id to names for movies, cinemas and genres
+    
     private Dictionary<int, string> _movieIdsToNames = new();
     private Dictionary<int, string> _cinemaIdsToNames = new();
     private Dictionary<int, string> _genreIdsToNames = new();
@@ -324,7 +326,6 @@
             }
         };
 
-
         _loadingPage = false;
         StateHasChanged();
 
@@ -339,9 +340,9 @@
             return;
         }
 
-        //load all show times from filter
+        //load all showtimes from filters
         (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
-        _availableShowtimeVotes = _availableShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _hostSelectOptions[NoVoteIndex] }).ToList();
+        _availableShowtimeVotes = _availableShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _selectOptionsForCreatePage[NoVoteIndex] }).ToList();
 
         //if KinoDKService yields any data not in database, handle it
         foreach (var cinema in _availableShowtimes.Select(s => s.Cinema).DistinctBy(c => c.Id))

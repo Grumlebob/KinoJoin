@@ -8,9 +8,9 @@
                 Hej, @context.User.Identity.Name!
             </p>
             <a href="#" @onclick="BeginSignOut">
-                <Button Variant="Button.ButtonVariant.White">
+                <CustomButton Variant="CustomButton.ButtonVariant.White">
                     Log ud
-                </Button>
+                </CustomButton>
             </a>
         </div>
     </Authorized>
@@ -18,9 +18,9 @@
         @if (Navigation.BaseUri.Contains("https"))
         {
             <a href="authentication/login">
-                <Button Variant="Button.ButtonVariant.Black">
+                <CustomButton Variant="CustomButton.ButtonVariant.Black">
                     Log ind
-                </Button>
+                </CustomButton>
             </a>
         }
     </NotAuthorized>

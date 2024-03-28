@@ -88,7 +88,7 @@
             <div class="flex h-fit w-full items-end justify-end gap-1 md:items-start md:justify-start">
                 @if (!UsingDesktop)
                 {
-                    <Button OnClick="@ShowVotes">Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)))</Button>
+                    <CustomButton OnClick="@ShowVotes">Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)))</CustomButton>
                 }
 
 
@@ -104,7 +104,7 @@
 
                 @if (IsHost && Event.ChosenShowtimeId != Showtime.Id)
                 {
-                    <Button Variant="Button.ButtonVariant.Red" OnClick="@(() => OpenConfirmationDialog(Showtime.Id))">Bekræft event</Button>
+                    <CustomButton Variant="CustomButton.ButtonVariant.Red" OnClick="@(() => OpenConfirmationDialog(Showtime.Id))">Bekræft event</CustomButton>
                 }
             </div>
         </div>
@@ -136,8 +136,8 @@
     <div class="flex flex-col items-end gap-4">
         <h2 class="text-xl font-bold">Ønsker du at bekræfte forestillingen for dette event?</h2>
         <div class="flex gap-1">
-            <Button Variant="Button.ButtonVariant.White" OnClick="@(() => CloseDialog(Showtime.Id))">Nej</Button>
-            <Button Variant="Button.ButtonVariant.Black" OnClick="@(async () => { await OpenDetailsDialog(Showtime, Showtime.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + Showtime.Id + UsingDesktop); })">Ja</Button>
+            <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@(() => CloseDialog(Showtime.Id))">Nej</CustomButton>
+            <CustomButton Variant="CustomButton.ButtonVariant.Black" OnClick="@(async () => { await OpenDetailsDialog(Showtime, Showtime.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + Showtime.Id + UsingDesktop); })">Ja</CustomButton>
         </div>
     </div>
 </dialog>
@@ -146,16 +146,16 @@
         <h2 class="text-xl font-bold">Event valgt</h2>
         <div class="space-y-3">
             <div class="flex flex-col gap-2 md:gap-1">
-                <Button Variant="Button.ButtonVariant.Red" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("open", $"https://kino.dk/ticketflow/showtimes/{Showtime.Id}", "_blank"))" Class="@(UsingDesktop ? "" : "w-full")">Bestil Billetter</Button>
-                <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "calendar-dialog" + UsingDesktop))">Tilføj til egen kalender</Button>
-                <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => await GoToMailToLink(Showtime))">Send mail til deltagere</Button>
+                <CustomButton Variant="CustomButton.ButtonVariant.Red" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("open", $"https://kino.dk/ticketflow/showtimes/{Showtime.Id}", "_blank"))" Class="@(UsingDesktop ? "" : "w-full")">Bestil Billetter</CustomButton>
+                <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "calendar-dialog" + UsingDesktop))">Tilføj til egen kalender</CustomButton>
+                <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@(async () => await GoToMailToLink(Showtime))">Send mail til deltagere</CustomButton>
                 @if (!UsingDesktop)
                 {
-                    <Button Variant="Button.ButtonVariant.White" OnClick="@ShareEvent">Del</Button>
+                    <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@ShareEvent">Del</CustomButton>
                 }
             </div>
             <div class="flex w-full justify-end">
-                <Button Variant="Button.ButtonVariant.Black" OnClick="@(() => CloseDialog(Showtime.Id))">Luk</Button>
+                <CustomButton Variant="CustomButton.ButtonVariant.Black" OnClick="@(() => CloseDialog(Showtime.Id))">Luk</CustomButton>
             </div>
         </div>
     </div>

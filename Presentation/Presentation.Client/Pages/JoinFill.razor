@@ -30,8 +30,8 @@
                 <h2 class="text-xl font-bold">@_event.Host.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h2>
                 <div class="flex md:items-end md:justify-end">
                     <div class="flex w-full flex-col gap-2 md:w-fit md:flex-row">
-                        <Button Variant="Button.ButtonVariant.White" OnClick="@(() => { _showFirstLoginDialog = false; })">Uden login</Button>
-                        <Button Variant="Button.ButtonVariant.Red" OnClick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + JoinEventId }); })"> Anvend dit Kino login</Button>
+                        <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@(() => { _showFirstLoginDialog = false; })">Uden login</CustomButton>
+                        <CustomButton Variant="CustomButton.ButtonVariant.Red" OnClick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + JoinEventId }); })"> Anvend dit Kino login</CustomButton>
                     </div>
                 </div>
             </div>
@@ -56,7 +56,7 @@
                     {
                         if (_isEditing)
                         {
-                            <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => { await UpdateJoinEvent(); _isEditing = false; })">Gem ændringer</Button>
+                            <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@(async () => { await UpdateJoinEvent(); _isEditing = false; })">Gem ændringer</CustomButton>
                         }
                         else
                         {
@@ -97,7 +97,7 @@
                 <span class="font-medium">Tidsinterval:</span>
                 <span> @_event.Showtimes.Min(s => s.Playtime.StartTime).ToString("dd. MMM") - @_event.Showtimes.Max(s => s.Playtime.StartTime).ToString("dd. MMM")</span>
                 <br/>
-                <Button Variant="Button.ButtonVariant.White" OnClick="@ScrollToBottom" Href="@(NavigationManager.Uri + "#results")" Class="font-label">Se Resultater</Button>
+                <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@ScrollToBottom" Href="@(NavigationManager.Uri + "#results")" Class="font-label">Se Resultater</CustomButton>
             </div>
         </div>
         @if (_isHost)
@@ -109,13 +109,13 @@
                         @((_baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)).Replace("https://", ""))
                     </a>
                     <div class="group">
-                        <Button OnClick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)); })" Variant="Button.ButtonVariant.White" class="min-w-6">
+                        <CustomButton OnClick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_event.Id)); })" Variant="CustomButton.ButtonVariant.White" class="min-w-6">
                             <img src="Icons/CopyIcon.svg" alt="copy" class="h-full rounded-full group-hover:invert"/>
-                        </Button>
+                        </CustomButton>
                     </div>
-                    <Button OnClick="@(async () => { await ShareEvent(); })" Variant="Button.ButtonVariant.Black" class="min-w-6">
+                    <CustomButton OnClick="@(async () => { await ShareEvent(); })" Variant="CustomButton.ButtonVariant.Black" class="min-w-6">
                         <img src="Icons/ShareIcon.svg" alt="share" class="h-full"/>
-                    </Button>
+                    </CustomButton>
                 </div>
             </div>
         }
@@ -125,7 +125,7 @@
 <ShowtimeSelector HasAnswered="@(_alreadyAnswered || _justAnswered)" SelectOptions="@_event.SelectOptions" DefaultSelectOption="@_event.DefaultSelectOption" Showtimes="@_event.Showtimes" LegendTitle="Tryk på de tider du kan" Votes="@_currentParticipant.VotedFor" VotesChanged="OnVotesChanged"/>
 
 
-<RegisterParticipantVote Event="_event" OnAnswerSaved="OnAnswerSaved" @bind-Nickname="@_currentParticipant.Nickname" AlreadyAnswered="_alreadyAnswered" VotedFor="@_currentParticipant.VotedFor" LoggedInUserId="@_currentParticipant.AuthId"/>
+<ParticipantRegisterForm JoinEvent="_event" OnAnswerSaved="OnAnswerSaved" Participant="@_currentParticipant" AlreadyAnswered="_alreadyAnswered"/>
 
 <br/>
 <br/>
@@ -231,9 +231,8 @@
         _currentParticipant.VotedFor = votes;
     }
 
-    private void OnAnswerSaved(Participant p)
+    private void OnAnswerSaved()
     {
-        _currentParticipant = p;
         _justAnswered = true;
         _joinEventResults.UpdateSorting();
     }

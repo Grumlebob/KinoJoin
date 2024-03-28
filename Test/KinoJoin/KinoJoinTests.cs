@@ -5,6 +5,7 @@ using Domain.Entities;
 using Domain.ExternalApiModels;
 using FluentAssertions;
 using Infrastructure.Persistence;
+using Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Presentation.Client.NamedHttpClients;
 
@@ -24,8 +25,6 @@ public class KinoJoinTests : IAsyncLifetime
     private readonly DataGenerator _dataGenerator = new();
 
     private readonly KinoContext _kinoContext;
-
-    private readonly KinoJoinHttpClient _kinoJoinHttpClient;
 
     public KinoJoinTests(KinoJoinApiWebAppFactory factory)
     {
@@ -214,7 +213,8 @@ public class KinoJoinTests : IAsyncLifetime
     {
         //No movies exist initially
         var response = await _client.GetAsync("api/kino-data/movies");
-        response.Content.ReadAsStringAsync().Result.Should().Be("[]");
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("[]");
 
         //Insert a movie
         var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
@@ -234,7 +234,8 @@ public class KinoJoinTests : IAsyncLifetime
     {
         //No cinemas exist initially
         var response = await _client.GetAsync("api/kino-data/cinemas");
-        response.Content.ReadAsStringAsync().Result.Should().Be("[]");
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("[]");
 
         //Insert a join event (with a cinema)
         var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
@@ -256,7 +257,8 @@ public class KinoJoinTests : IAsyncLifetime
     {
         //No genres exist initially
         var response = await _client.GetAsync("api/kino-data/genres");
-        response.Content.ReadAsStringAsync().Result.Should().Be("[]");
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Be("[]");
 
         //Insert a join event with all its nested properites
         var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
@@ -265,7 +267,8 @@ public class KinoJoinTests : IAsyncLifetime
 
         //After inserting a join event, genres should still not exist.
         var getResponse = await _client.GetAsync("api/kino-data/genres");
-        getResponse.Content.ReadAsStringAsync().Result.Should().Be("[]");
+        var getContent = await getResponse.Content.ReadAsStringAsync();
+        getContent.Should().Be("[]");
 
         //Inserting a genrer manually
         var genre = new Genre { Id = 1, Name = "Test" };
@@ -280,14 +283,78 @@ public class KinoJoinTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task UpdateAllBaseDataFromKinoDk_ShouldReturnOk_IfUpdateSucceeds()
+    public async Task UpdateAllBaseDataFromKinoDk_ThenUseTheDataToCheckKinoDkFilterApi()
     {
         //The tests main focus is getting the static data from kino.dk - should take about 2 minutes
         var response = await _client.PostAsync("api/kino-data/update-all", null);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        //Check that the data was inserted
+        var getResponse = await _client.GetAsync("api/kino-data/movies");
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var movies = await getResponse.Content.ReadFromJsonAsync<List<Movie>>();
+        movies.Should().NotBeNull();
+
+        var getResponseCinemas = await _client.GetAsync("api/kino-data/cinemas");
+        getResponseCinemas.StatusCode.Should().Be(HttpStatusCode.OK);
+        var cinemas = await getResponseCinemas.Content.ReadFromJsonAsync<List<Cinema>>();
+        cinemas.Should().NotBeNull();
+
+        var getResponseGenres = await _client.GetAsync("api/kino-data/genres");
+        getResponseGenres.StatusCode.Should().Be(HttpStatusCode.OK);
+        var genres = await getResponseGenres.Content.ReadFromJsonAsync<List<Genre>>();
+        genres.Should().NotBeNull();
+
+        //Check that the kino.dk filter api works
+        var fromDate = DateTime.Now.AddYears(-1);
+        var toDate = DateTime.Now.AddYears(10);
+
+        var filterApiHandler = new FilterApiHandler();
+        var (showtimesWithCinemaFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
+            cinemas!.Select(c => c.Id).Take(1).ToList(),
+            null,
+            null,
+            fromDate,
+            toDate
+        );
+        showtimesWithCinemaFilter.Should().NotBeNull();
+        showtimesWithCinemaFilter.Count.Should().BeGreaterThan(1);
+
+        var (showtimesWithMovieFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
+            null,
+            movies!.Select(m => m.Id).Take(1).ToList(),
+            null,
+            fromDate,
+            toDate
+        );
+        showtimesWithMovieFilter.Should().NotBeNull();
+        showtimesWithMovieFilter.Count.Should().BeGreaterThan(1);
+
+        var (showtimesWithGenreFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
+            null,
+            null,
+            genres!.Select(g => g.Id).Take(1).ToList(),
+            fromDate,
+            toDate
+        );
+        showtimesWithGenreFilter.Should().NotBeNull();
+        showtimesWithGenreFilter.Count.Should().BeGreaterThan(1);
+
+        //Test with combined filters
+        var specificshowtime = showtimesWithCinemaFilter.First();
+        var (showtimesWithCombinedFilters, _) = await filterApiHandler.GetShowtimesFromFilters(
+            new List<int> { specificshowtime.CinemaId },
+            new List<int> { specificshowtime.MovieId },
+            null,
+            fromDate,
+            toDate
+        );
+        showtimesWithCombinedFilters.Should().NotBeNull();
+        showtimesWithCombinedFilters.Count.Should().BeGreaterThan(1);
     }
 
-    //From our external api Kino.DK, they sometimes have a single element, and sometimes a list of elements, the convert class is used to handle this
+    //From our external api Kino.DK, they sometimes have a single element,
+    //and sometimes a list of elements, the convert class is used to handle this
     [Fact]
     public void FieldMediaImageConvertCanConvertAShowtimeApiFieldMediaImage()
     {

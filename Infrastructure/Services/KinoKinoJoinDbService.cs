@@ -5,37 +5,19 @@ namespace Infrastructure.Services;
 
 public class KinoKinoJoinDbService(KinoContext context) : IKinoJoinDbService
 {
-    public async Task<ICollection<Cinema>> GetAllCinemas(Func<Cinema, bool>? filter = null)
+    public async Task<ICollection<Cinema>> GetAllCinemas()
     {
-        var query = context.Cinemas.AsNoTracking();
-        if (filter != null)
-        {
-            query = query.AsEnumerable().Where(filter).AsQueryable();
-        }
-
-        return await query.ToListAsync();
+        return await context.Cinemas.AsNoTracking().ToListAsync();
     }
 
-    public async Task<ICollection<Movie>> GetAllMovies(Func<Movie, bool>? filter = null)
+    public async Task<ICollection<Movie>> GetAllMovies()
     {
-        var query = context.Movies.AsNoTracking();
-        if (filter != null)
-        {
-            query = query.AsEnumerable().Where(filter).AsQueryable();
-        }
-
-        return await query.ToListAsync();
+        return await context.Movies.AsNoTracking().ToListAsync();
     }
 
-    public async Task<ICollection<Genre>> GetAllGenres(Func<Genre, bool>? filter = null)
+    public async Task<ICollection<Genre>> GetAllGenres()
     {
-        var query = context.Genres.AsNoTracking();
-        if (filter != null)
-        {
-            query = query.AsEnumerable().Where(filter).AsQueryable();
-        }
-
-        return await query.ToListAsync();
+        return await context.Genres.AsNoTracking().ToListAsync();
     }
 
     public async Task<JoinEvent?> GetAsync(int id)

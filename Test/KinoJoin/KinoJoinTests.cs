@@ -73,6 +73,8 @@ public class KinoJoinTests : IAsyncLifetime
 
         //Upsert wrong joinEvent
         var joinEventWrong = new JoinEvent();
+        joinEventWrong.Title =
+            "Too looooooooooooooooooooong title here. AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
         var createResponseWrong = await _client.PutAsJsonAsync("api/events", joinEventWrong);
         createResponseWrong.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -159,6 +161,7 @@ public class KinoJoinTests : IAsyncLifetime
             .Participants!.Any(p => p.AuthId == "New")
             .Should()
             .BeTrue();
+        _kinoContext.ParticipantVotes.Count().Should().BeGreaterThan(0);
 
         //Update the participant we just added to a new name
         joinEventFromApiUpdatedParticipant.Participants!.First().Nickname = "Updated";
@@ -390,6 +393,11 @@ public class KinoJoinTests : IAsyncLifetime
         var fieldMediaImage = new FieldMediaImageConverter();
         var mediaSingleElement = new ShowtimeApiFieldMediaImage();
         fieldMediaImage.CanConvert(mediaSingleElement.GetType()).Should().BeTrue();
+        try
+        {
+            fieldMediaImage.WriteJson(null!, null!, null!);
+        }
+        catch (Exception) { } //WriteJson is only implemented to satisfy interface and throws an exception
     }
 
     [Fact]
@@ -429,6 +437,18 @@ public class KinoJoinTests : IAsyncLifetime
         );
 
         modelDifferences.Count.Should().Be(0);
+    }
+
+    //Test getters with a filter
+    [Fact]
+    public async Task GetJoinEvents_ShouldReturnOk_IfJoinEventsExistElseReturnsNotFound()
+    {
+        var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
+        var createResponse = await _client.PutAsJsonAsync("api/events", joinEvent);
+        createResponse.EnsureSuccessStatusCode();
+
+        var response = await _client.GetAsync($"api/events/host/{joinEvent.Host.AuthId}");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     //We don't care about the InitializeAsync method, but needed to implement the IAsyncLifetime interface

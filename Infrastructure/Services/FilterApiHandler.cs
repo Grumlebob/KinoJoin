@@ -249,4 +249,38 @@ public class FilterApiHandler : IFilterApiHandler
 
         return (showtimes, missingMovies);
     }
+
+    public string GetUrlFilterString(
+        ICollection<int> cinemaIds,
+        ICollection<int> movieIds,
+        ICollection<int> genreIds,
+        DateTime fromDate,
+        DateTime toDate
+    )
+    {
+        var fromDateString = fromDate.ToString("s"); //format: 2008-04-18T06:30:00
+        var toDateString = toDate.ToString("s");
+        
+        var filterStringBuilder = new StringBuilder("sort=most_purchased");
+
+        foreach (var id in movieIds)
+        {
+            filterStringBuilder.Append($"&movies={id}");
+        }
+
+        foreach (var id in cinemaIds)
+        {
+            filterStringBuilder.Append($"&cinemas={id}");
+        }
+
+        foreach (var id in genreIds)
+        {
+            filterStringBuilder.Append($"&genres={id}");
+        }
+
+        filterStringBuilder.Append($"&date={fromDateString}");
+        filterStringBuilder.Append($"&date={toDateString}");
+
+        return filterStringBuilder.ToString();
+    }
 }

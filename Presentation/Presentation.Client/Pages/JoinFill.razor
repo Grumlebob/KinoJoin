@@ -1,4 +1,5 @@
 ﻿@page "/filling/{JoinEventId}"
+@using Presentation.Client.Services
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
@@ -30,7 +31,7 @@
                 <div class="flex md:items-end md:justify-end">
                     <div class="flex w-full flex-col gap-2 md:w-fit md:flex-row">
                         <Button Variant="Button.ButtonVariant.White" OnClick="@(() => { _showFirstLoginDialog = false; })">Uden login</Button>
-                        <Button Variant="Button.ButtonVariant.Red" OnClick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + _event?.Id }); })"> Anvend dit Kino login</Button>
+                        <Button Variant="Button.ButtonVariant.Red" OnClick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + JoinEventId }); })"> Anvend dit Kino login</Button>
                     </div>
                 </div>
             </div>
@@ -188,15 +189,15 @@
 
 
         //check if user is host
-        var authState = await AuthenticationStateTask;
-        var user = authState.User;
-        _isLoggedIn = user.Identity!.IsAuthenticated;
+        var userInfo = await  UserInfoService.GetUserInfoAsync(AuthenticationStateTask);
+       
+        _isLoggedIn = userInfo!=null;
+        
         if (_isLoggedIn)
         {
-            var username = user.Identity.Name;
-            _currentParticipant.AuthId = user.FindFirst(c => c.Type == "sub")?.Value;
+            _currentParticipant.AuthId = userInfo!.Value.authId;
             _isHost = _event?.Host?.AuthId == _currentParticipant.AuthId;
-            _currentParticipant.Nickname = username;
+            _currentParticipant.Nickname = userInfo.Value.name;
             if (_event!.Participants!.Any(p => p.AuthId == _currentParticipant.AuthId))
             {
                 _alreadyAnswered = true;

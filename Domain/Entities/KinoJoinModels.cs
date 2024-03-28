@@ -17,10 +17,9 @@ public class JoinEvent
     public string Description { get; set; } = string.Empty;
     public List<Showtime> Showtimes { get; set; } = [];
     public int? ChosenShowtimeId { get; set; }
-    public List<Participant>? Participants { get; set; } = [];
+    public List<Participant> Participants { get; set; } = [];
     public List<SelectOption> SelectOptions { get; set; } = [];
     public int DefaultSelectOptionId { get; set; }
-
     public DateTime Deadline { get; set; }
 
     [ForeignKey("HostId")]
@@ -43,19 +42,18 @@ public class Showtime
 
     //Foreign Keys
     [ForeignKey("VersionTagId")]
-    public VersionTag? VersionTag { get; set; }
+    public VersionTag VersionTag { get; set; } = null!;
 
     [ForeignKey("RoomId")]
-    public Room? Room { get; set; }
+    public Room Room { get; set; } = null!;
 
     [ForeignKey("MovieId")]
-    public Movie? Movie { get; set; }
+    public Movie Movie { get; set; } = null!;
 
     [ForeignKey("CinemaId")]
-    public Cinema? Cinema { get; set; }
+    public Cinema Cinema { get; set; } = null!;
 
-    [ForeignKey("PlaytimeId")]
-    public Playtime? Playtime { get; set; }
+    [ForeignKey("PlaytimeId")] public Playtime Playtime { get; set; } = null!;
 }
 
 public class Movie
@@ -177,7 +175,7 @@ public class ParticipantVote
     public int SelectedOptionId { get; set; }
 
     [ForeignKey("SelectedOptionId")]
-    public SelectOption? SelectedOption { get; set; }
+    public SelectOption SelectedOption { get; set; } = null!;
 }
 
 /// <summary>

@@ -1,15 +1,15 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
 @inject IKinoJoinHttpClient KinoJoinHttpClient
-<div class="flex  flex-col justify-start text-start items-start gap-2 bg-slate-50   rounded p-5 shadow-md  text-wrap  ">
+<div class="flex flex-col items-start justify-start gap-2 rounded bg-slate-50 p-5 text-start shadow-md text-wrap">
 
 
     <div class="@(UsingDesktop ? "" : "gap-1") md:h-24">
-        <div class="flex w-full items-center gap-2 ">
+        <div class="flex w-full items-center gap-2">
 
             <div class="flex w-full items-center gap-1">
 
-                <p class="font-bold ">
+                <p class="font-bold">
                     @Showtime.Movie.Title
                 </p>
             </div>
@@ -18,12 +18,12 @@
         </div>
 
 
-        <p class=" md:hidden  text-xs font-normal text-gray-700 ">@Showtime.VersionTag.Type</p>
+        <p class="text-xs font-normal text-gray-700 md:hidden">@Showtime.VersionTag.Type</p>
 
-        <div class="flex flex-col  hidden md:block">
+        <div class="flex hidden flex-col md:block">
             @foreach (var version in Showtime.VersionTag.Type.Split("-"))
             {
-                <p class="  text-xs font-normal text-gray-700 ">@version.Trim()</p>
+                <p class="text-xs font-normal text-gray-700">@version.Trim()</p>
             }
         </div>
 
@@ -31,24 +31,24 @@
 
     <hr class="h-px w-full rounded-full bg-gray-300"/>
     <div class="gap-1 md:h-24">
-        <div class="flex w-full items-center gap-1 ">
-            <p class=" font-normal">
+        <div class="flex w-full items-center gap-1">
+            <p class="font-normal">
                 @Showtime.Cinema.Name
             </p>
         </div>
 
         <div class="flex w-full items-center gap-1">
-            <p class=" text-xs font-normal text-gray-700 ">@Showtime.Room.Name</p>
+            <p class="text-xs font-normal text-gray-700">@Showtime.Room.Name</p>
         </div>
     </div>
 
-    <hr class=" h-px w-full rounded-full bg-gray-300"/>
+    <hr class="h-px w-full rounded-full bg-gray-300"/>
 
-    <div class="flex flex-col h-full w-full justify-end gap-2">
-        <div class="gap-1 h-full flex flex-col justify-end">
+    <div class="flex h-full w-full flex-col justify-end gap-2">
+        <div class="flex h-full flex-col justify-end gap-1">
             <div class="flex w-full items-center gap-1">
                 <img src="Icons/DateIcon.svg" alt="date icon"/>
-                <p class=" font-normal ">
+                <p class="font-normal">
                     @Showtime.Playtime.StartTime.ToString("dd. MMM").
 
                 </p>
@@ -59,8 +59,8 @@
 
             </div>
 
-            <div class="flex w-full items-center gap-1 hidden md:block">
-                <p class="  text-sm font-normal  ">
+            <div class="flex hidden w-full items-center gap-1 md:block">
+                <p class="text-sm font-normal">
                     @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes((double)Showtime.Movie.Duration).ToString("HH:mm")
                 </p>
             </div>
@@ -68,9 +68,9 @@
 
         @if (!UsingDesktop || IsHost)
         {
-            <hr class=" h-px w-full rounded-full bg-gray-300"/>
+            <hr class="h-px w-full rounded-full bg-gray-300"/>
         }
-        <div class="flex w-full items-center gap-1 ">
+        <div class="flex w-full items-center gap-1">
 
 
             @if (!UsingDesktop)
@@ -85,7 +85,7 @@
                     </div>
                 }
             }
-            <div class="flex h-fit w-full justify-end items-end md:justify-start md:items-start gap-1 w-full">
+            <div class="flex h-fit w-full items-end justify-end gap-1 md:items-start md:justify-start">
                 @if (!UsingDesktop)
                 {
                     <Button OnClick="@ShowVotes">Se stemmer (@Event.Participants?.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)))</Button>
@@ -94,9 +94,9 @@
 
                 @if (Event.ChosenShowtimeId == Showtime.Id)
                 {
-                    <div class="  flex justify-center py-[14px] px-[15px] rounded-full bg-opacity-25  font-normal bg-success text-nowrap text-success-darkest">
+                    <div class="flex justify-center rounded-full bg-opacity-25 font-normal py-[14px] px-[15px] bg-success text-nowrap text-success-darkest">
                         <p>Aftalt tid</p>
-                        <button class="p-1 rounded-full  hover:bg-success" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + Showtime.Id + UsingDesktop); })">
+                        <button class="rounded-full p-1 hover:bg-success" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + Showtime.Id + UsingDesktop); })">
                             <img src="Icons/ThreeDotsIcon.svg" alt="options"/>
                         </button>
                     </div>
@@ -154,7 +154,7 @@
                     <Button Variant="Button.ButtonVariant.White" OnClick="@ShareEvent">Del</Button>
                 }
             </div>
-            <div class="w-full flex justify-end">
+            <div class="flex w-full justify-end">
                 <Button Variant="Button.ButtonVariant.Black" OnClick="@(() => CloseDialog(Showtime.Id))">Luk</Button>
             </div>
         </div>

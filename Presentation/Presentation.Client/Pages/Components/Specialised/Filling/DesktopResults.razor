@@ -1,14 +1,14 @@
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
 
-<div class="mb-2 w-full overflow-auto rounded-md border py-3 bg-gray-100">
+<div class="mb-2 w-full overflow-auto rounded-md border bg-gray-100 py-3">
     <table class="border-separate border-spacing-2">
         <tr >
             <th></th>@*Empty cell above the participant names*@
 
             @foreach (var showtime in OrderedShowtimes)
             {
-                <th class="max-w-48 min-w-48 ">
+                <th class="max-w-48 min-w-48">
                     <ResultCard Event="Event" Showtime="showtime" UsingDesktop="true" IsHost="IsHost" OnEventConfirmed="StateHasChanged"/>
                 </th>
             }
@@ -17,20 +17,20 @@
         @foreach (var participant in Event.Participants ?? [])
         {
             <tr>
-                <td class="sticky left-0 rounded  bg-slate-50 items-end">
-                    <div class=" flex gap-1 rounded p-5 shadow-md w-50">
+                <td class="sticky left-0 items-end rounded bg-slate-50">
+                    <div class="flex gap-1 rounded p-5 shadow-md w-50">
                         <div class="flex">
                             @if (IsHost && participant.Id != 0)
                         {
                             <button onclick="@(async () => { await OnDeleteParticipant.InvokeAsync(participant); })">
-                                <img src="Icons/DeleteIcon.svg" alt="delete" class="p-1 rounded-full hover:bg-error hover:bg-opacity-25" width="28"/>
+                                <img src="Icons/DeleteIcon.svg" alt="delete" class="rounded-full p-1 hover:bg-error hover:bg-opacity-25" width="28"/>
                             </button>
                         }
                         @if (!string.IsNullOrEmpty(participant.Note))
                         {
 
                             <div class="relative flex items-center">
-                                <img src="Icons/NoteIcon.svg" alt="note" class="peer hover:bg-gray-200 rounded-full p-1" width="28"/>
+                                <img src="Icons/NoteIcon.svg" alt="note" class="rounded-full p-1 peer hover:bg-gray-200" width="28"/>
                                 <div class="peer-hover:visible invisible absolute translate-x-8 -translate-y-20 transform rounded border border-gray-800 bg-gray-100 p-3 opacity-0 peer-hover:opacity-100 shadow-md z-5 bg-light-gray min-w-40 max-w-80 text-wrap">
                                     <p class="font-bold">@participant.Nickname's note</p>
                                     @if (!string.IsNullOrEmpty(participant.Note))

@@ -421,8 +421,8 @@
         var movieIds = _selectedMovies.ToList();
         var cinemaIds = _selectedCinemas.ToList();
         var genreIds = _selectedGenres.ToList();
-        var fromDate = _startDate.ToString("O"); //hvad betyder O?
-        var toDate = _endDate.ToString("O");
+        var fromDate = _startDate.ToString("s"); //format: 2008-04-18T06:30:00
+        var toDate = _endDate.ToString("s");
 
         //if no filters are selected, clear all showtimes and return
         if (movieIds.Count == 0 && cinemaIds.Count == 0 && genreIds.Count == 0)
@@ -459,7 +459,7 @@
         NavigationManager.NavigateTo(newUrl); //change url so a page reload will save the filters
 
         //get the showtimes from kino.dk
-        (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate.AddHours(23).AddMinutes(59));
+        (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate.Date.AddHours(23).AddMinutes(59));
 
         // Save votes for show times that were there before update 
         var stillAvailableShowtimeIds = new HashSet<int>(_availableShowtimeVotes

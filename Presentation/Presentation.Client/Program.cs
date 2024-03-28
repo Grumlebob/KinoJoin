@@ -1,10 +1,13 @@
 using Application.Interfaces;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Sqids;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddScoped<IKinoDkService, KinoDkService>();
+builder.Services.AddScoped<IFilterApiHandler, FilterApiHandler>();
+
+builder.Services.AddSingleton(new SqidsEncoder<int>(new SqidsOptions { MinLength = 6 }));
 
 builder.Services.AddHttpClient<IKinoJoinHttpClient, KinoJoinHttpClient>(client =>
 {

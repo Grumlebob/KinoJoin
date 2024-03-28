@@ -22,7 +22,11 @@ namespace Infrastructure.Persistence.Migrations
                             "Npgsql:ValueGenerationStrategy",
                             NpgsqlValueGenerationStrategy.IdentityByDefaultColumn
                         ),
-                    Censorship = table.Column<string>(type: "text", nullable: false)
+                    Censorship = table.Column<string>(
+                        type: "character varying(50)",
+                        maxLength: 50,
+                        nullable: false
+                    )
                 },
                 constraints: table =>
                 {
@@ -35,7 +39,11 @@ namespace Infrastructure.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false)
+                    Name = table.Column<string>(
+                        type: "character varying(260)",
+                        maxLength: 260,
+                        nullable: false
+                    )
                 },
                 constraints: table =>
                 {
@@ -48,7 +56,11 @@ namespace Infrastructure.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false)
+                    Name = table.Column<string>(
+                        type: "character varying(260)",
+                        maxLength: 260,
+                        nullable: false
+                    )
                 },
                 constraints: table =>
                 {
@@ -60,9 +72,21 @@ namespace Infrastructure.Persistence.Migrations
                 name: "Hosts",
                 columns: table => new
                 {
-                    AuthId = table.Column<string>(type: "text", nullable: false),
-                    Username = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: true)
+                    AuthId = table.Column<string>(
+                        type: "character varying(260)",
+                        maxLength: 260,
+                        nullable: false
+                    ),
+                    Username = table.Column<string>(
+                        type: "character varying(260)",
+                        maxLength: 260,
+                        nullable: false
+                    ),
+                    Email = table.Column<string>(
+                        type: "character varying(260)",
+                        maxLength: 260,
+                        nullable: true
+                    )
                 },
                 constraints: table =>
                 {
@@ -96,7 +120,11 @@ namespace Infrastructure.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false)
+                    Name = table.Column<string>(
+                        type: "character varying(260)",
+                        maxLength: 260,
+                        nullable: false
+                    )
                 },
                 constraints: table =>
                 {
@@ -114,8 +142,16 @@ namespace Infrastructure.Persistence.Migrations
                             "Npgsql:ValueGenerationStrategy",
                             NpgsqlValueGenerationStrategy.IdentityByDefaultColumn
                         ),
-                    VoteOption = table.Column<string>(type: "text", nullable: false),
-                    Color = table.Column<string>(type: "text", nullable: false)
+                    VoteOption = table.Column<string>(
+                        type: "character varying(260)",
+                        maxLength: 260,
+                        nullable: false
+                    ),
+                    Color = table.Column<string>(
+                        type: "character varying(260)",
+                        maxLength: 260,
+                        nullable: false
+                    )
                 },
                 constraints: table =>
                 {
@@ -133,7 +169,11 @@ namespace Infrastructure.Persistence.Migrations
                             "Npgsql:ValueGenerationStrategy",
                             NpgsqlValueGenerationStrategy.IdentityByDefaultColumn
                         ),
-                    Type = table.Column<string>(type: "text", nullable: false)
+                    Type = table.Column<string>(
+                        type: "character varying(260)",
+                        maxLength: 260,
+                        nullable: false
+                    )
                 },
                 constraints: table =>
                 {
@@ -146,11 +186,27 @@ namespace Infrastructure.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    ImageUrl = table.Column<string>(type: "text", nullable: true),
-                    KinoUrl = table.Column<string>(type: "text", nullable: true),
+                    Title = table.Column<string>(
+                        type: "character varying(500)",
+                        maxLength: 500,
+                        nullable: false
+                    ),
+                    ImageUrl = table.Column<string>(
+                        type: "character varying(500)",
+                        maxLength: 500,
+                        nullable: true
+                    ),
+                    KinoUrl = table.Column<string>(
+                        type: "character varying(500)",
+                        maxLength: 500,
+                        nullable: true
+                    ),
                     Duration = table.Column<int>(type: "integer", nullable: true),
-                    PremiereDate = table.Column<string>(type: "text", nullable: true),
+                    PremiereDate = table.Column<string>(
+                        type: "character varying(100)",
+                        maxLength: 100,
+                        nullable: true
+                    ),
                     AgeRatingId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
@@ -175,9 +231,21 @@ namespace Infrastructure.Persistence.Migrations
                             "Npgsql:ValueGenerationStrategy",
                             NpgsqlValueGenerationStrategy.IdentityByDefaultColumn
                         ),
-                    HostId = table.Column<string>(type: "text", nullable: false),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
+                    HostId = table.Column<string>(
+                        type: "character varying(260)",
+                        maxLength: 260,
+                        nullable: false
+                    ),
+                    Title = table.Column<string>(
+                        type: "character varying(60)",
+                        maxLength: 60,
+                        nullable: false
+                    ),
+                    Description = table.Column<string>(
+                        type: "character varying(500)",
+                        maxLength: 500,
+                        nullable: false
+                    ),
                     ChosenShowtimeId = table.Column<int>(type: "integer", nullable: true),
                     DefaultSelectOptionId = table.Column<int>(type: "integer", nullable: false),
                     Deadline = table.Column<DateTime>(
@@ -297,11 +365,27 @@ namespace Infrastructure.Persistence.Migrations
                             "Npgsql:ValueGenerationStrategy",
                             NpgsqlValueGenerationStrategy.IdentityByDefaultColumn
                         ),
-                    AuthId = table.Column<string>(type: "text", nullable: true),
+                    AuthId = table.Column<string>(
+                        type: "character varying(260)",
+                        maxLength: 260,
+                        nullable: true
+                    ),
                     JoinEventId = table.Column<int>(type: "integer", nullable: false),
-                    Nickname = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: true),
-                    Note = table.Column<string>(type: "text", nullable: true)
+                    Nickname = table.Column<string>(
+                        type: "character varying(60)",
+                        maxLength: 60,
+                        nullable: false
+                    ),
+                    Email = table.Column<string>(
+                        type: "character varying(60)",
+                        maxLength: 60,
+                        nullable: true
+                    ),
+                    Note = table.Column<string>(
+                        type: "character varying(500)",
+                        maxLength: 500,
+                        nullable: true
+                    )
                 },
                 constraints: table =>
                 {

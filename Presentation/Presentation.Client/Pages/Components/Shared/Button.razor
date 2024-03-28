@@ -1,0 +1,40 @@
+
+@if (Href is not null)
+{
+    <a href="@Href" target="@Target" class="@GetVariant()  rounded-full py-[14px] px-[17px] md:text-sm  text-xs text-nowrap flex items-center justify-center @Class">@ChildContent</a>
+}
+else
+{
+    <button class="@GetVariant() rounded-full py-[14px] px-[17px] md:text-sm  text-xs text-nowrap flex items-center justify-center @Class" onclick="@OnClick" type="@Type"> @ChildContent </button>
+}
+
+
+@code {
+
+    [Parameter] public required RenderFragment ChildContent { get; set; }
+    [Parameter] public ButtonVariant Variant { get; set; } = ButtonVariant.White;
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Type { get; set; }
+    [Parameter] public string? Href { get; set; }
+    [Parameter] public string? Target { get; set; }
+
+    public enum ButtonVariant
+    {
+        White,
+        Black,
+        Red,
+    }
+
+    private string GetVariant()
+    {
+        return Variant switch
+        {
+            ButtonVariant.Black => "bg-black text-white font-semibold",
+            ButtonVariant.White => "bg-transparent text-black border border-[#c4c4c4]  transition duration-200  hover:bg-black hover:border-black hover:text-white",
+            ButtonVariant.Red => "bg-primary text-white   hover:bg-primary-dark active:translate-y-1 transition duration-200 active:bg-primary-darkest",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
+}

@@ -37,6 +37,9 @@ module.exports = {
                 dark: "rgb(203,105,109)",
                 darkest: "rgb(182 93 96)",
             },
+            background: {
+                DEFAULT: "#f1f1f1"
+            }
         },
           
     },

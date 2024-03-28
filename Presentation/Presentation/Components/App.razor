@@ -21,8 +21,8 @@
     <HeadOutlet @rendermode="InteractiveWebAssembly"/>
 </head>
 
-<body class="bg-[#f1f1f1]">
-<Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)"/>
+<body class="bg-background">
+<Routes @rendermode="new InteractiveWebAssemblyRenderMode(false)"/>
 <script src="_framework/blazor.web.js"></script>
 <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
 
@@ -67,7 +67,51 @@
             scrollStep();
         },
         
+
+        
     }
+    
+    function setScrollButtons (elementId) {
+                   let scrollContainer = document.getElementById(elementId);
+                   let leftBlur = document.getElementById(`${elementId}-blur-left`);
+                   let rightBlur = document.getElementById(`${elementId}-blur-right`);
+                   
+                   if (!scrollContainer || !leftBlur || !rightBlur)
+                       return;
+                   
+                   leftBlur.onclick = () => {scrollContainer.scrollTo({
+                                               left: scrollContainer.scrollLeft - 300,
+                                               behavior: 'smooth'
+                                             })};
+                   rightBlur.onclick = () => {scrollContainer.scrollTo({
+                                                left: scrollContainer.scrollLeft + 300,
+                                                behavior: 'smooth'
+                                             })};
+                   
+                   const toggleScrollButtons = function() {
+                       if (scrollContainer.scrollWidth <= scrollContainer.clientWidth) { //no overflow
+                           leftBlur.style.visibility = "hidden";
+                           rightBlur.style.visibility = "hidden";
+                           return;
+                       }
+                      
+                       if (scrollContainer.scrollLeft === 0) { //scrolled to left end
+                          leftBlur.style.visibility = "hidden";
+                       }
+                       else {
+                           leftBlur.style.visibility = "visible";
+                       }
+                       
+                       if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 1) { //scrolled to right end
+                           rightBlur.style.visibility = "hidden";
+                       }
+                       else {
+                           rightBlur.style.visibility = "visible";
+                       }
+                   }
+                   toggleScrollButtons(); //initially calculate if it should show buttons
+                   scrollContainer.onscroll = toggleScrollButtons; //dynamically calculate when scrolling
+               }
     
     window.downloadFileFromStream = async (fileName, contentStreamReference) => {
                     const arrayBuffer = await contentStreamReference.arrayBuffer();

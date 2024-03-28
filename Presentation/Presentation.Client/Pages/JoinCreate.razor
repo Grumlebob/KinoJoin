@@ -3,11 +3,14 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
-@inject IKinoDkService KinoDkService
+@inject IFilterApiHandler FilterHandler
+@inject SqidsEncoder<int> SqidsEncoder
 
 @if (_loadingPage)
 {
-    <LoadingTextAndCircle/>
+    <div class="flex justify-center">
+        <LoadingIndicator/>
+    </div>
     return;
 }
 
@@ -18,7 +21,7 @@
     </h1>
     @if (_isLoggedInUserAdmin)
     {
-        <button class="rounded-full bg-yellow-100 p-1 text-black hover:bg-success-dark focus:outline-none focus:ring-2 focus:ring-green-400" @onclick="UpdateBaseDataFromKinoDk">Update from kino.dk</button>
+        <button class="rounded-full bg-yellow-100 p-1 text-black hover:bg-success-dark focus:outline-none focus:ring-2 focus:ring-green-400" @onclick="KinoJoinHttpClient.UpdateBaseDataFromKinoDkAsync">Update from kino.dk</button>
     }
 </div>
 
@@ -49,15 +52,15 @@
     <div class="mt-0 flex flex-col space-y-4 lg:w-1/3 lg:pr-3">
         <div class="flex w-full flex-wrap justify-start">
             <div class="w-1/2 pt-3 pr-1.5">
-                <div class="rounded bg-gray-100 shadow">
-                    <label for="start-date" class="block rounded-t text-center text-sm font-medium text-white bg-secondary">Start dato</label>
-                    <input id="start-date" type="date" @bind="_startDate" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm"/>
+                <div class="rounded-lg bg-gray-100 shadow">
+                    <label for="start-date" class="block rounded-t-lg text-center text-sm font-medium text-white bg-secondary">Start dato</label>
+                    <input id="start-date" type="date" @bind="_startDate" class="mt-1 block w-full text-center bg-transparent"/>
                 </div>
             </div>
             <div class="w-1/2 pt-3 pl-1.5">
-                <div class="rounded bg-gray-100 shadow">
-                    <label for="end-date" class="block rounded-t text-center text-sm font-medium text-white bg-secondary">Slut dato</label>
-                    <input id="end-date" type="date" @bind="_endDate" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm"/>
+                <div class="rounded-lg bg-gray-100 shadow">
+                    <label for="end-date" class="block rounded-t-lg text-center text-sm font-medium text-white bg-secondary">Slut dato</label>
+                    <input id="end-date" type="date" @bind="_endDate" class="mt-1 block w-full text-center bg-transparent"/>
                 </div>
             </div>
         </div>
@@ -71,12 +74,8 @@
 
         @*Filter Buttons*@
         <div class="mt-4 flex w-full justify-end gap-2 text-no-wrap md:w-auto">
-            <button @onclick="async () => { _selectedCinemas.Clear(); _selectedMovies.Clear(); _selectedGenres.Clear(); await HandleShowtimeFiltersChanged(); }" class="w-fit rounded-full border border-black p-2 shadow transition duration-300 font-label hover:bg-gray-700 hover:text-white">
-                Ryd filtrer
-            </button>
-            <button @onclick="HandleShowtimeFiltersChanged" class="w-fit rounded-full border border-transparent p-2 text-white shadow-sm font-label bg-secondary text-nowrap hover:bg-gray-800">
-                Opdater filtrer
-            </button>
+            <Button Variant="Button.ButtonVariant.White" OnClick="HandleFilterReset">Ryd filtre</Button>
+            <Button Variant="Button.ButtonVariant.Black" OnClick="HandleShowtimeFiltersChanged">Opdater filtre</Button>
         </div>
     </div>
 
@@ -101,12 +100,12 @@
 <ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de tider du vil have med i dit event" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_availableShowtimeVotes" VotesChanged="OnVoteChange" SelectOptions="_selectOptionsForCreatePage"/>
 
 @*Create button*@
-<button class="fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center gap-1 rounded-full shadow-lg bg-primary hover:bg-primary-dark md:right-12 md:bottom-12 md:h-auto md:w-auto md:px-4 md:py-2" @onclick="OpenEventDetailsDialog">
+<Button Variant="Button.ButtonVariant.Red" OnClick="OpenEventDetailsDialog" Class="fixed right-6 text-sm bottom-6 z-50 flex gap-1">
     <CreateIcon Class="stroke-white fill-white"/>
-    <span class="hidden py-1 text-white md:block">
-        Opret Event
+    <span class="text-white">
+        Opret og del
     </span>
-</button>
+</Button>
 
 
 @* Dialog where user enters title and other event details *@
@@ -207,7 +206,7 @@
     {
         SelectOptions =
         [
-            new() { VoteOption = "Kan ikke", Color = "gray-200" },
+            new() { VoteOption = "Kan ikke", Color = "gray-300" },
             new() { VoteOption = "Kan godt", Color = "success" },
             new() { VoteOption = "Hvis Nødvendigt (Klik to gange)", Color = "warning" }
         ],
@@ -245,7 +244,7 @@
 
     //Used to keep track of the start and end date that is selected in the filters
     private DateTime _startDate = DateTime.Today;
-    private DateTime _endDate = DateTime.Today.AddDays(30);
+    private DateTime _endDate = DateTime.Today.AddYears(1);
 
     //Used by the show all filters button on mobile
     private bool _showAllFilters;
@@ -314,7 +313,7 @@
             if (_loadingShowtimes)
             {
                 <div class="mt-5">
-                    <LoadingTextAndCircle Text="Indlæser spilletider"/>
+                    <LoadingIndicator Text="Indlæser spilletider"/>
                 </div>
             }
             else if (_selectedCinemas.Count == 0 && _selectedMovies.Count == 0 && _selectedGenres.Count == 0)
@@ -324,6 +323,7 @@
                 </div>
             }
         };
+
 
         _loadingPage = false;
         StateHasChanged();
@@ -340,8 +340,8 @@
         }
 
         //load all show times from filter
-        (_availableShowtimes, _moviesWithoutShowtimes) = await KinoDkService.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
-        _availableShowtimeVotes = _availableShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _selectOptionsForCreatePage[NoVoteIndex] }).ToList();
+        (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
+        _availableShowtimeVotes = _availableShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _hostSelectOptions[NoVoteIndex] }).ToList();
 
         //if KinoDKService yields any data not in database, handle it
         foreach (var cinema in _availableShowtimes.Select(s => s.Cinema).DistinctBy(c => c.Id))
@@ -458,7 +458,7 @@
         NavigationManager.NavigateTo(newUrl); //change url so a page reload will save the filters
 
         //get the showtimes from kino.dk
-        (_availableShowtimes, _moviesWithoutShowtimes) = await KinoDkService.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate.AddHours(23).AddMinutes(59));
+        (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate.AddHours(23).AddMinutes(59));
 
         // Save votes for show times that were there before update 
         var stillAvailableShowtimeIds = new HashSet<int>(_availableShowtimeVotes
@@ -554,7 +554,7 @@
         _joinEvent.Id = int.Parse(id);
 
 
-        NavigationManager.NavigateTo("filling/" + _joinEvent.Id);
+        NavigationManager.NavigateTo("filling/" + SqidsEncoder.Encode(_joinEvent.Id));
     }
 
     //Called when the user clicks on a showtime in the showtime selector
@@ -568,9 +568,13 @@
                 (_, showtime) => showtime).ToList();
     }
 
-    private async Task UpdateBaseDataFromKinoDk()
+
+    private async Task HandleFilterReset()
     {
-        await KinoJoinHttpClient.UpdateBaseDataFromKinoDkAsync();
+        _selectedCinemas.Clear();
+        _selectedMovies.Clear();
+        _selectedGenres.Clear();
+        await HandleShowtimeFiltersChanged();
     }
 
     private async Task ShowSnackbar(string message, string color)

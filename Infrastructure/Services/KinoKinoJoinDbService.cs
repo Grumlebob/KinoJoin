@@ -3,9 +3,41 @@ using Infrastructure.Persistence;
 
 namespace Infrastructure.Services;
 
-public class JoinEventService(KinoContext context) : IJoinEventService
+public class KinoKinoJoinDbService(KinoContext context) : IKinoJoinDbService
 {
-    //optimized db calls
+    public async Task<ICollection<Cinema>> GetAllCinemas(Func<Cinema, bool>? filter = null)
+    {
+        var query = context.Cinemas.AsNoTracking();
+        if (filter != null)
+        {
+            query = query.AsEnumerable().Where(filter).AsQueryable();
+        }
+
+        return await query.ToListAsync();
+    }
+
+    public async Task<ICollection<Movie>> GetAllMovies(Func<Movie, bool>? filter = null)
+    {
+        var query = context.Movies.AsNoTracking();
+        if (filter != null)
+        {
+            query = query.AsEnumerable().Where(filter).AsQueryable();
+        }
+
+        return await query.ToListAsync();
+    }
+
+    public async Task<ICollection<Genre>> GetAllGenres(Func<Genre, bool>? filter = null)
+    {
+        var query = context.Genres.AsNoTracking();
+        if (filter != null)
+        {
+            query = query.AsEnumerable().Where(filter).AsQueryable();
+        }
+
+        return await query.ToListAsync();
+    }
+
     public async Task<JoinEvent?> GetAsync(int id)
     {
         var result = await context
@@ -31,7 +63,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         return result;
     }
 
-    //optimized db calls
     public async Task<List<JoinEvent>> GetAllAsync(Expression<Func<JoinEvent, bool>>? filter = null)
     {
         IQueryable<JoinEvent> query = context.JoinEvents.AsNoTracking();
@@ -64,7 +95,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         return joinEvents;
     }
 
-    //OPTIMIZED DB CALLS
     public async Task DeleteParticipantAsync(int eventId, int participantId)
     {
         // Find the participant directly without loading the entire JoinEvent and Participants
@@ -126,13 +156,15 @@ public class JoinEventService(KinoContext context) : IJoinEventService
 
     private async Task<int> UpdateJoinEventAsync(JoinEvent updatedJoinEvent)
     {
-        await context.JoinEvents.ExecuteUpdateAsync(setters =>
-            setters
-                .SetProperty(b => b.Title, updatedJoinEvent.Title)
-                .SetProperty(b => b.Description, updatedJoinEvent.Description)
-                .SetProperty(b => b.ChosenShowtimeId, updatedJoinEvent.ChosenShowtimeId)
-                .SetProperty(b => b.Deadline, updatedJoinEvent.Deadline)
-        );
+        await context
+            .JoinEvents.Where(b => b.Id == updatedJoinEvent.Id)
+            .ExecuteUpdateAsync(setters =>
+                setters
+                    .SetProperty(b => b.Title, updatedJoinEvent.Title)
+                    .SetProperty(b => b.Description, updatedJoinEvent.Description)
+                    .SetProperty(b => b.ChosenShowtimeId, updatedJoinEvent.ChosenShowtimeId)
+                    .SetProperty(b => b.Deadline, updatedJoinEvent.Deadline)
+            );
 
         context.ChangeTracker.Clear();
         // Fetch existing participants from the database
@@ -198,7 +230,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         return addedId;
     }
 
-    //Optimized DB calls except playtimes.
     /// <summary>
     ///  Handles independent data that came from Kino.dk, like cinemas, movies, playtimes...
     /// </summary>
@@ -208,7 +239,7 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         var playtimeStartTimes = joinEvent.Showtimes.Select(st => st.Playtime.StartTime).Distinct();
         var versionTypes = joinEvent.Showtimes.Select(st => st.VersionTag.Type).Distinct().ToList();
         var roomIds = joinEvent.Showtimes.Select(st => st.Room.Id).Distinct().ToList();
-        var all = await context.Playtimes.ToListAsync();
+
         var existingCinemas = await context
             .Cinemas.Where(c => cinemaIds.Contains(c.Id))
             .ToDictionaryAsync(c => c.Id);
@@ -253,20 +284,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
             }
             showtime.Playtime = existingPlaytime;
 
-            //// Handle Playtime
-            //var existingPlaytime = await context.Playtimes.FirstOrDefaultAsync(p =>
-            //    p.StartTime == showtime.Playtime.StartTime
-            //);
-            //if (existingPlaytime != null)
-            //{
-            //    context.Playtimes.Attach(existingPlaytime);
-            //    showtime.Playtime = existingPlaytime;
-            //}
-            //else
-            //{
-            //    context.Playtimes.Add(showtime.Playtime);
-            //}
-
             // Handle VersionTag
             if (
                 !existingVersionTags.TryGetValue(
@@ -296,7 +313,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         await context.SaveChangesAsync();
     }
 
-    //OPTIMIZED DB CALLS
     private async Task HandleMovies(JoinEvent joinEvent)
     {
         // Collect all distinct movie IDs from the joinEvent's showtimes
@@ -350,7 +366,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         await context.SaveChangesAsync();
     }
 
-    //OPTIMIZED DB CALLS
     private async Task HandleHost(JoinEvent joinEvent)
     {
         var existingHost = await context.Hosts.FindAsync(joinEvent.Host.AuthId);
@@ -366,7 +381,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         await context.SaveChangesAsync();
     }
 
-    //OPTIMIZED DB CALLS
     private async Task HandleShowtimes(JoinEvent joinEvent)
     {
         var showtimeIds = joinEvent.Showtimes.Select(s => s.Id).ToList();
@@ -432,7 +446,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         joinEvent.SelectOptions = upsertedSelectOptions;
     }
 
-    //OPTIMIZED DB CALLS
     //It will first check the joinEvent.SelectOptions, as that list has been processed in previous method and includes references to DB entities
     private async Task HandleDefaultSelectOptions(JoinEvent joinEvent)
     {
@@ -473,7 +486,6 @@ public class JoinEventService(KinoContext context) : IJoinEventService
         }
     }
 
-    //OPTIMIZED DB CALLS
     private async Task<int> HandleJoinEvent(JoinEvent joinEvent)
     {
         var newJoinEvent = new JoinEvent

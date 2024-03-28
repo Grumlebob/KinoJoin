@@ -11,15 +11,13 @@
         <div class="text-error">
             <ValidationSummary/>
         </div>
-        <InputText class="w-full rounded-md border p-2" @bind-Value="@_participant.Nickname" placeholder="Indtast dit navn" required/>
+        <InputText class="w-full rounded-full border p-2 bg-gray-50 " @bind-Value="@_participant.Nickname" placeholder="Indtast dit navn" required/>
 
-        <InputText class="w-full rounded-md border p-2" @bind-Value="@_participant.Email" placeholder="Skriv din email (valgfrit)" type="email"/>
+        <InputText class="w-full rounded-full border p-2 bg-gray-50 " @bind-Value="@_participant.Email" placeholder="Skriv din email (valgfrit)" type="email"/>
         <div>
-            <InputTextArea class="h-32 w-full resize-none rounded-md border p-2" @bind-Value="@_participant.Note" placeholder="Note (valgfrit)"/>
+            <InputTextArea class="h-32 w-full resize-none rounded-3xl border p-2 bg-gray-50 " @bind-Value="@_participant.Note" placeholder="Note (valgfrit)"/>
         </div>
-        <button class="rounded-full p-2 text-white bg-primary hover:bg-primary-dark" type="submit">
-            Send svar
-        </button>
+        <Button Type="submit" Variant="Button.ButtonVariant.Red">Send svar</Button>
     </EditForm>
 }
 
@@ -40,8 +38,8 @@
         <h4 class="w-full text-xl font-bold">Obs! Du har ikke valgt nogen tider</h4>
         <h4 class="font-bold">Vil du indsende et tomt svar, der viser du ikke kan nogen tider?</h4>
         <div class="flex gap-1">
-            <button class="w-16 rounded-full p-3 text-white bg-error py-0.5 hover:bg-error-dark" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"); })">Nej</button>
-            <button class="w-16 rounded-full p-3 text-white bg-success py-0.5 hover:bg-success-dark" @onclick="@(async () => { await SaveParticipantAnswer(true, false); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"); })">Ja</button>
+            <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"))">Nej</Button>
+            <Button Variant="Button.ButtonVariant.Black" OnClick="@(async () => { await SaveParticipantAnswer(true, false); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"); })">Ja</Button>
         </div>
     </div>
 </dialog>
@@ -51,8 +49,8 @@
         <h4 class="w-full text-xl font-bold">Der er allerede en deltager med dette navn</h4>
         <h4 class="font-bold">Ønsker du at sende et nyt svar i samme navn?</h4>
         <div class="flex w-full justify-end gap-1">
-            <button class="w-16 rounded-full p-3 text-white bg-error py-0.5 hover:bg-error-dark" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Nej</button>
-            <button class="w-16 rounded-full p-3 text-white bg-success py-0.5 hover:bg-success-dark" @onclick="@(async () => { await SaveParticipantAnswer(true, true); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })">Ja</button>
+            <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })" Class="w-16">Nej</Button>
+            <Button Variant="Button.ButtonVariant.Black" OnClick="@(async () => { await SaveParticipantAnswer(true, true); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "same-name-dialog"); })" Class="w-16">Ja</Button>
         </div>
     </div>
 </dialog>

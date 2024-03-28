@@ -58,7 +58,7 @@
                             @if (vote.SelectedOptionId != Event.DefaultSelectOptionId)
                             {
                                 <div class="h-8 w-8 items-center justify-center gap-2 rounded-full bg-white">
-                                    <SingleCheckIcon Class="@("stroke-" + participant.VotedFor.First(v => v.ShowtimeId == showtime.Id).SelectedOption.Color)"/>
+                                    <CheckIconComp Class="@("stroke-" + participant.VotedFor.First(v => v.ShowtimeId == showtime.Id).SelectedOption.Color)"/>
                                 </div>
                             }
                         </div>

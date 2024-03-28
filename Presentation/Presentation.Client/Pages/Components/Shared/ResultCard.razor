@@ -80,7 +80,7 @@
                     <div class="flex w-full items-center gap-1">
                         @if (Vote != null && Vote.SelectedOptionId != Event.DefaultSelectOptionId)
                         {
-                            <SingleCheckIcon Class="@("stroke-" + Vote.SelectedOption.Color)"/>
+                            <CheckIconComp Class="@("stroke-" + Vote.SelectedOption.Color)"/>
                         }
                     </div>
                 }
@@ -95,9 +95,9 @@
                 @if (Event.ChosenShowtimeId == Showtime.Id)
                 {
                     <div class="  flex justify-center py-[14px] px-[15px] rounded-full bg-opacity-25  font-normal bg-success text-nowrap text-success-darkest">
-                        <p >Aftalt tid</p>
+                        <p>Aftalt tid</p>
                         <button class="p-1 rounded-full  hover:bg-success" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + Showtime.Id + Desktop); })">
-                            <ThreeDotIcon/>
+                            <img src="Icons/ThreeDotsIcon.svg" alt="options"/>
                         </button>
                     </div>
                 }
@@ -126,7 +126,7 @@
         {
             <div class="flex w-full justify-between gap-2">
                 <p>@participant.Nickname</p>
-                <SingleCheckIcon Class="@("stroke-" + vote.SelectedOption.Color)"/>
+                <CheckIconComp Class="@("stroke-" + vote.SelectedOption.Color)"/>
             </div>
         }
     </dialog>

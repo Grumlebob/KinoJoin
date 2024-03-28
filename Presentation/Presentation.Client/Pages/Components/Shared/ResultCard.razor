@@ -118,7 +118,7 @@
         <div class="mb-4 flex justify-between">
             <h4 class="text-lg font-bold">Stemmer</h4>
             <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", $"votesDialog{Showtime.Id}"))">
-                <CrossIcon/>
+                <img src="Icons/CrossIcon.svg" alt="close"/>
             </button>
         </div>
         @{ var participantsAndVotes = Event.Participants?.Where(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id)).Select(p => (p, p.VotedFor.First(v => v.ShowtimeId == Showtime.Id))).ToList(); }

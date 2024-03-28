@@ -36,7 +36,7 @@
     <div class="mb-4 flex justify-between">
         <h4 class="text-lg font-bold">Deltagere</h4>
         <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", $"participantsDialog"))">
-            <CrossIcon/>
+            <img src="Icons/CrossIcon.svg" alt="close"/>
         </button>
     </div>
 
@@ -92,7 +92,7 @@
         <div class="mb-4 flex justify-between">
             <p class="font-bold">@_participantToShowNoteFor.Nickname's Note</p>
             <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", $"note-dialog"))">
-                <CrossIcon/>
+                <img src="Icons/CrossIcon.svg" alt="close"/>
             </button>
         </div>
         <p>@_participantToShowNoteFor.Note</p>

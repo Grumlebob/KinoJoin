@@ -1,11 +1,15 @@
 ﻿@inject NavigationManager Navigation
 @inject SignOutSessionStateManager SignOutManager
 
+@*
+Taken from guide: https://auth0.com/blog/securing-blazor-webassembly-apps/
+*@
+
 <AuthorizeView>
     <Authorized>
         <div class="flex items-center">
             <p class="mr-2 hidden md:block">
-                Hej, @context.User.Identity.Name!
+                Hej, @context.User.Identity!.Name!
             </p>
             <a href="#" @onclick="BeginSignOut">
                 <Button Variant="Button.ButtonVariant.White">

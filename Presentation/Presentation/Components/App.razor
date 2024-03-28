@@ -102,7 +102,7 @@
                            leftBlur.style.visibility = "visible";
                        }
                        
-                       if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 1) { //scrolled to right end
+                       if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 3) { //scrolled to right end (-3 to tolerate decimal rounding)
                            rightBlur.style.visibility = "hidden";
                        }
                        else {

@@ -1,0 +1,125 @@
+@inject IJSRuntime JsRuntime 
+@inject NavigationManager NavigationManager
+@inject IKinoJoinHttpClient KinoJoinHttpClient
+<div class="flex flex-col items-start justify-start gap-2 rounded bg-slate-50 p-5 text-start shadow-md text-wrap">
+
+    <!-- Movie title and tags -->
+    <div class="md:gap-1 md:h-24">
+        <div class="flex w-full items-center gap-2">
+            <div class="flex w-full items-center gap-1">
+                <p class="font-bold">
+                    @Showtime.Movie.Title
+                </p>
+            </div>
+        </div>
+
+        <p class="text-xs font-normal text-gray-700 md:hidden">@Showtime.VersionTag.Type</p>
+        <div class="hidden md:flex-col md:flex">
+            @foreach (var version in Showtime.VersionTag.Type.Split("-"))
+            {
+                <p class="text-xs font-normal text-gray-700">@version.Trim()</p>
+            }
+        </div>
+    </div>
+
+    <!-- Cinema name and room -->
+    <hr class="h-px w-full rounded-full bg-gray-300"/>
+    <div class="gap-1 md:h-24">
+        <div class="flex w-full items-center gap-1">
+            <p class="font-normal">
+                @Showtime.Cinema.Name
+            </p>
+        </div>
+
+        <div class="flex w-full items-center gap-1">
+            <p class="text-xs font-normal text-gray-700">@Showtime.Room.Name</p>
+        </div>
+    </div>
+
+    <hr class="h-px w-full rounded-full bg-gray-300"/>
+
+    <!-- Showtime playtime -->
+    <div class="flex h-full w-full flex-col justify-end gap-2">
+        <div class="flex h-full flex-col justify-end gap-1">
+            <div class="flex w-full items-center gap-1">
+                <img src="Icons/DateIcon.svg" alt="date icon"/>
+                <p class="font-normal">
+                    @Showtime.Playtime.StartTime.ToString("dd. MMM").
+                </p>
+
+                <p class="md:hidden"> - @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes(Showtime.Movie.DurationInMinutes ?? 0).ToString("HH:mm") </p>
+
+            </div>
+
+            <div class="hidden w-full items-center gap-1 md:flex">
+                <p class="text-sm font-normal">
+                    @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes(Showtime.Movie.DurationInMinutes ?? 0).ToString("HH:mm")
+                </p>
+            </div>
+        </div>
+
+        @if (IsHost)
+        {
+            <hr class="h-px w-full rounded-full bg-gray-300 md:hidden"/>
+        }
+
+        <!-- Check icon, se stemmer, bekræft event -->
+        <div class="flex w-full items-center gap-1">
+            @if (HasVoted && Vote != null && Vote.SelectedOptionId != JoinEvent.DefaultSelectOptionId)
+            {
+                <div class="flex w-full items-center gap-1 md:hidden">
+                    <CheckIconComp Class="@("stroke-" + Vote.SelectedOption.Color)"/>
+                </div>
+            }
+
+            <div class="flex h-fit w-full items-end justify-end gap-1 md:items-start md:justify-start">
+
+                <button class="btn-white md:hidden" @onclick="@(async () => await OnShowParticipantVotes.InvokeAsync(Showtime.Id))">
+                    Se stemmer (@JoinEvent.Participants.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != JoinEvent.DefaultSelectOptionId)))
+                </button>
+                @if (JoinEvent.ChosenShowtimeId == Showtime.Id)
+                {
+                    <div class="flex justify-center rounded-full bg-opacity-25 font-normal py-[14px] px-[15px] bg-success text-nowrap text-success-darkest">
+                        <p>Aftalt tid</p>
+                        <button class="rounded-full p-1 hover:bg-success" @onclick="async () => await OnOpenEventActions.InvokeAsync()">
+                            <img src="Icons/ThreeDotsIcon.svg" alt="options"/>
+                        </button>
+                    </div>
+                }
+
+                @if (IsHost && JoinEvent.ChosenShowtimeId != Showtime.Id)
+                {
+                    <button class="btn-red" onclick="@(async () => await OnShowtimeSelected.InvokeAsync(Showtime.Id))">Bekræft event</button>
+                }
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@code {
+
+    [Parameter] public required Showtime Showtime { get; set; }
+
+    [Parameter] public required JoinEvent JoinEvent { get; set; }
+
+    [Parameter] public bool HasVoted { get; set; }
+
+    [Parameter] public ParticipantVote? Vote { get; set; }
+
+    [Parameter] public bool IsHost { get; set; }
+    
+    ///<summary>When "Bekræft event" is clicked on a showtime. <br/>
+    /// Is invoked with the id of the selected showtime
+    /// </summary>
+    [Parameter] public EventCallback<int> OnShowtimeSelected { get; set; }
+    
+    ///<summary>When "Se stemmer" is clicked on a showtime. <br/>
+    /// Is invoked with the id of the selected showtime
+    /// </summary>
+    [Parameter] public EventCallback<int> OnShowParticipantVotes { get; set; }
+    
+    ///<summary>When the three dots on a confirmed showtime is clicked</summary>
+    [Parameter] public EventCallback OnOpenEventActions { get; set; }
+
+}

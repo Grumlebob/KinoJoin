@@ -128,7 +128,7 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                                             Censorship = jsonMovie.Content.FieldCensorshipIcon
                                         },
                                 ImageUrl = imageUrl,
-                                Duration = duration,
+                                DurationInMinutes = duration,
                             };
                             MoviesOnKinoDk.Add(movieObject.Id, movieObject);
                         }
@@ -154,7 +154,7 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                         existingMovie.KinoUrl = movie.KinoUrl;
                         existingMovie.AgeRating = existingAgeRating ?? movie.AgeRating ?? null;
                         existingMovie.ImageUrl = movie.ImageUrl;
-                        existingMovie.Duration = movie.Duration;
+                        existingMovie.DurationInMinutes = movie.DurationInMinutes;
                     }
 
                     await context.SaveChangesAsync();

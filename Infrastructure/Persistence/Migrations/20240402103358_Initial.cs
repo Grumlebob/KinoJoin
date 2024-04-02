@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Infrastructure.Migrations
+namespace Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration
@@ -201,7 +201,7 @@ namespace Infrastructure.Migrations
                         maxLength: 500,
                         nullable: true
                     ),
-                    Duration = table.Column<int>(type: "integer", nullable: true),
+                    DurationInMinutes = table.Column<int>(type: "integer", nullable: true),
                     PremiereDate = table.Column<string>(
                         type: "character varying(100)",
                         maxLength: 100,

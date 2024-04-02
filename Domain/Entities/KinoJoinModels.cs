@@ -26,7 +26,7 @@ public class JoinEvent
     public Host? Host { get; set; }
 
     [ForeignKey("DefaultSelectOptionId")]
-    public SelectOption? DefaultSelectOption { get; set; }
+    public SelectOption DefaultSelectOption { get; set; } = null!;
 }
 
 public class Showtime
@@ -70,7 +70,7 @@ public class Movie
 
     [MaxLength(500, ErrorMessage = "Kino's info url kan højst være 260 tegn.")]
     public string? KinoUrl { get; set; } = string.Empty;
-    public int? Duration { get; set; }
+    public int? DurationInMinutes { get; set; }
 
     [MaxLength(100, ErrorMessage = "PremiereDate kan højst være 260 tegn.")]
     public string? PremiereDate { get; set; }

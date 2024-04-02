@@ -117,7 +117,7 @@ public class FilterApiHandler : IFilterApiHandler
                                 "https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/",
                                 ""
                             ),
-                        Duration = duration,
+                        DurationInMinutes = duration,
                     };
                     existingMovies.Add(movieObject.Id, movieObject);
                 }
@@ -242,7 +242,7 @@ public class FilterApiHandler : IFilterApiHandler
                     "https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/",
                     ""
                 ),
-                Duration = duration
+                DurationInMinutes = duration
             };
             missingMovies.Add(movieObject);
         }

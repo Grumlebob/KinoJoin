@@ -26,7 +26,7 @@
     <div class="space-y-3 md:hidden">
         @foreach (var showtime in _orderedShowtimes)
         {
-            <ResultCard IsHost="IsHost" JoinEvent="JoinEvent" Showtime="showtime" OnShowtimeSelected="SetShowtimeForConfirmation" OnShowParticipantVotes="OpenVotesDialog" OnOpenEventActions="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActionsDialog"))" HasVoted="@(CurrentParticipant != null)" Vote="@(CurrentParticipant?.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id))"/>
+            <ShowtimeResultCard IsHost="IsHost" JoinEvent="JoinEvent" Showtime="showtime" OnShowtimeSelected="SetShowtimeForConfirmation" OnShowParticipantVotes="OpenVotesDialog" OnOpenEventActions="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActionsDialog"))" HasVoted="@(CurrentParticipant != null)" Vote="@(CurrentParticipant?.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id))"/>
         }
     </div>
 
@@ -39,7 +39,7 @@
                     @foreach (var showtime in _orderedShowtimes)
                     {
                         <th class="max-w-48 min-w-48">
-                            <ResultCard JoinEvent="JoinEvent" Showtime="showtime" OnShowtimeSelected="SetShowtimeForConfirmation" OnShowParticipantVotes="OpenVotesDialog" OnOpenEventActions="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActionsDialog"))" IsHost="IsHost"/>
+                            <ShowtimeResultCard JoinEvent="JoinEvent" Showtime="showtime" OnShowtimeSelected="SetShowtimeForConfirmation" OnShowParticipantVotes="OpenVotesDialog" OnOpenEventActions="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActionsDialog"))" IsHost="IsHost"/>
                         </th>
                     }
                 </tr>

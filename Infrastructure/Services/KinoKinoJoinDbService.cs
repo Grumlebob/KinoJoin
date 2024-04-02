@@ -315,7 +315,7 @@ public class KinoKinoJoinDbService(KinoContext context) : IKinoJoinDbService
             {
                 // Update the existing movie details
                 existingMovie.KinoUrl = movie.KinoUrl;
-                existingMovie.Duration = movie.Duration;
+                existingMovie.DurationInMinutes = movie.DurationInMinutes;
                 existingMovie.ImageUrl = movie.ImageUrl;
                 existingMovie.Title = movie.Title;
                 existingMovie.PremiereDate = movie.PremiereDate;

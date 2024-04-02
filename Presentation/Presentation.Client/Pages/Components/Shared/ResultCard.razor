@@ -54,14 +54,14 @@
                 </p>
                 @if (!UsingDesktop)
                 {
-                    <p> - @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes((double)Showtime.Movie.Duration).ToString("HH:mm") </p>
+                    <p> - @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes((double)Showtime.Movie.DurationInMinutes).ToString("HH:mm") </p>
                 }
 
             </div>
 
             <div class="flex hidden w-full items-center gap-1 md:block">
                 <p class="text-sm font-normal">
-                    @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes((double)Showtime.Movie.Duration).ToString("HH:mm")
+                    @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes((double)Showtime.Movie.DurationInMinutes).ToString("HH:mm")
                 </p>
             </div>
         </div>

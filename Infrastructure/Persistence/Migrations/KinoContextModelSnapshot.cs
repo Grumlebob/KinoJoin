@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Infrastructure.Migrations
+namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(KinoContext))]
     partial class KinoContextModelSnapshot : ModelSnapshot
@@ -142,7 +142,7 @@ namespace Infrastructure.Migrations
                     b.Property<int?>("AgeRatingId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("Duration")
+                    b.Property<int?>("DurationInMinutes")
                         .HasColumnType("integer");
 
                     b.Property<string>("ImageUrl")

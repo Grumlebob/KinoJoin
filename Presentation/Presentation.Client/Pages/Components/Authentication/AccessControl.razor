@@ -19,7 +19,7 @@ Taken from guide: https://auth0.com/blog/securing-blazor-webassembly-apps/
         </div>
     </Authorized>
     <NotAuthorized>
-        @if (Navigation.BaseUri.Contains("https"))
+        @if (!GlobalSettings.HostOnNgrokWithNoHttpsAndSetDefaultUser)
         {
             <a href="authentication/login">
                 <button class="btn-black">

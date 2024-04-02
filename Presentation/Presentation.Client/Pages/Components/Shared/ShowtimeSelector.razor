@@ -26,6 +26,9 @@
                 }
                 
                 <div class="@pClass">
+                    @*  This comment is needed to generate the following dynamic tailwind classes. 
+                                            The colors are taken from the select options in the database.
+                                            bg-success bg-warning bg-gray-300 *@
                     <div class="rounded text-base md:text-xl px-1 shadow-md  bg-@option.Color ">
                         <p>@option.VoteOption</p>
                     </div>

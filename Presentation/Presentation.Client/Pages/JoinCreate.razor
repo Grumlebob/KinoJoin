@@ -199,7 +199,7 @@
 @*Snackbar*@
 @if (_snackbarMessage != null)
 {
-    <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-@_snackbarColor text-white p-2.5 rounded-md">
+    <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-error text-white p-2.5 rounded-md">
         @_snackbarMessage
     </div>
 }
@@ -284,7 +284,6 @@
     private bool _uploadingEvent;
 
     private string? _snackbarMessage;
-    private string? _snackbarColor;
 
     protected override async Task OnInitializedAsync()
     {
@@ -503,7 +502,7 @@
     {
         if (_joinEvent.Showtimes.Count < 1)
         {
-            await ShowSnackbar("Vælg mindst en mulig forestilling", "error");
+            await ShowSnackbar("Vælg mindst en mulig forestilling");
         }
         else
         {
@@ -542,10 +541,9 @@
         NavigationManager.NavigateTo("filling/" + SqidsEncoder.Encode(_joinEvent.Id));
     }
 
-    private async Task ShowSnackbar(string message, string color)
+    private async Task ShowSnackbar(string message)
     {
         _snackbarMessage = message;
-        _snackbarColor = color;
         StateHasChanged();
 
         //Hide snackbar after 3 seconds

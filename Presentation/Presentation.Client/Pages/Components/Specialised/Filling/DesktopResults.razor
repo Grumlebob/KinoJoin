@@ -9,7 +9,7 @@
             @foreach (var showtime in OrderedShowtimes)
             {
                 <th class="max-w-48 min-w-48">
-                    <ResultCard Event="Event" Showtime="showtime" UsingDesktop="true" IsHost="IsHost" OnEventConfirmed="StateHasChanged"/>
+                    <ResultCard Event="Event" Showtime="showtime" UniqueId="true" IsHost="IsHost" OnEventConfirmed="StateHasChanged"/>
                 </th>
             }
         </tr>

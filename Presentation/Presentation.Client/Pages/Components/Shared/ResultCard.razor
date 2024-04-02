@@ -3,32 +3,26 @@
 @inject IKinoJoinHttpClient KinoJoinHttpClient
 <div class="flex flex-col items-start justify-start gap-2 rounded bg-slate-50 p-5 text-start shadow-md text-wrap">
 
-
-    <div class="@(UsingDesktop ? "" : "gap-1") md:h-24">
+    <!-- Movie title and tags -->
+    <div class="md:gap-1 md:h-24">
         <div class="flex w-full items-center gap-2">
-
             <div class="flex w-full items-center gap-1">
-
                 <p class="font-bold">
                     @Showtime.Movie.Title
                 </p>
             </div>
-
-
         </div>
 
-
         <p class="text-xs font-normal text-gray-700 md:hidden">@Showtime.VersionTag.Type</p>
-
-        <div class="flex hidden flex-col md:block">
+        <div class="hidden md:flex-col md:flex">
             @foreach (var version in Showtime.VersionTag.Type.Split("-"))
             {
                 <p class="text-xs font-normal text-gray-700">@version.Trim()</p>
             }
         </div>
-
     </div>
 
+    <!-- Cinema name and room -->
     <hr class="h-px w-full rounded-full bg-gray-300"/>
     <div class="gap-1 md:h-24">
         <div class="flex w-full items-center gap-1">
@@ -44,59 +38,50 @@
 
     <hr class="h-px w-full rounded-full bg-gray-300"/>
 
+    <!-- Showtime playtime -->
     <div class="flex h-full w-full flex-col justify-end gap-2">
         <div class="flex h-full flex-col justify-end gap-1">
             <div class="flex w-full items-center gap-1">
                 <img src="Icons/DateIcon.svg" alt="date icon"/>
                 <p class="font-normal">
                     @Showtime.Playtime.StartTime.ToString("dd. MMM").
-
                 </p>
-                @if (!UsingDesktop)
-                {
-                    <p> - @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes((double)Showtime.Movie.DurationInMinutes).ToString("HH:mm") </p>
-                }
+
+                <p class="md:hidden"> - @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes(Showtime.Movie.DurationInMinutes ?? 0).ToString("HH:mm") </p>
 
             </div>
 
-            <div class="flex hidden w-full items-center gap-1 md:block">
+            <div class="hidden w-full items-center gap-1 md:flex">
                 <p class="text-sm font-normal">
-                    @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes((double)Showtime.Movie.DurationInMinutes).ToString("HH:mm")
+                    @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes(Showtime.Movie.DurationInMinutes ?? 0).ToString("HH:mm")
                 </p>
             </div>
         </div>
 
-        @if (!UsingDesktop || IsHost)
+        @if (IsHost)
         {
-            <hr class="h-px w-full rounded-full bg-gray-300"/>
+            <hr class="h-px w-full rounded-full bg-gray-300 md:hidden"/>
         }
+
+        <!-- Check icon, se stemmer, bekræft event -->
         <div class="flex w-full items-center gap-1">
-
-
-            @if (!UsingDesktop)
+            @if (HasVoted && Vote != null && Vote.SelectedOptionId != Event.DefaultSelectOptionId)
             {
-                if (HasVoted)
-                {
-                    <div class="flex w-full items-center gap-1">
-                        @if (Vote != null && Vote.SelectedOptionId != Event.DefaultSelectOptionId)
-                        {
-                            <CheckIconComp Class="@("stroke-" + Vote.SelectedOption.Color)"/>
-                        }
-                    </div>
-                }
+                <div class="flex w-full items-center gap-1 md:hidden">
+                    <CheckIconComp Class="@("stroke-" + Vote.SelectedOption.Color)"/>
+                </div>
             }
+
             <div class="flex h-fit w-full items-end justify-end gap-1 md:items-start md:justify-start">
-                @if (!UsingDesktop)
-                {
-                    <button class="btn-white" @onclick="ShowVotes">Se stemmer (@Event.Participants.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)))</button>
-                }
 
-
+                <button class="btn-white md:hidden" @onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", $"votesDialog{UniqueId}{Showtime.Id}"))">
+                    Se stemmer (@Event.Participants.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != Event.DefaultSelectOptionId)))
+                </button>
                 @if (Event.ChosenShowtimeId == Showtime.Id)
                 {
                     <div class="flex justify-center rounded-full bg-opacity-25 font-normal py-[14px] px-[15px] bg-success text-nowrap text-success-darkest">
                         <p>Aftalt tid</p>
-                        <button class="rounded-full p-1 hover:bg-success" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + Showtime.Id + UsingDesktop); })">
+                        <button class="rounded-full p-1 hover:bg-success" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActions" + Showtime.Id + UniqueId); })">
                             <img src="Icons/ThreeDotsIcon.svg" alt="options"/>
                         </button>
                     </div>
@@ -111,48 +96,44 @@
     </div>
 
 </div>
-@if (!UsingDesktop)
-{
-    <dialog id="@($"votesDialog{Showtime.Id}")" class="fixed w-full max-w-md rounded p-4 bg-slates-300 xs:h-dvh">
 
-        <div class="mb-4 flex justify-between">
-            <h4 class="text-lg font-bold">Stemmer</h4>
-            <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", $"votesDialog{Showtime.Id}"))">
-                <img src="Icons/CrossIcon.svg" alt="close"/>
-            </button>
+<dialog id="@($"votesDialog{UniqueId}{Showtime.Id}")" class="fixed w-full max-w-md rounded p-4 bg-slates-300 xs:h-dvh">
+
+    <div class="mb-4 flex justify-between">
+        <h4 class="text-lg font-bold">Stemmer</h4>
+        <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", $"votesDialog{UniqueId}{Showtime.Id}"))">
+            <img src="Icons/CrossIcon.svg" alt="close"/>
+        </button>
+    </div>
+    @{ var participantsAndVotes = Event.Participants?.Where(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id)).Select(p => (p, p.VotedFor.First(v => v.ShowtimeId == Showtime.Id))).ToList(); }
+    @foreach (var (participant, vote) in participantsAndVotes)
+    {
+        <div class="flex w-full justify-between gap-2">
+            <p>@participant.Nickname</p>
+            <CheckIconComp Class="@("stroke-" + vote.SelectedOption.Color)"/>
         </div>
-        @{ var participantsAndVotes = Event.Participants?.Where(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id)).Select(p => (p, p.VotedFor.First(v => v.ShowtimeId == Showtime.Id))).ToList(); }
-        @foreach (var (participant, vote) in participantsAndVotes)
-        {
-            <div class="flex w-full justify-between gap-2">
-                <p>@participant.Nickname</p>
-                <CheckIconComp Class="@("stroke-" + vote.SelectedOption.Color)"/>
-            </div>
-        }
-    </dialog>
-}
+    }
+</dialog>
 
-<dialog class="rounded p-5" id="@("confirmEvent" + Showtime.Id + UsingDesktop)">
+<dialog class="rounded p-5" id="@("confirmEvent" + Showtime.Id + UniqueId)">
     <div class="flex flex-col items-end gap-4">
         <h2 class="text-xl font-bold">Ønsker du at bekræfte forestillingen for dette event?</h2>
         <div class="flex gap-1">
             <button class="btn-white" onclick="@(() => CloseDialog(Showtime.Id))">Nej</button>
-            <button class="btn-black" onclick="@(async () => { await OpenDetailsDialog(Showtime, Showtime.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + Showtime.Id + UsingDesktop); })">Ja</button>
+            <button class="btn-black" onclick="@(async () => { await OpenDetailsDialog(Showtime, Showtime.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + Showtime.Id + UniqueId); })">Ja</button>
         </div>
     </div>
 </dialog>
-<dialog class="rounded p-5" id="@("confirmDetails" + Showtime.Id + UsingDesktop)">
+
+<dialog class="rounded p-5" id="@("afterConfirmActions" + Showtime.Id + UniqueId)">
     <div class="flex flex-col items-center gap-4">
         <h2 class="text-xl font-bold">Event valgt</h2>
         <div class="space-y-3">
             <div class="flex flex-col gap-2 md:gap-1">
-                <button class="btn-red @(UsingDesktop ? "" : "w-full")" onclick="@(async () => await JsRuntime.InvokeVoidAsync("open", $"https://kino.dk/ticketflow/showtimes/{Showtime.Id}", "_blank"))">Bestil Billetter</button>
-                <button class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "calendar-dialog" + UsingDesktop))">Tilføj til egen kalender</button>
+                <button class="btn-red w-full" onclick="@(async () => await JsRuntime.InvokeVoidAsync("open", $"https://kino.dk/ticketflow/showtimes/{Showtime.Id}", "_blank"))">Bestil Billetter</button>
+                <button class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "calendar-dialog" + UniqueId))">Tilføj til egen kalender</button>
                 <button class="btn-white" onclick="@(async () => await GoToMailToLink(Showtime))">Send mail til deltagere</button>
-                @if (!UsingDesktop)
-                {
-                    <button class="btn-white" @onclick="ShareEvent">Del</button>
-                }
+                <button class="btn-white md:hidden" @onclick="ShareEvent">Del</button>
             </div>
             <div class="flex w-full justify-end">
                 <button class="btn-black" onclick="@(() => CloseDialog(Showtime.Id))">Luk</button>
@@ -161,17 +142,16 @@
     </div>
 </dialog>
 
-
-<dialog class="rounded p-5" id=@("calendar-dialog" + UsingDesktop)>
+<dialog class="rounded p-5" id=@("calendar-dialog" + UniqueId)>
     <div class="flex flex-col items-center gap-4">
         <h2 class="text-2xl text-bold">Tilføj til kalender</h2>
 
-        <div class="flex flex-col items-center gap-1 md:flex-row">
-                <button class="btn-white w-full md:w-fit" onclick="@(async () => await OpenGoogleCalendar())">Tilføj til google kalender</button>
-                <button class="btn-white w-full md:w-fit" onclick="@(async () => await DownloadCalendarFile())">Download til andre kalendre</button>
+        <div class="flex flex-col items-center gap-1">
+            <button class="btn-white w-full" onclick="@(async () => await OpenGoogleCalendar())">Tilføj til google kalender</button>
+            <button class="btn-white w-full" onclick="@(async () => await DownloadCalendarFile())">Download til andre kalendre</button>
         </div>
         <div class="flex w-full justify-end">
-            <button class="btn-black" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog" + UsingDesktop))">Luk</button>
+            <button class="btn-black" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog" + UniqueId))">Luk</button>
         </div>
     </div>
 </dialog>
@@ -186,35 +166,29 @@
 
     [Parameter] public ParticipantVote? Vote { get; set; }
 
-    [Parameter] public bool UsingDesktop { get; set; }
+    [Parameter] public required string UniqueId { get; set; }
 
     [Parameter] public bool IsHost { get; set; }
 
     [Parameter] public EventCallback OnEventConfirmed { get; set; }
 
-
-    private async Task ShowVotes()
-    {
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "votesDialog" + Showtime.Id);
-    }
-
     private async Task OpenDetailsDialog(Showtime showtime, int index)
     {
         Event.ChosenShowtimeId = showtime.Id;
         await KinoJoinHttpClient.PutJoinEventAsync(Event);
-        OnEventConfirmed.InvokeAsync();
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmDetails" + index + UsingDesktop);
+        await OnEventConfirmed.InvokeAsync();
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActions" + index + UniqueId);
     }
 
     private async Task OpenConfirmationDialog(int index)
     {
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmEvent" + index + UsingDesktop);
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmEvent" + index + UniqueId);
     }
 
     private async Task CloseDialog(int index)
     {
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + index + UsingDesktop);
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmDetails" + index + UsingDesktop);
+        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + index + UniqueId);
+        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "afterConfirmActions" + index + UniqueId);
     }
 
     private async Task GoToMailToLink(Showtime showtime)
@@ -236,7 +210,7 @@
 
         await JsRuntime.InvokeVoidAsync("navigator.share", data);
     }
-    
+
     private async Task OpenGoogleCalendar()
     {
         var url = "https://calendar.google.com/calendar/u/0/r/eventedit?"
@@ -257,53 +231,50 @@
         var location = Showtime.Cinema.Name;
         var description = Event.Description + "\n Film: " + Showtime.Movie.Title + ", " + Showtime.Room.Name + ", " + Showtime.VersionTag.Type;
 
-        //create a new stringbuilder instance
-        var sb = new StringBuilder();
+        var calenderStringBuilder = new StringBuilder();
 
         //start the calendar item
-        sb.AppendLine("BEGIN:VCALENDAR");
-        sb.AppendLine("VERSION:2.0");
-        sb.AppendLine("PRODID:stackoverflow.com");
-        sb.AppendLine("CALSCALE:GREGORIAN");
-        sb.AppendLine("METHOD:PUBLISH");
+        calenderStringBuilder.AppendLine("BEGIN:VCALENDAR");
+        calenderStringBuilder.AppendLine("VERSION:2.0");
+        calenderStringBuilder.AppendLine("PRODID:stackoverflow.com");
+        calenderStringBuilder.AppendLine("CALSCALE:GREGORIAN");
+        calenderStringBuilder.AppendLine("METHOD:PUBLISH");
 
         //create a time zone if needed, TZID to be used in the event itself
-        sb.AppendLine("BEGIN:VTIMEZONE");
-        sb.AppendLine("TZID:Europe/Amsterdam");
-        sb.AppendLine("BEGIN:STANDARD");
-        sb.AppendLine("TZOFFSETTO:+0100");
-        sb.AppendLine("TZOFFSETFROM:+0100");
-        sb.AppendLine("END:STANDARD");
-        sb.AppendLine("END:VTIMEZONE");
+        calenderStringBuilder.AppendLine("BEGIN:VTIMEZONE");
+        calenderStringBuilder.AppendLine("TZID:Europe/Amsterdam");
+        calenderStringBuilder.AppendLine("BEGIN:STANDARD");
+        calenderStringBuilder.AppendLine("TZOFFSETTO:+0100");
+        calenderStringBuilder.AppendLine("TZOFFSETFROM:+0100");
+        calenderStringBuilder.AppendLine("END:STANDARD");
+        calenderStringBuilder.AppendLine("END:VTIMEZONE");
 
         //add the event
-        sb.AppendLine("BEGIN:VEVENT");
+        calenderStringBuilder.AppendLine("BEGIN:VEVENT");
 
         //with time zone specified
-        sb.AppendLine("DTSTART;TZID=Europe/Amsterdam:" + dateStart.ToString("yyyyMMddTHHmm00"));
-        sb.AppendLine("DTEND;TZID=Europe/Amsterdam:" + dateEnd.ToString("yyyyMMddTHHmm00"));
+        calenderStringBuilder.AppendLine("DTSTART;TZID=Europe/Amsterdam:" + dateStart.ToString("yyyyMMddTHHmm00"));
+        calenderStringBuilder.AppendLine("DTEND;TZID=Europe/Amsterdam:" + dateEnd.ToString("yyyyMMddTHHmm00"));
         //or without
-        sb.AppendLine("DTSTART:" + dateStart.ToString("yyyyMMddTHHmm00"));
-        sb.AppendLine("DTEND:" + dateEnd.ToString("yyyyMMddTHHmm00"));
+        calenderStringBuilder.AppendLine("DTSTART:" + dateStart.ToString("yyyyMMddTHHmm00"));
+        calenderStringBuilder.AppendLine("DTEND:" + dateEnd.ToString("yyyyMMddTHHmm00"));
 
-        sb.AppendLine("SUMMARY:" + summary + "");
-        sb.AppendLine("LOCATION:" + location + "");
-        sb.AppendLine("DESCRIPTION:" + description + "");
-        sb.AppendLine("PRIORITY:3");
-        sb.AppendLine("END:VEVENT");
+        calenderStringBuilder.AppendLine("SUMMARY:" + summary + "");
+        calenderStringBuilder.AppendLine("LOCATION:" + location + "");
+        calenderStringBuilder.AppendLine("DESCRIPTION:" + description + "");
+        calenderStringBuilder.AppendLine("PRIORITY:3");
+        calenderStringBuilder.AppendLine("END:VEVENT");
 
         //end calendar item
-        sb.AppendLine("END:VCALENDAR");
+        calenderStringBuilder.AppendLine("END:VCALENDAR");
 
-        //create a string from the stringbuilder
-        var calendarItem = sb.ToString();
-        
         const string fileName = "event.ics";
 
-        var bytes = Encoding.UTF8.GetBytes(calendarItem);
+        var bytes = Encoding.UTF8.GetBytes(calenderStringBuilder.ToString());
         var stream = new MemoryStream(bytes);
         using var streamRef = new DotNetStreamReference(stream);
         await JsRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
     }
+
 }

@@ -195,7 +195,7 @@ public class SelectOption
 
     [MaxLength(260, ErrorMessage = "VoteOption kan højst være 260 tegn.")]
     public required string VoteOption { get; set; }
-    
+
     /// <remarks>
     /// In order to use a color in a tailwind class dynamically, the class must be used somewhere else in the project statically.<br/>
     /// We do this by adding a comment above the line where it is generated like this: <br/>

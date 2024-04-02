@@ -17,11 +17,11 @@
 
 @if (!_isLoggedIn && !GlobalSettings.HostOnNgrokWithNoHttpsAndSetDefaultUser)
 {
-    <div class="flex flex-col w-full h-full h-fit justify-center items-center bg-black bg-opacity-50  fixed inset-0 z-50 flex">
+    <div class="flex flex-col w-full h-full h-fit justify-center items-center bg-black bg-opacity-50  fixed inset-0 z-50">
         <div class="w-fit h-fit shadow-md p-3 bg-gray-50 rounded ">
             <p class="text-2xl font-semibold">Du skal være logget ind for at oprette et event</p>
             <div class="w-fit">
-                <CustomButton Variant="CustomButton.ButtonVariant.Black" OnClick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/create-event/" + UrlFilterString }); })">Log ind</CustomButton>
+                <button class="btn-black" onclick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions { Interaction = InteractionType.SignIn, ReturnUrl = "/create-event/" + UrlFilterString }); })">Log ind</button>
             </div>
         </div>
     </div>
@@ -88,8 +88,8 @@
 
         @*Filter Buttons*@
         <div class="mt-4 flex w-full justify-end gap-2 text-no-wrap md:w-auto">
-            <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="HandleFilterReset">Ryd filtre</CustomButton>
-            <CustomButton Variant="CustomButton.ButtonVariant.Black" OnClick="HandleShowtimeFiltersChanged">Opdater filtre</CustomButton>
+            <button class="btn-white" @onclick="HandleFilterReset">Ryd filtre</button>
+            <button class="btn-black" @onclick="HandleShowtimeFiltersChanged">Opdater filtre</button>
         </div>
     </div>
 
@@ -114,12 +114,12 @@
 <ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de spilletider du vil have med i dit event" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_showtimeVotes" VotesChanged="OnVoteChange" SelectOptions="@_selectOptionsForCreatePage" DefaultSelectOption="@_selectOptionsForCreatePage.First()"/>
 
 @*Create button*@
-<CustomButton Variant="CustomButton.ButtonVariant.Red" OnClick="@OpenEventDetailsDialog" Class="fixed right-6 text-sm bottom-6 z-50 flex gap-1">
+<button class="btn-red fixed right-6 text-sm bottom-6 z-50 flex gap-1" @onclick="OpenEventDetailsDialog" >
     <img src="Icons/CreateIcon.svg" alt="create"/>
     <span class="text-white">
         Opret og del
     </span>
-</CustomButton>
+</button>
 
 @* Dialog where user enters title and other event details *@
 <dialog id="eventDetailsDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
@@ -146,8 +146,8 @@
         </div>
 
         <div class="mt-5 mb-5 flex justify-end space-x-3">
-            <CustomButton Type="button" Variant="CustomButton.ButtonVariant.White" OnClick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog"))">Annuller</CustomButton>
-            <CustomButton Type="submit" Variant="CustomButton.ButtonVariant.Black">Opret</CustomButton>
+            <button type="button" class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog"))">Annuller</button>
+            <button type="submit" class="btn-black">Opret</button>
         </div>
     </EditForm>
 
@@ -185,8 +185,8 @@
         @if (!_uploadingEvent)
         {
             <div class="flex justify-end space-x-3">
-                <CustomButton Type="button" Variant="CustomButton.ButtonVariant.White" OnClick="@(() => JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog"))">Rediger videre</CustomButton>
-                <CustomButton Type="submit" Variant="CustomButton.ButtonVariant.Black" OnClick="@FinishJoinEvent">Opret</CustomButton>
+                <button type="button" class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog"))">Rediger videre</button>
+                <button type="submit" class="btn-black" @onclick="FinishJoinEvent">Opret</button>
             </div>
         }
         else

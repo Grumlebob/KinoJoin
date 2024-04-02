@@ -16,8 +16,8 @@
             </a>
             <!--Læs mere og trailer-->
             <div class="hidden flex-col items-center px-3 space-y-1 md:flex">
-                <CustomButton Variant="CustomButton.ButtonVariant.White" Href="@($"https://kino.dk{Movie.KinoUrl}")" Target="_blank" Class="font-label w-full">Læs mere</CustomButton>
-                <CustomButton Variant="CustomButton.ButtonVariant.White" Class="font-label w-full" OnClick="@(async () => await ShowMovieTrailer(Movie))">Se trailer</CustomButton>
+                <a class="btn-white font-label w-full" href="@($"https://kino.dk{Movie.KinoUrl}")" target="_blank">Læs mere</a>
+                <button class="btn-white font-label w-full" onclick="@(async () => await ShowMovieTrailer(Movie))">Se trailer</button>
             </div>
         </div>
     }
@@ -69,10 +69,10 @@
 
                 <div class="block md:hidden">
                     <!--Læs mere og trailer mobile-->
-                    <CustomButton Variant="CustomButton.ButtonVariant.White" Class="font-label" Href="@($"https://kino.dk{Movie.KinoUrl}")" Target="_blank">Læs mere</CustomButton>
+                    <a class="btn-white font-label" href="@($"https://kino.dk{Movie.KinoUrl}")" target="_blank">Læs mere</a>
                 </div>
                 <div class="block md:hidden">
-                    <CustomButton Variant="CustomButton.ButtonVariant.White" Class="font-label" OnClick="@(async () => await ShowMovieTrailer(Movie))">Se trailer</CustomButton>
+                    <button class="btn-white font-label" onclick="@(async () => await ShowMovieTrailer(Movie))">Se trailer</button>
                 </div>
             </div>
         }

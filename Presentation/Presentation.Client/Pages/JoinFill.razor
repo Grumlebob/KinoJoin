@@ -30,8 +30,8 @@
                 <h2 class="text-xl font-bold">@_joinEvent!.Host.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h2>
                 <div class="flex md:items-end md:justify-end">
                     <div class="flex w-full flex-col gap-2 md:w-fit md:flex-row">
-                        <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@(() => { _showFirstLoginDialog = false; })">Uden login</CustomButton>
-                        <CustomButton Variant="CustomButton.ButtonVariant.Red" OnClick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + JoinEventId }); })"> Anvend dit Kino login</CustomButton>
+                        <button class="btn-white" onclick="@(() => { _showFirstLoginDialog = false; })">Uden login</button>
+                        <button class="btn-red" onclick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions() { Interaction = InteractionType.SignIn, ReturnUrl = "/filling/" + JoinEventId }); })"> Anvend dit Kino login</button>
                     </div>
                 </div>
             </div>
@@ -56,7 +56,7 @@
                     {
                         if (_isEditing)
                         {
-                            <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@(async () => { await UpdateJoinEvent(); _isEditing = false; })">Gem ændringer</CustomButton>
+                            <button class="btn-white" onclick="@(async () => { await UpdateJoinEvent(); _isEditing = false; })">Gem ændringer</button>
                         }
                         else
                         {
@@ -97,7 +97,7 @@
                 <span class="font-medium">Tidsinterval:</span>
                 <span> @_joinEvent.Showtimes.Min(s => s.Playtime.StartTime).ToString("dd. MMM") - @_joinEvent.Showtimes.Max(s => s.Playtime.StartTime).ToString("dd. MMM")</span>
                 <br/>
-                <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@ScrollToBottom" Href="@(NavigationManager.Uri + "#results")" Class="font-label">Se Resultater</CustomButton>
+                <a class="btn-white font-label" href="@(NavigationManager.Uri + "#results")">Se Resultater</a>
             </div>
         </div>
         @if (_isHost)
@@ -109,13 +109,13 @@
                         @((_baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id)).Replace("https://", ""))
                     </a>
                     <div class="group">
-                        <CustomButton OnClick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id)); })" Variant="CustomButton.ButtonVariant.White" class="min-w-6">
+                        <button class="btn-white min-w-6" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id)); })">
                             <img src="Icons/CopyIcon.svg" alt="copy" class="h-full rounded-full group-hover:invert"/>
-                        </CustomButton>
+                        </button>
                     </div>
-                    <CustomButton OnClick="@(async () => { await ShareEvent(); })" Variant="CustomButton.ButtonVariant.Black" class="min-w-6">
+                    <button class="btn-black min-w-6 lg:hidden" onclick="@(async () => { await ShareEvent(); })">
                         <img src="Icons/ShareIcon.svg" alt="share" class="h-full"/>
-                    </CustomButton>
+                    </button>
                 </div>
             </div>
         }
@@ -127,9 +127,9 @@
 @if (!_currentParticipantAlreadyAnswered)
 {
     <div class="flex justify-center">
-        <CustomButton Variant="CustomButton.ButtonVariant.Red" OnClick="@OpenParticipantInfoDialog" Class="p-4">
-            <p class="text-xl font-bold">Send svar</p>
-        </CustomButton>
+        <button class="btn-red p-4 text-xl font-bold" @onclick="OpenParticipantInfoDialog">
+            Send svar
+        </button>
     </div>
 
     if (_somethingWentWrong)
@@ -152,8 +152,8 @@ else
         <h4 class="w-full text-xl font-bold">Obs! Du har ikke valgt nogen tider</h4>
         <h4 class="font-bold">Vil du indsende et tomt svar, der viser du ikke kan nogen tider?</h4>
         <div class="flex gap-1">
-            <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"))">Nej</CustomButton>
-            <CustomButton Variant="CustomButton.ButtonVariant.Black" OnClick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"); await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "ParticipantInfoDialog"); })">Ja</CustomButton>
+            <button class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"))">Nej</button>
+            <button class="btn-black" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"); await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "ParticipantInfoDialog"); })">Ja</button>
         </div>
     </div>
 </dialog>
@@ -182,8 +182,8 @@ else
             <InputTextArea class="h-32 w-full resize-none rounded-3xl border bg-gray-50 p-2" @bind-Value="@_currentParticipant.Note" placeholder="Note (valgfrit)"/>
         </div>
         <div class="mt-5 mb-5 flex justify-end space-x-3">
-            <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "ParticipantInfoDialog"))">Annuller</CustomButton>
-            <CustomButton Type="submit" Variant="CustomButton.ButtonVariant.Black">Send svar</CustomButton>
+            <button type="button" class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "ParticipantInfoDialog"))">Annuller</button>
+            <button type="submit" class="btn-black">Send svar</button>
         </div>
     </EditForm>
 </dialog>

@@ -34,7 +34,9 @@
         {
             <span class="mr-2 mb-2 inline-flex items-center rounded-full border border-gray-300 text-sm font-medium text-black chip px-2.5 py-0.5">
                 @IdsToLabels[id]
-                <button @onclick="() => SelectedItems.Remove(id)" class="rounded-full text-sm ml-1.5 p-0.5 hover:bg-gray-200 focus:outline-none"><CrossIcon/></button>
+                <button @onclick="() => SelectedItems.Remove(id)" class="rounded-full text-sm ml-1.5 p-0.5 hover:bg-gray-200 focus:outline-none">
+                    <img src="Icons/CrossIcon.svg" alt="remove"/>
+                </button>
             </span>
         }
     </div>

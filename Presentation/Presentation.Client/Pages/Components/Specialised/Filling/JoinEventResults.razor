@@ -5,10 +5,10 @@
 <div class="flex flex-col gap-2">
     <div class="flex justify-between">
         <h2 class="text-2xl text-bold">Resultater</h2>
-        <CustomButton Variant="CustomButton.ButtonVariant.Black" OnClick="@ShowParticipantDialog" Class="flex justify-center items-center gap-1 md:hidden">
+        <button class="btn-black gap-1 md:hidden" @onclick="ShowParticipantDialog">
             <img src="Icons/ParticipantsIcon.svg" alt="participants"/>
             <span>Deltagere</span>
-        </CustomButton>
+        </button>
     </div>
 
     <label>
@@ -79,8 +79,8 @@
         <div class="flex flex-col items-end gap-4">
             <p class="text-xl font-bold">Er du sikker på at du vil slette @_participantToDelete.Nickname's svar?</p>
             <div class="flex gap-1">
-                <CustomButton Variant="CustomButton.ButtonVariant.White" OnClick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })" Class="w-16">Nej</CustomButton>
-                <CustomButton Variant="CustomButton.ButtonVariant.Black" OnClick="@(async () => { await DeleteParticipant(_participantToDelete.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })" Class="w-16">Ja</CustomButton>
+                <button class="btn-white w-16" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Nej</button>
+                <button class="btn-black w-16" onclick="@(async () => { await DeleteParticipant(_participantToDelete.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Ja</button>
             </div>
         </div>
     }
@@ -153,7 +153,7 @@
     {
         _participantToShowNoteFor = participant;
         StateHasChanged();
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", $"note-dialog");
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "note-dialog");
     }
 
     private void SetSortOption(string option)

@@ -14,9 +14,11 @@
     <label>
         <div class="w-fit rounded border bg-gray-100 p-3">
             Sortér efter:
-            <select class="bg-transparent" onchange="@((ChangeEventArgs e) => { SetSortOption(e.Value.ToString()); })">
-                <option value="@VotesString">@VotesString</option>
-                <option value="@TimeString">@TimeString</option>
+            <select class="bg-transparent" value="@_currentSortOption" onchange="@((ChangeEventArgs e) => SortShowtimes(Enum.Parse<SortBy>(e.Value!.ToString()!)))">
+                @foreach (var option in Enum.GetValues<SortBy>())
+                {
+                    <option value="@option">@ToDanish(option)</option>
+                }
             </select>
         </div>
     </label>
@@ -234,9 +236,7 @@
 
     [Parameter] public bool IsHost { get; set; }
 
-    [Parameter] public Participant CurrentParticipant { get; set; }
-
-    private List<Showtime> _orderedShowtimes;
+    [Parameter] public Participant? CurrentParticipant { get; set; }
 
     private Participant? _participantToDelete;
 
@@ -246,24 +246,39 @@
 
     private int _selectedShowtimeId;
 
-    private const string VotesString = "Stemmer";
-    private const string TimeString = "Tidspunkt";
+    private List<Showtime> _orderedShowtimes = [];
+
+    private enum SortBy
+    {
+        Votes,
+        Time
+    }
+
+    private string ToDanish(SortBy option)
+        => option switch
+        {
+            SortBy.Votes => "Stemmer",
+            SortBy.Time => "Tid",
+            _ => ""
+        };
+
+    private SortBy _currentSortOption = SortBy.Votes;
 
     private Dictionary<Participant, bool> _showNote = new();
 
     protected override void OnInitialized()
     {
         _showNote = JoinEvent.Participants.ToDictionary(p => p, _ => false);
-        SetSortOption(VotesString);
+        SortShowtimes(_currentSortOption);
     }
-    
+
     private async Task DeleteParticipant(int participantId)
     {
         var response = await KinoJoinHttpClient.DeleteParticipantAsync(JoinEvent.Id, participantId);
         if (response.IsSuccessStatusCode)
         {
             JoinEvent.Participants.RemoveAll(p => p.Id == participantId);
-            SetSortOption(VotesString);
+            SortShowtimes(_currentSortOption);
             StateHasChanged();
         }
     }
@@ -282,28 +297,24 @@
         await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "votesDialog");
     }
 
-    private void SetSortOption(string option)
+    private void SortShowtimes(SortBy option)
     {
-        if (option == VotesString)
+        _currentSortOption = option;
+        _orderedShowtimes = option switch
         {
-            _orderedShowtimes = JoinEvent.Showtimes.OrderByDescending(showtime =>
-                    JoinEvent.Participants?
-                        .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.SelectedOptionId != JoinEvent.DefaultSelectOptionId)) ?? 0)
-                .ThenBy(showtime =>
-                    JoinEvent.Participants
-                        .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.SelectedOptionId != JoinEvent.DefaultSelectOptionId)
-                            .Sum(v => JoinEvent.SelectOptions.FindIndex(s => s.Id == v.SelectedOptionId))))
-                .ThenBy(s => s.Playtime.StartTime).ToList();
-        }
-        else
-        {
-            _orderedShowtimes = JoinEvent.Showtimes.OrderBy(s => s.Playtime.StartTime).ToList();
-        }
+            SortBy.Votes => JoinEvent.Showtimes.OrderByDescending(showtime =>
+                    JoinEvent.Participants.Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.SelectedOptionId != JoinEvent.DefaultSelectOptionId)))
+                .ThenBy(showtime => JoinEvent.Participants.Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.SelectedOptionId != JoinEvent.DefaultSelectOptionId)
+                    .Sum(v => JoinEvent.SelectOptions.FindIndex(s => s.Id == v.SelectedOptionId))))
+                .ThenBy(s => s.Playtime.StartTime).ToList(),
+            SortBy.Time => JoinEvent.Showtimes.OrderBy(s => s.Playtime.StartTime).ToList(),
+            _ => _orderedShowtimes
+        };
     }
 
     public void UpdateSorting()
     {
-        SetSortOption(VotesString);
+        SortShowtimes(_currentSortOption);
     }
 
     private async Task GoToMailToLink(Showtime showtime)

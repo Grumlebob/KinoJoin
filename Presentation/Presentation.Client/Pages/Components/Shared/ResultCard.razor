@@ -81,7 +81,7 @@
                 {
                     <div class="flex justify-center rounded-full bg-opacity-25 font-normal py-[14px] px-[15px] bg-success text-nowrap text-success-darkest">
                         <p>Aftalt tid</p>
-                        <button class="rounded-full p-1 hover:bg-success" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActions" + Showtime.Id + UniqueId); })">
+                        <button class="rounded-full p-1 hover:bg-success" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActionsDialog"); })">
                             <img src="Icons/ThreeDotsIcon.svg" alt="options"/>
                         </button>
                     </div>
@@ -89,7 +89,7 @@
 
                 @if (IsHost && JoinEvent.ChosenShowtimeId != Showtime.Id)
                 {
-                    <button class="btn-red" onclick="@(() => OpenConfirmationDialog(Showtime.Id))">Bekræft event</button>
+                    <button class="btn-red" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmEvent" + Showtime.Id + UniqueId))">Bekræft event</button>
                 }
             </div>
         </div>
@@ -120,7 +120,7 @@
         <h2 class="text-xl font-bold">Ønsker du at bekræfte forestillingen for dette event?</h2>
         <div class="flex gap-1">
             <button class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + Showtime.Id + UniqueId))">Nej</button>
-            <button class="btn-black" onclick="@(async () => { await OpenDetailsDialog(Showtime, Showtime.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + Showtime.Id + UniqueId); })">Ja</button>
+            <button class="btn-black" onclick="@(async () => { await OnEventConfirmed.InvokeAsync(Showtime.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + Showtime.Id + UniqueId); })">Ja</button>
         </div>
     </div>
 </dialog>
@@ -139,19 +139,6 @@
 
     [Parameter] public bool IsHost { get; set; }
 
-    [Parameter] public EventCallback OnEventConfirmed { get; set; }
-
-    private async Task OpenDetailsDialog(Showtime showtime, int index)
-    {
-        JoinEvent.ChosenShowtimeId = showtime.Id;
-        await KinoJoinHttpClient.PutJoinEventAsync(JoinEvent);
-        await OnEventConfirmed.InvokeAsync();
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActions" + index + UniqueId);
-    }
-
-    private async Task OpenConfirmationDialog(int index)
-    {
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmEvent" + index + UniqueId);
-    }
+    [Parameter] public EventCallback<int> OnEventConfirmed { get; set; }
 
 }

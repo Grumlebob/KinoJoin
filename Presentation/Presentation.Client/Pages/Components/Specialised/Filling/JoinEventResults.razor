@@ -29,7 +29,7 @@
     <div class="space-y-3 md:hidden">
         @foreach (var showtime in _orderedShowtimes)
         {
-            <ResultCard IsHost="IsHost" JoinEvent="JoinEvent" Showtime="showtime" HasVoted="@(CurrentParticipant != null)" Vote="@(CurrentParticipant?.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id))" OnEventConfirmed="StateHasChanged"/>
+            <ResultCard IsHost="IsHost" JoinEvent="JoinEvent" Showtime="showtime" HasVoted="@(CurrentParticipant != null)" Vote="@(CurrentParticipant?.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id))" OnEventConfirmed="ConfirmShowtimeAndOpenActionDialog"/>
         }
     </div>
 
@@ -102,7 +102,7 @@
 </dialog>
 
 <!-- after a showtime has been confirmed, the following dialogs can be used -->
-<dialog class="rounded p-5" id="afterConfirmActions">
+<dialog class="rounded p-5" id="afterConfirmActionsDialog">
     <div class="flex flex-col items-center gap-4">
         <h2 class="text-xl font-bold">Event valgt</h2>
         <div class="space-y-3">
@@ -113,7 +113,7 @@
                 <button class="btn-white md:hidden" @onclick="ShareEvent">Del</button>
             </div>
             <div class="flex w-full justify-end">
-                <button class="btn-black" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "afterConfirmActions"))">Luk</button>
+                <button class="btn-black" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "afterConfirmActionsDialog"))">Luk</button>
             </div>
         </div>
     </div>
@@ -124,8 +124,8 @@
         <h2 class="text-2xl text-bold">Tilføj til kalender</h2>
 
         <div class="flex flex-col items-center gap-1">
-            <button class="btn-white w-full" onclick="@(async () => await OpenGoogleCalendar()))">Tilføj til google kalender</button>
-            <button class="btn-white w-full" onclick="@(async () => await DownloadCalendarFile())">Download til andre kalendre</button>
+            <button class="btn-white w-full" @onclick="OpenGoogleCalendar">Tilføj til google kalender</button>
+            <button class="btn-white w-full" @onclick="DownloadCalendarFile">Download til andre kalendre</button>
         </div>
         <div class="flex w-full justify-end">
             <button class="btn-black" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog"))">Luk</button>
@@ -198,7 +198,7 @@
                     JoinEvent.Participants?
                         .Sum(p => p.VotedFor.Count(v => v.ShowtimeId == showtime.Id && v.SelectedOptionId != JoinEvent.DefaultSelectOptionId)) ?? 0)
                 .ThenBy(showtime =>
-                    JoinEvent.Participants?
+                    JoinEvent.Participants
                         .Sum(p => p.VotedFor.Where(v => v.ShowtimeId == showtime.Id && v.SelectedOptionId != JoinEvent.DefaultSelectOptionId)
                             .Sum(v => JoinEvent.SelectOptions.FindIndex(s => s.Id == v.SelectedOptionId))))
                 .ThenBy(s => s.Playtime.StartTime).ToList();
@@ -234,10 +234,11 @@
         await JsRuntime.InvokeVoidAsync("navigator.share", data);
     }
 
-    private async Task ConfirmShowtimeAndSave(int showtimeId)
+    private async Task ConfirmShowtimeAndOpenActionDialog(int showtimeId)
     {
         JoinEvent.ChosenShowtimeId = showtimeId;
         await KinoJoinHttpClient.PutJoinEventAsync(JoinEvent);
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActionsDialog");
     }
 
     private async Task OpenGoogleCalendar()
@@ -248,7 +249,7 @@
                   + $"&dates={showtime.Playtime.StartTime.ToString("yyyyMMddTHHmmss")}/{showtime.Playtime.StartTime.AddMinutes(showtime.Movie.DurationInMinutes ?? 0).ToString("yyyyMMddTHHmmss")}"
                   + $"&location={showtime.Cinema.Name}"
                   + $"&details={JoinEvent.Description} %0AFilm: {showtime.Movie.Title}, {showtime.Room.Name}, {showtime.VersionTag.Type}";
-
+        
         await JsRuntime.InvokeVoidAsync("open", url, "_blank");
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
     }
@@ -256,7 +257,7 @@
     private async Task CloseDialog(int index)
     {
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + index);
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "afterConfirmActions" + index);
+        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "afterConfirmActionsDialog" + index);
     }
 
     private async Task DownloadCalendarFile()

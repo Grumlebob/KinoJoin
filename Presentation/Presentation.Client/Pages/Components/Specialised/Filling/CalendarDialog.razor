@@ -6,11 +6,11 @@
         <h2 class="text-2xl text-bold">Tilføj til kalender</h2>
 
         <div class="flex flex-col items-center gap-1 md:flex-row">
-            <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => await OpenGoogleCalendar())" Class="w-full md:w-fit">Tilføj til google kalender</Button>
-            <Button Variant="Button.ButtonVariant.White" OnClick="@(async () => await DownloadCalendarFile())" Class="w-full md:w-fit">Download til andre kalendre</Button>
+                <button class="btn-white w-full md:w-fit" onclick="@(async () => await OpenGoogleCalendar())">Tilføj til google kalender</button>
+                <button class="btn-white w-full md:w-fit" onclick="@(async () => await DownloadCalendarFile())">Download til andre kalendre</button>
         </div>
         <div class="flex w-full justify-end">
-            <Button Variant="Button.ButtonVariant.Black" OnClick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog" + UsingDesktop))">Luk</Button>
+            <button class="btn-black" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog" + UsingDesktop))">Luk</button>
         </div>
     </div>
 

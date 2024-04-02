@@ -2,9 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base{
-    
-    .font-label{
+
+@layer components {
+    .btn {
+        @apply rounded-full py-[14px] px-[17px] md:text-sm text-xs text-nowrap flex items-center justify-center
+    }
+
+    .btn-red {
+        @apply btn text-white transition duration-200 bg-primary hover:bg-primary-dark active:bg-primary-darkest active:translate-y-1
+    }
+
+    .btn-black {
+        @apply btn bg-black font-semibold text-white transition duration-200 hover:opacity-50
+    }
+
+    .btn-white {
+        @apply btn bg-transparent text-black border border-[#c4c4c4] transition duration-200 hover:bg-black hover:border-black hover:text-white
+    }
+}
+
+@layer utilities {
+    .font-label {
         @apply font-medium text-sm uppercase tracking-widest
     }
 }

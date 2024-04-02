@@ -12,9 +12,9 @@ Taken from guide: https://auth0.com/blog/securing-blazor-webassembly-apps/
                 Hej, @context.User.Identity!.Name!
             </p>
             <a href="#" @onclick="BeginSignOut">
-                <Button Variant="Button.ButtonVariant.White">
+                <button class="btn-white">
                     Log ud
-                </Button>
+                </button>
             </a>
         </div>
     </Authorized>
@@ -22,9 +22,9 @@ Taken from guide: https://auth0.com/blog/securing-blazor-webassembly-apps/
         @if (Navigation.BaseUri.Contains("https"))
         {
             <a href="authentication/login">
-                <Button Variant="Button.ButtonVariant.Black">
+                <button class="btn-black">
                     Log ind
-                </Button>
+                </button>
             </a>
         }
     </NotAuthorized>

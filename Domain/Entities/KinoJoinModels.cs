@@ -26,7 +26,7 @@ public class JoinEvent
     public Host? Host { get; set; }
 
     [ForeignKey("DefaultSelectOptionId")]
-    public SelectOption? DefaultSelectOption { get; set; }
+    public SelectOption DefaultSelectOption { get; set; } = null!;
 }
 
 public class Showtime

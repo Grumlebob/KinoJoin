@@ -5,12 +5,14 @@
 <div class="flex flex-col gap-2">
     <div class="flex justify-between">
         <h2 class="text-2xl text-bold">Resultater</h2>
-        <button class="btn-black gap-1 md:hidden" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "participantsDialog"))">
+        <button class="btn-black gap-1 md:hidden" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "participants-dialog"))">
             <img src="Icons/ParticipantsIcon.svg" alt="participants"/>
             <span>Deltagere</span>
         </button>
     </div>
 
+
+    <!-- Sort option selector -->
     <label>
         <div class="w-fit rounded border bg-gray-100 p-3">
             Sortér efter:
@@ -23,13 +25,15 @@
         </div>
     </label>
 
+    <!-- Results for small devices -->
     <div class="space-y-3 md:hidden">
         @foreach (var showtime in _orderedShowtimes)
         {
-            <ShowtimeResultCard IsHost="IsHost" JoinEvent="JoinEvent" Showtime="showtime" OnShowtimeSelected="SetShowtimeForConfirmation" OnShowParticipantVotes="OpenVotesDialog" OnOpenEventActions="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActionsDialog"))" HasVoted="@(CurrentParticipant != null)" Vote="@(CurrentParticipant?.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id))"/>
+            <ShowtimeResultCard IsHost="IsHost" JoinEvent="JoinEvent" Showtime="showtime" OnShowtimeSelected="SetShowtimeForConfirmation" OnShowParticipantVotes="OpenVotesDialog" OnOpenEventActions="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "after-confirm-actions-dialog"))" HasVoted="@(CurrentParticipant != null)" Vote="@(CurrentParticipant?.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id))"/>
         }
     </div>
 
+    <!-- Results for large devices -->
     <div class="hidden md:block">
         <div class="mb-2 w-full overflow-auto rounded-md border bg-gray-100 py-3">
             <table class="border-separate border-spacing-2">
@@ -39,11 +43,12 @@
                     @foreach (var showtime in _orderedShowtimes)
                     {
                         <th class="max-w-48 min-w-48">
-                            <ShowtimeResultCard JoinEvent="JoinEvent" Showtime="showtime" OnShowtimeSelected="SetShowtimeForConfirmation" OnShowParticipantVotes="OpenVotesDialog" OnOpenEventActions="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActionsDialog"))" IsHost="IsHost"/>
+                            <ShowtimeResultCard JoinEvent="JoinEvent" Showtime="showtime" OnShowtimeSelected="SetShowtimeForConfirmation" OnShowParticipantVotes="OpenVotesDialog" OnOpenEventActions="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "after-confirm-actions-dialog"))" IsHost="IsHost"/>
                         </th>
                     }
                 </tr>
 
+                <!-- A row for each participant displaying which showtimes they voted for and what they voted -->
                 @foreach (var participant in JoinEvent.Participants)
                 {
                     <tr>
@@ -73,16 +78,15 @@
                                 <p class="truncate ...">
                                     @participant.Nickname
                                 </p>
-
                             </div>
-
                         </td>
+                        <!-- Display with colored boxes what the participant in current row voted for each showtime -->
                         @foreach (var showtime in _orderedShowtimes)
                         {
                             var vote = participant.VotedFor.FirstOrDefault(v => v.ShowtimeId == showtime.Id)
                                        ?? new ParticipantVote { SelectedOption = JoinEvent.DefaultSelectOption, SelectedOptionId = JoinEvent.DefaultSelectOptionId };
                             <td >
-                                @*  This comment is needed to generate the following dynamic tailwind classes. 
+                                @* This comment is needed to generate the following dynamic tailwind classes. 
                                                         The colors are taken from the select options in the database.
                                                         bg-success bg-warning bg-gray-300 *@
                                 <div class="h-16 flex items-center justify-center bg-@(vote.SelectedOption.Color) rounded border border-gray-400 p-5 shadow-md">
@@ -102,11 +106,13 @@
     </div>
 
 </div>
-<dialog id="participantsDialog" class="fixed w-full max-w-md rounded p-4 bg-slates-300 xs:h-dvh">
+
+<!-- Show all participants dialog -->
+<dialog id="participants-dialog" class="fixed w-full max-w-md rounded p-4 bg-slates-300 xs:h-dvh">
 
     <div class="mb-4 flex justify-between">
         <h4 class="text-lg font-bold">Deltagere</h4>
-        <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "participantsDialog"))">
+        <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "participants-dialog"))">
             <img src="Icons/CrossIcon.svg" alt="close"/>
         </button>
     </div>
@@ -169,11 +175,12 @@
     }
 </dialog>
 
-<dialog id="votesDialog" class="fixed w-full max-w-md rounded p-4 bg-slates-300 xs:h-dvh">
+<!-- on small devices you can select a showtime and see who voted for it with this dialog -->
+<dialog id="votes-dialog" class="fixed w-full max-w-md rounded p-4 bg-slates-300 xs:h-dvh">
 
     <div class="mb-4 flex justify-between">
         <h4 class="text-lg font-bold">Stemmer</h4>
-        <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "votesDialog"))">
+        <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "votes-dialog"))">
             <img src="Icons/CrossIcon.svg" alt="close"/>
         </button>
     </div>
@@ -187,19 +194,19 @@
     }
 </dialog>
 
-<dialog class="rounded p-5" id="confirmEventDialog">
+<dialog class="rounded p-5" id="confirm-event-dialog">
     <div class="flex flex-col items-end gap-4">
         <h2 class="text-xl font-bold">Ønsker du at bekræfte forestillingen for dette event?</h2>
         <div class="flex gap-1">
-            <button class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEventDialog"))">Nej</button>
-            <button class="btn-black" onclick="@(async () => { await ConfirmShowtimeAndOpenActionDialog(_selectedShowtimeId); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEventDialog"); })">Ja</button>
+            <button class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-event-dialog"))">Nej</button>
+            <button class="btn-black" onclick="@(async () => { await ConfirmShowtimeAndOpenActionDialog(_selectedShowtimeId); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-event-dialog"); })">Ja</button>
         </div>
     </div>
 </dialog>
 
 
 <!-- after a showtime has been confirmed, the following dialogs can be used -->
-<dialog class="rounded p-5" id="afterConfirmActionsDialog">
+<dialog class="rounded p-5" id="after-confirm-actions-dialog">
     <div class="flex flex-col items-center gap-4">
         <h2 class="text-xl font-bold">Event valgt</h2>
         <div class="space-y-3">
@@ -210,7 +217,7 @@
                 <button class="btn-white md:hidden" @onclick="ShareEvent">Del</button>
             </div>
             <div class="flex w-full justify-end">
-                <button class="btn-black" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "afterConfirmActionsDialog"))">Luk</button>
+                <button class="btn-black" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "after-confirm-actions-dialog"))">Luk</button>
             </div>
         </div>
     </div>
@@ -294,7 +301,7 @@
     {
         _selectedShowtimeId = showtimeId;
         StateHasChanged();
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "votesDialog");
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "votes-dialog");
     }
 
     private void SortShowtimes(SortBy option)
@@ -340,14 +347,14 @@
     private async Task SetShowtimeForConfirmation(int showtimeId)
     {
         _selectedShowtimeId = showtimeId;
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmEventDialog");
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirm-event-dialog");
     }
 
     private async Task ConfirmShowtimeAndOpenActionDialog(int showtimeId)
     {
         JoinEvent.ChosenShowtimeId = showtimeId;
         await KinoJoinHttpClient.PutJoinEventAsync(JoinEvent);
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActionsDialog");
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "after-confirm-actions-dialog");
     }
 
     private async Task OpenGoogleCalendar()
@@ -361,12 +368,6 @@
 
         await JsRuntime.InvokeVoidAsync("open", url, "_blank");
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
-    }
-
-    private async Task CloseDialog(int index)
-    {
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEventDialog" + index);
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "afterConfirmActionsDialog" + index);
     }
 
     private async Task DownloadCalendarFile()

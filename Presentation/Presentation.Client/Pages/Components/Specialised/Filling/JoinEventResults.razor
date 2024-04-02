@@ -5,7 +5,7 @@
 <div class="flex flex-col gap-2">
     <div class="flex justify-between">
         <h2 class="text-2xl text-bold">Resultater</h2>
-        <button class="btn-black gap-1 md:hidden" @onclick="ShowParticipantDialog">
+        <button class="btn-black gap-1 md:hidden" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "participantsDialog"))">
             <img src="Icons/ParticipantsIcon.svg" alt="participants"/>
             <span>Deltagere</span>
         </button>
@@ -21,16 +21,82 @@
         </div>
     </label>
 
-
-    <div class="hidden md:block">
-        <DesktopResults Event="JoinEvent" IsHost="IsHost" OnDeleteParticipant="OpenDeleteDialog" OrderedShowtimes="_orderedShowtimes"/>
-    </div>
-    
     <div class="space-y-3 md:hidden">
         @foreach (var showtime in _orderedShowtimes)
         {
-            <ResultCard IsHost="IsHost" JoinEvent="JoinEvent" Showtime="showtime" HasVoted="@(CurrentParticipant != null)" Vote="@(CurrentParticipant?.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id))" OnEventConfirmed="ConfirmShowtimeAndOpenActionDialog"/>
+            <ResultCard IsHost="IsHost" JoinEvent="JoinEvent" Showtime="showtime" OnShowtimeSelected="SetShowtimeForConfirmation" OnShowParticipantVotes="OpenVotesDialog" OnOpenEventActions="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActionsDialog"))" HasVoted="@(CurrentParticipant != null)" Vote="@(CurrentParticipant?.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id))"/>
         }
+    </div>
+
+    <div class="hidden md:block">
+        <div class="mb-2 w-full overflow-auto rounded-md border bg-gray-100 py-3">
+            <table class="border-separate border-spacing-2">
+                <tr>
+                    <th></th>@*Empty cell above the participant names*@
+
+                    @foreach (var showtime in _orderedShowtimes)
+                    {
+                        <th class="max-w-48 min-w-48">
+                            <ResultCard JoinEvent="JoinEvent" Showtime="showtime" OnShowtimeSelected="SetShowtimeForConfirmation" OnShowParticipantVotes="OpenVotesDialog" OnOpenEventActions="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActionsDialog"))" IsHost="IsHost"/>
+                        </th>
+                    }
+                </tr>
+
+                @foreach (var participant in JoinEvent.Participants)
+                {
+                    <tr>
+                        <td class="sticky left-0 items-end rounded bg-slate-50">
+                            <div class="flex gap-1 rounded p-5 shadow-md w-50">
+                                <div class="flex">
+                                    @if (IsHost && participant.Id != 0)
+                                    {
+                                        <button onclick="@(() => OpenDeleteDialog(participant))">
+                                            <img src="Icons/DeleteIcon.svg" alt="delete" class="rounded-full p-1 hover:bg-error hover:bg-opacity-25" width="28"/>
+                                        </button>
+                                    }
+                                    @if (!string.IsNullOrEmpty(participant.Note))
+                                    {
+                                        <div class="relative flex items-center">
+                                            <img src="Icons/NoteIcon.svg" alt="note" class="rounded-full p-1 peer hover:bg-gray-200" width="28"/>
+                                            <div class="peer-hover:visible invisible absolute translate-x-8 -translate-y-20 transform rounded border border-gray-800 bg-gray-100 p-3 opacity-0 peer-hover:opacity-100 shadow-md z-5 bg-light-gray min-w-40 max-w-80 text-wrap">
+                                                <p class="font-bold">@participant.Nickname's note</p>
+                                                @if (!string.IsNullOrEmpty(participant.Note))
+                                                {
+                                                    <p class="break-words">@participant.Note</p>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                                <p class="truncate ...">
+                                    @participant.Nickname
+                                </p>
+
+                            </div>
+
+                        </td>
+                        @foreach (var showtime in _orderedShowtimes)
+                        {
+                            var vote = participant.VotedFor.FirstOrDefault(v => v.ShowtimeId == showtime.Id)
+                                       ?? new ParticipantVote { SelectedOption = JoinEvent.DefaultSelectOption, SelectedOptionId = JoinEvent.DefaultSelectOptionId };
+                            <td >
+                                @*  This comment is needed to generate the following dynamic tailwind classes. 
+                                                        The colors are taken from the select options in the database.
+                                                        bg-success bg-warning bg-gray-300 *@
+                                <div class="h-16 flex items-center justify-center bg-@(vote.SelectedOption.Color) rounded border border-gray-400 p-5 shadow-md">
+                                    @if (vote.SelectedOptionId != JoinEvent.DefaultSelectOptionId)
+                                    {
+                                        <div class="h-8 w-8 items-center justify-center gap-2 rounded-full bg-white">
+                                            <CheckIconComp Class="@("stroke-" + participant.VotedFor.First(v => v.ShowtimeId == showtime.Id).SelectedOption.Color)"/>
+                                        </div>
+                                    }
+                                </div>
+                            </td>
+                        }
+                    </tr>
+                }
+            </table>
+        </div>
     </div>
 
 </div>
@@ -101,6 +167,35 @@
     }
 </dialog>
 
+<dialog id="votesDialog" class="fixed w-full max-w-md rounded p-4 bg-slates-300 xs:h-dvh">
+
+    <div class="mb-4 flex justify-between">
+        <h4 class="text-lg font-bold">Stemmer</h4>
+        <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "votesDialog"))">
+            <img src="Icons/CrossIcon.svg" alt="close"/>
+        </button>
+    </div>
+    @{ var participantsAndVotes = JoinEvent.Participants.Where(p => p.VotedFor.Any(v => v.ShowtimeId == _selectedShowtimeId)).Select(p => (p, p.VotedFor.First(v => v.ShowtimeId == _selectedShowtimeId))).ToList(); }
+    @foreach (var (participant, vote) in participantsAndVotes)
+    {
+        <div class="flex w-full justify-between gap-2">
+            <p>@participant.Nickname</p>
+            <CheckIconComp Class="@("stroke-" + vote.SelectedOption.Color)"/>
+        </div>
+    }
+</dialog>
+
+<dialog class="rounded p-5" id="confirmEventDialog">
+    <div class="flex flex-col items-end gap-4">
+        <h2 class="text-xl font-bold">Ønsker du at bekræfte forestillingen for dette event?</h2>
+        <div class="flex gap-1">
+            <button class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEventDialog"))">Nej</button>
+            <button class="btn-black" onclick="@(async () => { await ConfirmShowtimeAndOpenActionDialog(_selectedShowtimeId); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEventDialog"); })">Ja</button>
+        </div>
+    </div>
+</dialog>
+
+
 <!-- after a showtime has been confirmed, the following dialogs can be used -->
 <dialog class="rounded p-5" id="afterConfirmActionsDialog">
     <div class="flex flex-col items-center gap-4">
@@ -149,11 +244,19 @@
 
     private Showtime? _showtimeToCalendar = null;
 
+    private int _selectedShowtimeId;
+
     private const string VotesString = "Stemmer";
     private const string TimeString = "Tidspunkt";
 
     private Dictionary<Participant, bool> _showNote = new();
 
+    protected override void OnInitialized()
+    {
+        _showNote = JoinEvent.Participants.ToDictionary(p => p, _ => false);
+        SetSortOption(VotesString);
+    }
+    
     private async Task DeleteParticipant(int participantId)
     {
         var response = await KinoJoinHttpClient.DeleteParticipantAsync(JoinEvent.Id, participantId);
@@ -165,17 +268,6 @@
         }
     }
 
-    protected override void OnInitialized()
-    {
-        _showNote = JoinEvent.Participants.ToDictionary(p => p, _ => false);
-        SetSortOption(VotesString);
-    }
-
-    private async Task ShowParticipantDialog()
-    {
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "participantsDialog");
-    }
-
     private async Task OpenDeleteDialog(Participant participant)
     {
         _participantToDelete = participant;
@@ -183,11 +275,11 @@
         await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirm-delete-dialog");
     }
 
-    private async Task OpenNoteDialog(Participant participant)
+    private async Task OpenVotesDialog(int showtimeId)
     {
-        _participantToShowNoteFor = participant;
+        _selectedShowtimeId = showtimeId;
         StateHasChanged();
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "note-dialog");
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "votesDialog");
     }
 
     private void SetSortOption(string option)
@@ -234,6 +326,12 @@
         await JsRuntime.InvokeVoidAsync("navigator.share", data);
     }
 
+    private async Task SetShowtimeForConfirmation(int showtimeId)
+    {
+        _selectedShowtimeId = showtimeId;
+        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmEventDialog");
+    }
+
     private async Task ConfirmShowtimeAndOpenActionDialog(int showtimeId)
     {
         JoinEvent.ChosenShowtimeId = showtimeId;
@@ -249,14 +347,14 @@
                   + $"&dates={showtime.Playtime.StartTime.ToString("yyyyMMddTHHmmss")}/{showtime.Playtime.StartTime.AddMinutes(showtime.Movie.DurationInMinutes ?? 0).ToString("yyyyMMddTHHmmss")}"
                   + $"&location={showtime.Cinema.Name}"
                   + $"&details={JoinEvent.Description} %0AFilm: {showtime.Movie.Title}, {showtime.Room.Name}, {showtime.VersionTag.Type}";
-        
+
         await JsRuntime.InvokeVoidAsync("open", url, "_blank");
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
     }
 
     private async Task CloseDialog(int index)
     {
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + index);
+        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEventDialog" + index);
         await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "afterConfirmActionsDialog" + index);
     }
 

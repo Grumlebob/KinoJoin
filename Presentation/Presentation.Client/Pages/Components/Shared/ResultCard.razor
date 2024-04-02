@@ -74,14 +74,14 @@
 
             <div class="flex h-fit w-full items-end justify-end gap-1 md:items-start md:justify-start">
 
-                <button class="btn-white md:hidden" @onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", $"votesDialog{UniqueId}{Showtime.Id}"))">
+                <button class="btn-white md:hidden" @onclick="@(async () => await OnShowParticipantVotes.InvokeAsync(Showtime.Id))">
                     Se stemmer (@JoinEvent.Participants.Count(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id && v.SelectedOptionId != JoinEvent.DefaultSelectOptionId)))
                 </button>
                 @if (JoinEvent.ChosenShowtimeId == Showtime.Id)
                 {
                     <div class="flex justify-center rounded-full bg-opacity-25 font-normal py-[14px] px-[15px] bg-success text-nowrap text-success-darkest">
                         <p>Aftalt tid</p>
-                        <button class="rounded-full p-1 hover:bg-success" @onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "afterConfirmActionsDialog"); })">
+                        <button class="rounded-full p-1 hover:bg-success" @onclick="async () => await OnOpenEventActions.InvokeAsync()">
                             <img src="Icons/ThreeDotsIcon.svg" alt="options"/>
                         </button>
                     </div>
@@ -89,41 +89,13 @@
 
                 @if (IsHost && JoinEvent.ChosenShowtimeId != Showtime.Id)
                 {
-                    <button class="btn-red" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirmEvent" + Showtime.Id + UniqueId))">Bekræft event</button>
+                    <button class="btn-red" onclick="@(async () => await OnShowtimeSelected.InvokeAsync(Showtime.Id))">Bekræft event</button>
                 }
             </div>
         </div>
     </div>
 
 </div>
-
-<dialog id="@($"votesDialog{UniqueId}{Showtime.Id}")" class="fixed w-full max-w-md rounded p-4 bg-slates-300 xs:h-dvh">
-
-    <div class="mb-4 flex justify-between">
-        <h4 class="text-lg font-bold">Stemmer</h4>
-        <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", $"votesDialog{UniqueId}{Showtime.Id}"))">
-            <img src="Icons/CrossIcon.svg" alt="close"/>
-        </button>
-    </div>
-    @{ var participantsAndVotes = JoinEvent.Participants?.Where(p => p.VotedFor.Any(v => v.ShowtimeId == Showtime.Id)).Select(p => (p, p.VotedFor.First(v => v.ShowtimeId == Showtime.Id))).ToList(); }
-    @foreach (var (participant, vote) in participantsAndVotes)
-    {
-        <div class="flex w-full justify-between gap-2">
-            <p>@participant.Nickname</p>
-            <CheckIconComp Class="@("stroke-" + vote.SelectedOption.Color)"/>
-        </div>
-    }
-</dialog>
-
-<dialog class="rounded p-5" id="@("confirmEvent" + Showtime.Id + UniqueId)">
-    <div class="flex flex-col items-end gap-4">
-        <h2 class="text-xl font-bold">Ønsker du at bekræfte forestillingen for dette event?</h2>
-        <div class="flex gap-1">
-            <button class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + Showtime.Id + UniqueId))">Nej</button>
-            <button class="btn-black" onclick="@(async () => { await OnEventConfirmed.InvokeAsync(Showtime.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirmEvent" + Showtime.Id + UniqueId); })">Ja</button>
-        </div>
-    </div>
-</dialog>
 
 @code {
 
@@ -135,10 +107,19 @@
 
     [Parameter] public ParticipantVote? Vote { get; set; }
 
-    [Parameter] public required string UniqueId { get; set; }
-
     [Parameter] public bool IsHost { get; set; }
-
-    [Parameter] public EventCallback<int> OnEventConfirmed { get; set; }
+    
+    ///<summary>When "Bekræft event" is clicked on a showtime. <br/>
+    /// Is invoked with the id of the selected showtime
+    /// </summary>
+    [Parameter] public EventCallback<int> OnShowtimeSelected { get; set; }
+    
+    ///<summary>When "Se stemmer" is clicked on a showtime. <br/>
+    /// Is invoked with the id of the selected showtime
+    /// </summary>
+    [Parameter] public EventCallback<int> OnShowParticipantVotes { get; set; }
+    
+    ///<summary>When the three dots on a confirmed showtime is clicked</summary>
+    [Parameter] public EventCallback OnOpenEventActions { get; set; }
 
 }

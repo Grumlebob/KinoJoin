@@ -15,7 +15,7 @@ public class FilterApiHandler : IFilterApiHandler
     public async Task<(
         List<Showtime> showtimes,
         List<Movie> moviesWithoutShowtimes
-        )> GetShowtimesFromFilters(
+    )> GetShowtimesFromFilters(
         ICollection<int>? cinemaIds = null,
         ICollection<int>? movieIds = null,
         ICollection<int>? genreIds = null,
@@ -74,8 +74,7 @@ public class FilterApiHandler : IFilterApiHandler
             );
 
         var showtimes = new List<Showtime>();
-        var existingMovies =
-            new Dictionary<int, Movie>(); //several cinemas may show the same movie. No need to create the movie object every time
+        var existingMovies = new Dictionary<int, Movie>(); //several cinemas may show the same movie. No need to create the movie object every time
 
         foreach (var jsonCinema in apiResultObject.ShowtimeApiContent.ShowtimeApiContent.Content)
         {
@@ -96,8 +95,7 @@ public class FilterApiHandler : IFilterApiHandler
             {
                 if (!int.TryParse(jsonMovie.Content.FieldPlayingTime, out var duration))
                     duration = 0;
-                if (!existingMovies.TryGetValue(jsonMovie.Id,
-                        out var movieObject)) //use existing movie object or create new
+                if (!existingMovies.TryGetValue(jsonMovie.Id, out var movieObject)) //use existing movie object or create new
                 {
                     movieObject = new Movie
                     {
@@ -157,8 +155,13 @@ public class FilterApiHandler : IFilterApiHandler
 
                             const string dateTimeFormat = "dd/MM HH:mm";
 
-                            DateTime.TryParseExact(dateString, dateTimeFormat, CultureInfo.InvariantCulture,
-                                DateTimeStyles.None, out var parsedDate);
+                            DateTime.TryParseExact(
+                                dateString,
+                                dateTimeFormat,
+                                CultureInfo.InvariantCulture,
+                                DateTimeStyles.None,
+                                out var parsedDate
+                            );
 
                             var playtimeObject = new Playtime { StartTime = parsedDate };
 

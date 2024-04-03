@@ -1,4 +1,10 @@
-﻿<div class="flex w-full flex-col">
+﻿@*
+When using this component, the parent component will often need to use the methods in here, 
+for that reason a reference must be set to the component like this:
+private SearchableCheckboxList _cinemaCheckBoxList = new();
+<SearchableCheckboxList @ref="_cinemaCheckBoxList" IconPath="/Icons/CinemaFilterIcon.svg" ..../>
+*@
+<div class="flex w-full flex-col">
     <!-- Accordion header -->
     <div @onclick="() => SetAccordionOpen(!_isAccordionOpen)" class="cursor-pointer bg-secondary font-semibold text-white px-5 py-3 @(_isAccordionOpen ? "rounded-t-3xl" : "rounded-full") flex justify-between items-center">
         @if (IconPath != null)

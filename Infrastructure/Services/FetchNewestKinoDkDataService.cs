@@ -27,7 +27,6 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                 //facets are unchanged by the query. only save this data once
                 if (i == lowestCinemaId)
                 {
-                    // Cinemas
                     var cinemas = facets.ShowtimeApiCinemas.Options.Select(o => new Cinema
                     {
                         Id = o.Key,
@@ -35,14 +34,12 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                     });
                     await context.Cinemas.UpsertRange(cinemas).RunAsync();
 
-                    //VersionTags
                     var versions = facets.Versions.Options.Select(o => new VersionTag
                     {
                         Type = o.Value
                     });
                     await context.Versions.UpsertRange(versions).On(v => v.Type).RunAsync();
 
-                    //Genres
                     var genres = facets.ShowtimeApiGenres.Options.Select(o => new Genre
                     {
                         Id = o.Key,
@@ -50,7 +47,7 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                     });
                     await context.Genres.UpsertRange(genres).RunAsync();
 
-                    //movie facets (more data is added throughout the loop iterations)
+                    //more data is added throughout the loop iterations
                     movieIdsToNames =
                         apiResultObject.ShowtimeApiContent.ShowtimeApiFacets.Movies.Options.ToDictionary(
                             movieOption => movieOption.Key,

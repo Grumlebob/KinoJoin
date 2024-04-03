@@ -11,7 +11,7 @@ public interface IFilterApiHandler
         DateTime? toDate = null
     );
 
-    public string ConvertFilterStringToUrlString(
+    public string ConvertFiltersToUrlString(
         ICollection<int> cinemaIds,
         ICollection<int> movieIds,
         ICollection<int> genreIds,

@@ -444,7 +444,7 @@
 
         //Set the filter string in the url to match the selected filters,
         //so the page will save filters on reload
-        var urlFilterString = FilterHandler.ConvertFilterStringToUrlString(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
+        var urlFilterString = FilterHandler.ConvertFiltersToUrlString(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
         var newUrl = "create-event/" + urlFilterString;
         NavigationManager.NavigateTo(newUrl);
 

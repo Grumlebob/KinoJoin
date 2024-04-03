@@ -1,3 +1,7 @@
+@*
+This component is a simple spinning circle, with a text in front of it.
+*@
+
 <div class="flex gap-1">
     <p class="text-xl font-bold">@Text</p>
     <div role="status">
@@ -9,6 +13,5 @@
 </div>
 
 @code {
-    [Parameter]
-    public string Text { get; set; } = "Indlæser";
+    [Parameter] public string Text { get; set; } = "Indlæser";
 }

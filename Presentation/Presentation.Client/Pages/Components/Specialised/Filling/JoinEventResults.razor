@@ -362,7 +362,7 @@
         var showtime = JoinEvent.Showtimes.First(s => s.Id == JoinEvent.ChosenShowtimeId);
         var url = "https://calendar.google.com/calendar/u/0/r/eventedit?"
                   + $"text={JoinEvent.Title}"
-                  + $"&dates={showtime.Playtime.StartTime.ToString("yyyyMMddTHHmmss")}/{showtime.Playtime.StartTime.AddMinutes(showtime.Movie.DurationInMinutes ?? 0).ToString("yyyyMMddTHHmmss")}"
+                  + $"&dates={showtime.Playtime.StartTime.ToString("yyyyMMddTHHmmss")}/{showtime.Playtime.StartTime.AddMinutes(showtime.Movie.DurationInMinutes).ToString("yyyyMMddTHHmmss")}"
                   + $"&location={showtime.Cinema.Name}"
                   + $"&details={JoinEvent.Description} %0AFilm: {showtime.Movie.Title}, {showtime.Room.Name}, {showtime.VersionTag.Type}";
 
@@ -374,7 +374,7 @@
     {
         var showtime = JoinEvent.Showtimes.First(s => s.Id == JoinEvent.ChosenShowtimeId);
         var dateStart = showtime.Playtime.StartTime;
-        var dateEnd = showtime.Playtime.StartTime.AddMinutes(showtime.Movie.DurationInMinutes ?? 0);
+        var dateEnd = showtime.Playtime.StartTime.AddMinutes(showtime.Movie.DurationInMinutes);
         var summary = JoinEvent.Title;
         var location = showtime.Cinema.Name;
         var description = JoinEvent.Description + "\n Film: " + showtime.Movie.Title + ", " + showtime.Room.Name + ", " + showtime.VersionTag.Type;

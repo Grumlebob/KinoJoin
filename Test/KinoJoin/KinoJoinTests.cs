@@ -12,7 +12,6 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using Presentation.Client.NamedHttpClients;
 
 namespace Test.KinoJoin;
 
@@ -304,8 +303,8 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public async Task UpdateAllBaseDataFromKinoDk_ThenUseTheDataToCheckKinoDkFilterApi()
     {
-        //The tests main focus is getting the static data from kino.dk - should take about 2 minutes
-        var response = await _client.PostAsync("api/kino-data/update-all", null);
+        //The tests main focus is getting the static data from kino.dk
+        var response = await _client.PostAsync("api/kino-data/update-all/1/3", null);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         //Check that the data was inserted

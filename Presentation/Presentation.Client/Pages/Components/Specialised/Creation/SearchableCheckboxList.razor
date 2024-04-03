@@ -3,9 +3,9 @@
     <div @onclick="() => SetAccordionOpen(!_isAccordionOpen)" class="cursor-pointer bg-secondary font-semibold text-white px-5 py-3 @(_isAccordionOpen ? "rounded-t-3xl" : "rounded-full") flex justify-between items-center">
         @if (IconPath != null)
         {
-            <img src="@IconPath" alt="Movie Icon" class="mr-2 h-6 w-6"/>
+            <img src="@IconPath" alt="@Title Icon" class="mr-2 h-6 w-6"/>
         }
-        <span>@FilterTitle</span>
+        <span>@Title</span>
         <svg class="transition-transform" style="@(_isAccordionOpen ? "transform: rotate(0deg);" : "transform: rotate(-90deg);")" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
         </svg>
@@ -14,14 +14,14 @@
     <!-- Accordion content including search bar and list -->
     <div class="@(_isAccordionOpen ? "block" : "hidden") transition-all overflow-hidden bg-gray-100 px-5 py-3 rounded-b-3xl shadow">
         <!-- Search bar -->
-        <input type="text" placeholder="Søg" @oninput="@(e => { _searchTerm = e.Value?.ToString() ?? string.Empty; })" class="mb-4 w-full bg-gray-50 rounded-full border border-gray-300 p-2"/>
+        <input type="text" placeholder="Søg" @oninput="@(e => { _searchTerm = e.Value?.ToString() ?? string.Empty; })" class="mb-4 w-full rounded-full border border-gray-300 bg-gray-50 p-2"/>
         <!-- List -->
         <div class="max-h-40 overflow-y-auto">
             @foreach (var (id, label) in IdsToLabels.Where(item => item.Value.ToLowerInvariant().Contains(_searchTerm.ToLowerInvariant())).Select(item => (item.Key, item.Value)))
             {
                 var checkBoxId = $"{_uniqueId.ToString()}-{id}";
                 <div class="mb-2 flex items-center overflow-hidden whitespace-nowrap">
-                    <input type="checkbox" id="@checkBoxId" value="@id" @onchange="@(e => HandleCheckboxChange(e, id))" checked="@(SelectedItems.Contains(id))" class="mr-2 h-5 min-w-5 bg-gray-50 accent-secondary"/>
+                    <input type="checkbox" id="@checkBoxId" value="@id" @onchange="@(e => HandleCheckboxChange(e, id))" checked="@(SelectedItems.Contains(id))" class="mr-2 h-5 bg-gray-50 min-w-5 accent-secondary"/>
                     <label for="@checkBoxId" class="ml-1 flex-grow truncate">@label</label>
                 </div>
             }
@@ -52,12 +52,19 @@
 
     [Parameter] public HashSet<int> SelectedItems { get; set; } = [];
 
-    [Parameter] public string FilterTitle { get; set; } = "";
+    [Parameter] public string Title { get; set; } = "";
 
     [Parameter] public string? IconPath { get; set; }
 
     private string _searchTerm = string.Empty;
     private readonly Guid _uniqueId = Guid.NewGuid(); //this is used to generate unique ids for checkbox items
+
+    private bool _isAccordionOpen = false;
+
+    public void SetAccordionOpen(bool isOpen)
+    {
+        _isAccordionOpen = isOpen;
+    }
 
     private void HandleCheckboxChange(ChangeEventArgs e, int movieId)
     {
@@ -69,13 +76,5 @@
 
         SelectedItems.Remove(movieId);
     }
-
-    private bool _isAccordionOpen = false;
-    
-    public void SetAccordionOpen(bool isOpen)
-    {
-        _isAccordionOpen = isOpen;
-    }
-    
 
 }

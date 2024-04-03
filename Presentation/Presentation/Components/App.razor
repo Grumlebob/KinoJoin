@@ -5,10 +5,9 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <base href="/"/>
-    <link rel="stylesheet" href="Presentation.styles.css"/>
+    <link rel="stylesheet" href="Presentation.styles.css"/> <!-- Used for styling error message -->
     <link rel="icon" type="image/png" href="favicon.svg"/>
     <link rel="stylesheet" href="app.min.css"/>
-
     <link rel="stylesheet" href="fonts/Basier_Square_Webfont/Basier-Square-bold-webfont/stylesheet.css"/>
     <link rel="stylesheet" href="fonts/Basier_Square_Webfont/Basier-Square-bolditalic-webfont/stylesheet.css"/>
     <link rel="stylesheet" href="fonts/Basier_Square_Webfont/Basier-Square-medium-webfont/stylesheet.css"/>
@@ -17,113 +16,85 @@
     <link rel="stylesheet" href="fonts/Basier_Square_Webfont/Basier-Square-regularitalic-webfont/stylesheet.css"/>
     <link rel="stylesheet" href="fonts/Basier_Square_Webfont/Basier-Square-semibold-webfont/stylesheet.css"/>
     <link rel="stylesheet" href="fonts/Basier_Square_Webfont/Basier-Square-semibolditalic-webfont/stylesheet.css"/>
-
     <HeadOutlet @rendermode="InteractiveWebAssembly"/>
+    <title>KinoJoin</title>
 </head>
 
 <body class="bg-background">
-<Routes @rendermode="new InteractiveWebAssemblyRenderMode(false)"/>
+<Routes @rendermode="new InteractiveWebAssemblyRenderMode(false)"/><!-- PreRender false is to make Auth0 work -->
 <script src="_framework/blazor.web.js"></script>
 <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
 
 
 <script>
-    customFunctions={
-        
-        showDialog:function (dialogId) {
-            var dialog = document.getElementById(dialogId);
-            if (dialog) {
-                dialog.showModal();
-            }
-        },
-        
-        hideDialog: function (dialogId) {
-            var dialog = document.getElementById(dialogId);
-            if (dialog) {
-                dialog.close();
-            }
-        },
-        
-        scrollToBottom: function() {
-               window.scrollTo({
-                    top: document.body.scrollHeight,
-                    behavior: 'smooth'
-                });
-        },
-        
-        scrollToBottomIncrementally: function() {
-            const totalHeight = document.body.scrollHeight;
-            let currentScroll = window.scrollY;
-            const step = 50; // Adjust the step size as needed
-        
-            function scrollStep() {
-                if (currentScroll < totalHeight) {
-                    window.scrollTo(0, currentScroll);
-                    currentScroll += step;
-                    requestAnimationFrame(scrollStep);
-                }
-            }
-        
-            scrollStep();
-        },
-        
 
-        
+    function hideDialog (dialogId) {
+        var dialog = document.getElementById(dialogId);
+        if (dialog) {
+            dialog.close();
+        }
+    }
+    
+    function showDialog (dialogId) {
+        var dialog = document.getElementById(dialogId);
+        if (dialog) {
+            dialog.showModal();
+        }
     }
     
     function setScrollButtons (elementId) {
-                   let scrollContainer = document.getElementById(elementId);
-                   let leftBlur = document.getElementById(`${elementId}-blur-left`);
-                   let rightBlur = document.getElementById(`${elementId}-blur-right`);
-                   
-                   if (!scrollContainer || !leftBlur || !rightBlur)
-                       return;
-                   
-                   leftBlur.onclick = () => {scrollContainer.scrollTo({
-                                               left: scrollContainer.scrollLeft - 300,
-                                               behavior: 'smooth'
-                                             })};
-                   rightBlur.onclick = () => {scrollContainer.scrollTo({
-                                                left: scrollContainer.scrollLeft + 300,
-                                                behavior: 'smooth'
-                                             })};
-                   
-                   const toggleScrollButtons = function() {
-                       if (scrollContainer.scrollWidth <= scrollContainer.clientWidth) { //no overflow
-                           leftBlur.style.visibility = "hidden";
-                           rightBlur.style.visibility = "hidden";
-                           return;
-                       }
-                      
-                       if (scrollContainer.scrollLeft === 0) { //scrolled to left end
-                          leftBlur.style.visibility = "hidden";
-                       }
-                       else {
-                           leftBlur.style.visibility = "visible";
-                       }
-                       
-                       if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 3) { //scrolled to right end (-3 to tolerate decimal rounding)
-                           rightBlur.style.visibility = "hidden";
-                       }
-                       else {
-                           rightBlur.style.visibility = "visible";
-                       }
-                   }
-                   toggleScrollButtons(); //initially calculate if it should show buttons
-                   scrollContainer.onscroll = toggleScrollButtons; //dynamically calculate when scrolling
-               }
+        let scrollContainer = document.getElementById(elementId);
+        let leftBlur = document.getElementById(`${elementId}-blur-left`);
+        let rightBlur = document.getElementById(`${elementId}-blur-right`);
+        
+        if (!scrollContainer || !leftBlur || !rightBlur)
+            return;
+        
+        leftBlur.onclick = () => {scrollContainer.scrollTo({
+                                    left: scrollContainer.scrollLeft - 300,
+                                    behavior: 'smooth'
+                                  })};
+        rightBlur.onclick = () => {scrollContainer.scrollTo({
+                                     left: scrollContainer.scrollLeft + 300,
+                                     behavior: 'smooth'
+                                  })};
+        
+        const toggleScrollButtons = function() {
+            if (scrollContainer.scrollWidth <= scrollContainer.clientWidth) { //no overflow
+                leftBlur.style.visibility = "hidden";
+                rightBlur.style.visibility = "hidden";
+                return;
+            }
+           
+            if (scrollContainer.scrollLeft === 0) { //scrolled to left end
+               leftBlur.style.visibility = "hidden";
+            }
+            else {
+                leftBlur.style.visibility = "visible";
+            }
+            
+            if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 3) { //scrolled to right end (-3 to tolerate decimal rounding)
+                rightBlur.style.visibility = "hidden";
+            }
+            else {
+                rightBlur.style.visibility = "visible";
+            }
+        }
+        toggleScrollButtons(); //initially calculate if it should show buttons
+        scrollContainer.onscroll = toggleScrollButtons; //dynamically calculate when scrolling
+    }
     
-    window.downloadFileFromStream = async (fileName, contentStreamReference) => {
-                    const arrayBuffer = await contentStreamReference.arrayBuffer();
-                    const blob = new Blob([arrayBuffer]);
-                    const url = URL.createObjectURL(blob);
-                    const anchorElement = document.createElement('a');
-                    anchorElement.href = url;
-                    anchorElement.download = fileName ?? '';
-                    anchorElement.click();
-                    anchorElement.remove();
-                    URL.revokeObjectURL(url);
-                }
+    window.downloadCalendarFile = async (fileName, contentStreamReference) => {
+        const arrayBuffer = await contentStreamReference.arrayBuffer();
+        const blob = new Blob([arrayBuffer]);
+        const url = URL.createObjectURL(blob);
+        const anchorElement = document.createElement('a');
+        anchorElement.href = url;
+        anchorElement.download = fileName ?? '';
+        anchorElement.click();
+        anchorElement.remove();
+        URL.revokeObjectURL(url);
+    }
     </script>
 </body>
 

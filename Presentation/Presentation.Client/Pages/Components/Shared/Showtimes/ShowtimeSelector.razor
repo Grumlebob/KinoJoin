@@ -1,0 +1,169 @@
+@inject IJSRuntime JsRuntime
+
+@*
+This is the parent component, rendering the ShowtimeSelectorHeading and ShowtimeByDateTable components.
+The main purpose is to group showtimes by their Cinema, Version and Movie, and display a clickable button for each showtime.
+*@
+
+@if (Showtimes.Count == 0)
+{
+    return;
+}
+
+@*Displays Legend, such as "kan ikke" "kan godt" *@
+<div class="flex flex-col items-center justify-center mt-16 gap-1">
+    <p class="font-bold text-3xl">@LegendTitle</p>
+    <div class=" @(HasAnswered ? "mb-5" : "mb-7") w-fit space-y-1  ">
+        <div class="flex items-center mb-2 w-fit divide-x-2">
+            @foreach (var option in SelectOptions)
+            {
+                var sidePadding = option == SelectOptions.First() ? "pr-2" :
+                    option == SelectOptions.Last() ? "pl-2" : "px-2";
+                <div class="@sidePadding">
+                    @*  This comment is needed to generate the following dynamic tailwind classes. 
+                        The colors are taken from the select options in the database.
+                        bg-success bg-warning bg-gray-300 *@
+                    <div class="rounded text-base md:text-xl px-1 shadow-md bg-@option.Color">
+                        <p>@option.VoteOption</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@*Warn people who already answered*@
+@if (HasAnswered)
+{
+    <div class="flex items-center content-center justify-center w-full mb-5">
+        <div class="bg-gray-100 shadow w-fit p-3">
+            <p class="text-2xl font-bold text-success-darkest">Du har allerede indsendt et svar på dette event</p>
+        </div>
+    </div>
+}
+
+@* The main content of the component, showing all the showtimes using virtualization, to only load what is neccessary *@
+<div class="space-y-5">
+    @{
+        var showtimeByMovieList = Showtimes.GroupBy(s => s.Movie.Id).ToList();
+    }
+    <Virtualize Items="showtimeByMovieList" Context="showtimesByMovie" OverscanCount="3">
+        <ItemContent>
+            @{
+                var movie = showtimesByMovie.First().Movie;
+            }
+            <ShowtimeSelectorHeading HasAnswered="@HasAnswered" Movie="movie">
+                @{
+                    var showtimeByCinemaList = showtimesByMovie.GroupBy(s => s.Cinema.Id).ToList();
+                }
+                <Virtualize Items="showtimeByCinemaList" OverscanCount="8" Context="showtimesByCinema" ItemSize="300">
+                    <ItemContent>
+                        @{ var cinema = showtimesByCinema.First().Cinema; }
+                        <div class="mb-2 flex justify-between">
+                            <!-- CinemaLocation -->
+                            <h3 id="@cinema.Id" class="text-xl font-bold mb-2.5">@cinema.Name</h3>
+                            <button @onclick="() => ToggleCollapse(movie.Id, cinema.Id)">
+                                <svg class="transition-transform" style="@(_disbandedCinemasAtMovies.Contains((movie.Id, cinema.Id)) ? "transform: rotate(0deg);" : "transform: rotate(-180deg);")" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        @* Don't render disbanded cinemas and movies*@
+                        @if (!_disbandedCinemasAtMovies.Contains((movie.Id, cinema.Id)))
+                        {
+                            var showtimeByVersionTagList = showtimesByCinema.GroupBy(s => s.VersionTag.Type).ToList();
+
+                            <Virtualize Items="showtimeByVersionTagList" Context="showtimesByVersionTag" OverscanCount="5" ItemSize="300">
+                                <ItemContent>
+                                    <div class="mb-4 max-w-screen-md">
+                                        <div class="w-fit">
+                                            <p class="bg-gray-300 px-2 py-1 font-label">@showtimesByVersionTag.Key</p>
+                                        </div>
+                                        <ShowtimeByDateTable SelectOptions="SelectOptions" DefaultSelectOption="DefaultSelectOption" UniqueId="@($"{movie.Id}-{cinema.Id}-{showtimesByVersionTag.Key}")" Votes="ShowtimeChoices" VotesChanged="VotesChanged" Showtimes="@showtimesByVersionTag.ToList()" HasAnswered="HasAnswered" StartDate="@Showtimes.Min(s => s.Playtime.StartTime.Date)"/>
+                                    </div>
+                                </ItemContent>
+                                <Placeholder>
+                                    <LoadingIndicator/>
+                                </Placeholder>
+                            </Virtualize>
+                        }
+                    </ItemContent>
+                    <Placeholder>
+                        <LoadingIndicator/>
+                    </Placeholder>
+                </Virtualize>
+            </ShowtimeSelectorHeading>
+        </ItemContent>
+        <Placeholder>
+            <LoadingIndicator/>
+        </Placeholder>
+    </Virtualize>
+</div>
+
+@*If the combination of filters leads to movies with no showtimes.
+We want the movie displayed with relevant info, but warning of no showtimes.
+*@
+@if (Showtimes.Count > 0)
+{
+    <Virtualize Items="MoviesWithoutShowTimes" Context="movie" OverscanCount="5">
+        <ItemContent>
+            <ShowtimeSelectorHeading Movie="movie">
+                <div class="inline-flex items-center justify-center gap-4 rounded bg-gray-300 p-2">
+                    <span>Ingen forestillinger fundet for denne film med de valgte filtre</span>
+                </div>
+            </ShowtimeSelectorHeading>
+        </ItemContent>
+        <Placeholder>
+            <LoadingIndicator/>
+        </Placeholder>
+    </Virtualize>
+}
+
+@code {
+
+    [Parameter] public string LegendTitle { get; set; } = "";
+
+    [Parameter] public List<Showtime> Showtimes { get; set; } = [];
+
+    ///<summary>If filters lead to a combination where a movie has no showtimes, we want to display the movie with relevant info</summary>
+    [Parameter]
+    public List<Movie> MoviesWithoutShowTimes { get; set; } = [];
+
+    ///<summary>This collection has EVERY showtime, with their status.</summary>
+    /// <example>100 showtimes, only 1 is selected. Then 99 votes in this list will have no, and 1 will have yes </example>
+    [Parameter]
+    public ICollection<ParticipantVote> ShowtimeChoices { get; set; } = [];
+
+    [Parameter] public EventCallback<ICollection<ParticipantVote>> VotesChanged { get; set; }
+
+    [Parameter] public List<SelectOption> SelectOptions { get; set; } = [new SelectOption { VoteOption = "Kan ikke", Color = "gray-300" }, new SelectOption { VoteOption = "Kan godt", Color = "success" }];
+
+    ///<summary>If user has not clicked on a showtime, that showtimes default choice will be this</summary>
+    [Parameter]
+    public SelectOption DefaultSelectOption { get; set; } = null!;
+
+    [Parameter] public bool HasAnswered { get; set; }
+
+    ///<summary>Cinemas under movies that are toggled away: (MovieId, CinemaId).
+    /// Example if they disband Atlas Biografferne under the movie "Dune" it will be added to this list, with
+    /// CinemaId = 'Atlas Biografferne' and MovieId = 'Dune'
+    /// </summary>
+    private HashSet<(int, int)> _disbandedCinemasAtMovies = [];
+
+    protected override void OnInitialized()
+    {
+        DefaultSelectOption = SelectOptions.First();
+    }
+
+    private void ToggleCollapse(int movieId, int cinemaId)
+    {
+        if (!_disbandedCinemasAtMovies.Add((movieId, cinemaId)))
+        {
+            _disbandedCinemasAtMovies.Remove((movieId, cinemaId));
+        }
+
+        StateHasChanged();
+    }
+
+}

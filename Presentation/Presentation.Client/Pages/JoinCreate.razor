@@ -369,6 +369,10 @@
             if (_movieIdsToNames.ContainsKey(movie.Id)) continue;
             _movieIdsToNames[movie.Id] = movie.Title;
         }
+        foreach (var movie in _moviesWithoutShowtimes.Where(m => !_movieIdsToNames.ContainsKey(m.Id)))
+        {
+            _movieIdsToNames[movie.Id] = movie.Title;
+        }
 
         _loadingShowtimes = false;
     }

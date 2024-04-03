@@ -28,21 +28,34 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                 if (i == lowestCinemaId)
                 {
                     // Cinemas
-                    var cinemas =
-                        facets.ShowtimeApiCinemas.Options.Select(o => new Cinema { Id = o.Key, Name = o.Value });
+                    var cinemas = facets.ShowtimeApiCinemas.Options.Select(o => new Cinema
+                    {
+                        Id = o.Key,
+                        Name = o.Value
+                    });
                     await context.Cinemas.UpsertRange(cinemas).RunAsync();
 
                     //VersionTags
-                    var versions = facets.Versions.Options.Select(o => new VersionTag { Type = o.Value });
+                    var versions = facets.Versions.Options.Select(o => new VersionTag
+                    {
+                        Type = o.Value
+                    });
                     await context.Versions.UpsertRange(versions).On(v => v.Type).RunAsync();
 
                     //Genres
-                    var genres = facets.ShowtimeApiGenres.Options.Select(o => new Genre { Id = o.Key, Name = o.Value });
+                    var genres = facets.ShowtimeApiGenres.Options.Select(o => new Genre
+                    {
+                        Id = o.Key,
+                        Name = o.Value
+                    });
                     await context.Genres.UpsertRange(genres).RunAsync();
 
                     //movie facets (more data is added throughout the loop iterations)
-                    movieIdsToNames = apiResultObject.ShowtimeApiContent.ShowtimeApiFacets.Movies.Options
-                        .ToDictionary(movieOption => movieOption.Key, movieOption => movieOption.Value);
+                    movieIdsToNames =
+                        apiResultObject.ShowtimeApiContent.ShowtimeApiFacets.Movies.Options.ToDictionary(
+                            movieOption => movieOption.Key,
+                            movieOption => movieOption.Value
+                        );
                 }
 
                 //MOVIES
@@ -50,18 +63,23 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                 var moviesOnKinoDk = new Dictionary<int, Movie>();
 
                 //if movieIdsToNames does not contain the id it may be a different kind of event like "særvisninger"
-                foreach (var jsonMovie in apiResultObject.ShowtimeApiContent.ShowtimeApiContent.Content.SelectMany(
-                             jsonCinema => jsonCinema.Movies.Where(jsonMovie =>
-                                 movieIdsToNames.ContainsKey(jsonMovie.Id)
-                             )))
+                foreach (
+                    var jsonMovie in apiResultObject.ShowtimeApiContent.ShowtimeApiContent.Content.SelectMany(
+                        jsonCinema =>
+                            jsonCinema.Movies.Where(jsonMovie =>
+                                movieIdsToNames.ContainsKey(jsonMovie.Id)
+                            )
+                    )
+                )
                 {
-                    if (moviesOnKinoDk.TryGetValue(jsonMovie.Id, out var movieObject)) continue; //already added
+                    if (moviesOnKinoDk.TryGetValue(jsonMovie.Id, out var movieObject))
+                        continue; //already added
 
-                    if (!int.TryParse(jsonMovie.Content.FieldPlayingTime, out var duration)) duration = 0;
+                    if (!int.TryParse(jsonMovie.Content.FieldPlayingTime, out var duration))
+                        duration = 0;
                     string? imageUrl = null;
                     if (
-                        jsonMovie.Content.ShowtimeApiFieldPoster.FieldMediaImage?.Sources
-                        != null
+                        jsonMovie.Content.ShowtimeApiFieldPoster.FieldMediaImage?.Sources != null
                         && jsonMovie.Content.ShowtimeApiFieldPoster.FieldMediaImage.Sources.Any()
                     )
                     {
@@ -92,15 +110,20 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                     moviesOnKinoDk.Add(movieObject.Id, movieObject);
                 }
 
-                List<AgeRating> ageRatings = moviesOnKinoDk.Values.Where(v => v.AgeRating != null)
-                    .Select(v => v.AgeRating).DistinctBy(a => a!.Censorship).ToList()!;
+                List<AgeRating> ageRatings = moviesOnKinoDk
+                    .Values.Where(v => v.AgeRating != null)
+                    .Select(v => v.AgeRating)
+                    .DistinctBy(a => a!.Censorship)
+                    .ToList()!;
                 await context.AgeRatings.UpsertRange(ageRatings).On(a => a.Censorship).RunAsync();
 
                 var ageRatingsFromDb = await context.AgeRatings.ToListAsync();
 
                 foreach (var movie in moviesOnKinoDk.Values.Where(m => m.AgeRating != null))
                 {
-                    movie.AgeRatingId = ageRatingsFromDb.First(a => a.Censorship == movie.AgeRating!.Censorship).Id;
+                    movie.AgeRatingId = ageRatingsFromDb
+                        .First(a => a.Censorship == movie.AgeRating!.Censorship)
+                        .Id;
                 }
 
                 await context.Movies.UpsertRange(moviesOnKinoDk.Values).RunAsync();
@@ -108,7 +131,8 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
             catch (Exception)
             {
                 throw new Exception(
-                    $"Failed to fetch data for cinema {i}. Skipping to next. Usually Kino.dk is down 5% of the day.");
+                    $"Failed to fetch data for cinema {i}. Skipping to next. Usually Kino.dk is down 5% of the day."
+                );
             }
         }
     }

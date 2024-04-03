@@ -12,7 +12,7 @@ public interface IKinoJoinHttpClient
     Task<ICollection<Cinema>?> GetCinemasAsync();
     Task<ICollection<Movie>?> GetMoviesAsync();
     Task<ICollection<Genre>?> GetGenresAsync();
-    
+
     /// <remarks>Both ids are inclusive</remarks>
     Task<HttpResponseMessage> UpdateBaseDataFromKinoDkAsync(int fromId, int toId);
 }

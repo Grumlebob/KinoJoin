@@ -1,7 +1,7 @@
 @inject IJSRuntime JsRuntime
 
 @*
-This is the parent component, rendering the ShowtimeSelectorHeading and ShowtimeByDateTable components.
+This is the parent component, rendering ShowtimeByDateTable components.
 The main purpose is to group showtimes by their Cinema, Version and Movie, and display a clickable button for each showtime.
 *@
 
@@ -167,7 +167,7 @@ The main purpose is to group showtimes by their Cinema, Version and Movie, and d
                                                     <div class="w-fit">
                                                         <p class="bg-gray-300 px-2 py-1 font-label">@showtimesByVersionTag.Key</p>
                                                     </div>
-                                                    <ShowtimeByDateTable SelectOptions="SelectOptions" DefaultSelectOption="DefaultSelectOption" UniqueId="@($"{movie.Id}-{cinema.Id}-{showtimesByVersionTag.Key}")" Votes="ShowtimeChoices" VotesChanged="VotesChanged" Showtimes="@showtimesByVersionTag.ToList()" HasAnswered="HasAnswered" StartDate="@Showtimes.Min(s => s.Playtime.StartTime.Date)"/>
+                                                    <ShowtimeByDateTable SelectOptions="SelectOptions" DefaultSelectOption="DefaultSelectOption" UniqueTableId="@($"{movie.Id}-{cinema.Id}-{showtimesByVersionTag.Key}")" ShowtimeChoices="ShowtimeChoices" VotesChanged="VotesChanged" Showtimes="@showtimesByVersionTag.ToList()" HasAnswered="HasAnswered" StartDate="@Showtimes.Min(s => s.Playtime.StartTime.Date)"/>
                                                 </div>
                                             </ItemContent>
                                             <Placeholder>
@@ -284,7 +284,7 @@ The main purpose is to group showtimes by their Cinema, Version and Movie, and d
         var json = await client.GetStringAsync(apiString);
 
         var movieRoot = JsonConvert.DeserializeObject<MovieApiRoot>(json);
-        if (movieRoot?.ApiContent.MovieApiFieldTrailer?.MovieApiFieldMediaOembedVideo?.TrailerUrl == null) //no video found
+        if (movieRoot?.ApiContent?.MovieApiFieldTrailer?.MovieApiFieldMediaOembedVideo?.TrailerUrl == null) //no video found
         {
             await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
             return;

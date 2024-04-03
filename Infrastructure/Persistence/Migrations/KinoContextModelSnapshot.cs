@@ -142,7 +142,7 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<int?>("AgeRatingId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("DurationInMinutes")
+                    b.Property<int>("DurationInMinutes")
                         .HasColumnType("integer");
 
                     b.Property<string>("ImageUrl")

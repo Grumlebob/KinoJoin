@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(KinoContext))]
-    [Migration("20240403111605_Initial")]
+    [Migration("20240403124051_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -145,7 +145,7 @@ namespace Infrastructure.Persistence.Migrations
                     b.Property<int?>("AgeRatingId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("DurationInMinutes")
+                    b.Property<int>("DurationInMinutes")
                         .HasColumnType("integer");
 
                     b.Property<string>("ImageUrl")

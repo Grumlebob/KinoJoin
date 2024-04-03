@@ -202,7 +202,7 @@ namespace Infrastructure.Persistence.Migrations
                         maxLength: 500,
                         nullable: true
                     ),
-                    DurationInMinutes = table.Column<int>(type: "integer", nullable: true),
+                    DurationInMinutes = table.Column<int>(type: "integer", nullable: false),
                     PremiereDate = table.Column<string>(
                         type: "character varying(100)",
                         maxLength: 100,

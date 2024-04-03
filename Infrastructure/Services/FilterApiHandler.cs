@@ -240,7 +240,7 @@ public class FilterApiHandler : IFilterApiHandler
         return (showtimes, missingMovies);
     }
 
-    public string GetUrlFilterString(
+    public string ConvertFilterStringToUrlString(
         ICollection<int> cinemaIds,
         ICollection<int> movieIds,
         ICollection<int> genreIds,

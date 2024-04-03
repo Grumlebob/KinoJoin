@@ -284,12 +284,14 @@ The main purpose is to group showtimes by their Cinema, Version and Movie, and d
         var uri = new Uri(movieRoot.ApiContent.MovieApiFieldTrailer.MovieApiFieldMediaOembedVideo.TrailerUrl);
         var videoId = uri.Segments.Last() == "watch" ? HttpUtility.ParseQueryString(uri.Query)["v"] : uri.Segments.Last();
 
-        if (videoId == null) await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
-        else
+        if (videoId == null)
         {
-            _trailerUrl = $"https://www.youtube.com/embed/{videoId}";
-            StateHasChanged();
+            await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
+            return;
         }
+
+        _trailerUrl = $"https://www.youtube.com/embed/{videoId}";
+        StateHasChanged();
     }
 
     private Dictionary<string, string> _censorshipToIcon = new()

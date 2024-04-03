@@ -45,6 +45,7 @@ public interface IKinoJoinDbService
      * Non-dtos are returned to include all nested data.
      * </returns>
      */
+    //TODO På andre skriver hvad det er er, her gør vi ikke. Ex "get all cinemas" og her er det bare "get all" gør ensartet
     Task<List<JoinEvent>> GetAllAsync(Expression<Func<JoinEvent, bool>>? filter = null);
 
     //Delete participant

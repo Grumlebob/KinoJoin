@@ -15,7 +15,7 @@ public class FilterApiHandler : IFilterApiHandler
     public async Task<(
         List<Showtime> showtimes,
         List<Movie> moviesWithoutShowtimes
-    )> GetShowtimesFromFilters(
+        )> GetShowtimesFromFilters(
         ICollection<int>? cinemaIds = null,
         ICollection<int>? movieIds = null,
         ICollection<int>? genreIds = null,
@@ -30,7 +30,7 @@ public class FilterApiHandler : IFilterApiHandler
         toDate ??= DateTime.Today.AddYears(1);
 
         fromDate = fromDate.Value.Date;
-        toDate = toDate.Value.Date.AddHours(23).AddMinutes(59); //inclusive
+        toDate = toDate.Value.Date;
 
         var filterStringBuilder = new StringBuilder("&sort=most_purchased");
         var cinemaList = cinemaIds.ToList();
@@ -51,8 +51,8 @@ public class FilterApiHandler : IFilterApiHandler
             filterStringBuilder.Append($"&genres[{i}]={genreList[i]}");
         }
 
-        filterStringBuilder.Append($"&date={fromDate.Value.ToString("s")}"); //format: 2008-04-18T06:30:00
-        filterStringBuilder.Append($"&date={toDate.Value.ToString("s")}");
+        filterStringBuilder.Append($"&date[start]={fromDate.Value.ToString("s")}"); //format: 2008-04-18T06:30:00
+        filterStringBuilder.Append($"&date[end]={toDate.Value.ToString("s")}");
 
         var apiString = BaseUrl + filterStringBuilder;
 
@@ -74,7 +74,8 @@ public class FilterApiHandler : IFilterApiHandler
             );
 
         var showtimes = new List<Showtime>();
-        var existingMovies = new Dictionary<int, Movie>(); //several cinemas may show the same movie. No need to create the movie object every time
+        var existingMovies =
+            new Dictionary<int, Movie>(); //several cinemas may show the same movie. No need to create the movie object every time
 
         foreach (var jsonCinema in apiResultObject.ShowtimeApiContent.ShowtimeApiContent.Content)
         {
@@ -95,7 +96,8 @@ public class FilterApiHandler : IFilterApiHandler
             {
                 if (!int.TryParse(jsonMovie.Content.FieldPlayingTime, out var duration))
                     duration = 0;
-                if (!existingMovies.TryGetValue(jsonMovie.Id, out var movieObject)) //use existing movie object or create new
+                if (!existingMovies.TryGetValue(jsonMovie.Id,
+                        out var movieObject)) //use existing movie object or create new
                 {
                     movieObject = new Movie
                     {
@@ -155,23 +157,8 @@ public class FilterApiHandler : IFilterApiHandler
 
                             const string dateTimeFormat = "dd/MM HH:mm";
 
-                            if (
-                                DateTime.TryParseExact(
-                                    dateString,
-                                    dateTimeFormat,
-                                    CultureInfo.InvariantCulture,
-                                    DateTimeStyles.None,
-                                    out var parsedDate
-                                )
-                            )
-                            {
-                                //Couldn't get the api to filter on date. Do it manually
-                                if (fromDate != DateTime.MinValue && parsedDate < fromDate)
-                                    continue;
-
-                                if (toDate != DateTime.MinValue && parsedDate > toDate)
-                                    continue;
-                            }
+                            DateTime.TryParseExact(dateString, dateTimeFormat, CultureInfo.InvariantCulture,
+                                DateTimeStyles.None, out var parsedDate);
 
                             var playtimeObject = new Playtime { StartTime = parsedDate };
 

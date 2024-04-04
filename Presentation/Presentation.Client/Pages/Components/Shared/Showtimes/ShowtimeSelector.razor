@@ -221,7 +221,7 @@ The main purpose is to group showtimes by their Cinema, Version and Movie, and d
     [Parameter]
     public ICollection<ParticipantVote> ShowtimeChoices { get; set; } = [];
 
-    [Parameter] public EventCallback<ICollection<ParticipantVote>> VotesChanged { get; set; }
+    [Parameter] public EventCallback<ICollection<ParticipantVote>> ChoicesChanged { get; set; }
 
     [Parameter] public List<SelectOption> SelectOptions { get; set; } = [new SelectOption { VoteOption = "Kan ikke", Color = "gray-300" }, new SelectOption { VoteOption = "Kan godt", Color = "success" }];
 

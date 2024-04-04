@@ -84,10 +84,7 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                     {
                         imageUrl = jsonMovie
                             .Content.ShowtimeApiFieldPoster.FieldMediaImage.Sources[0]
-                            .Srcset?.Replace(
-                                "https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/",
-                                ""
-                            );
+                            .Srcset;
                     }
 
                     movieObject = new Movie

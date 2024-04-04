@@ -109,10 +109,7 @@ public class FilterApiHandler : IFilterApiHandler
                         ImageUrl =
                             jsonMovie.Content.ShowtimeApiFieldPoster.FieldMediaImage?.Sources?[
                                 0
-                            ].Srcset.Replace(
-                                "https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/",
-                                ""
-                            ),
+                            ].Srcset,
                         DurationInMinutes = duration,
                     };
                     existingMovies.Add(movieObject.Id, movieObject);
@@ -226,10 +223,7 @@ public class FilterApiHandler : IFilterApiHandler
                         : new AgeRating { Censorship = movie.Content.FieldCensorshipIcon },
                 ImageUrl = movie.Content.ShowtimeApiFieldPoster.FieldMediaImage?.Sources?[
                     0
-                ].Srcset.Replace(
-                    "https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/",
-                    ""
-                ),
+                ].Srcset,
                 DurationInMinutes = duration
             };
             missingMovies.Add(movieObject);
@@ -246,6 +240,9 @@ public class FilterApiHandler : IFilterApiHandler
         DateTime toDate
     )
     {
+        var fromDateString = fromDate.ToString("s"); //format: 2008-04-18T06:30:00, this format is needed so there is no slashes in the string, which would be interpreted as paths in the url
+        var toDateString = toDate.ToString("s");
+        
         var filterStringBuilder = new StringBuilder("sort=most_purchased");
 
         foreach (var id in movieIds)
@@ -263,8 +260,8 @@ public class FilterApiHandler : IFilterApiHandler
             filterStringBuilder.Append($"&genres={id}");
         }
 
-        filterStringBuilder.Append($"&date={fromDate}");
-        filterStringBuilder.Append($"&date={toDate}");
+        filterStringBuilder.Append($"&date={fromDateString}");
+        filterStringBuilder.Append($"&date={toDateString}");
 
         return filterStringBuilder.ToString();
     }

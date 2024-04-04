@@ -9,28 +9,22 @@ public class FilterApiHandler : IFilterApiHandler
 {
     private readonly HttpClient _httpClient = new();
 
-    private const string BaseUrl =
+    private const string ApiBaseUrl =
         "https://api.kino.dk/ticketflow/showtimes?region=content&format=json";
 
     public async Task<(
         List<Showtime> showtimes,
         List<Movie> moviesWithoutShowtimes
     )> GetShowtimesFromFilters(
-        ICollection<int>? cinemaIds = null,
-        ICollection<int>? movieIds = null,
-        ICollection<int>? genreIds = null,
-        DateTime? fromDate = null,
-        DateTime? toDate = null
+        ICollection<int> cinemaIds,
+        ICollection<int> movieIds,
+        ICollection<int> genreIds,
+        DateTime fromDate,
+        DateTime toDate
     )
     {
-        cinemaIds ??= [];
-        movieIds ??= [];
-        genreIds ??= [];
-        fromDate ??= DateTime.Today;
-        toDate ??= DateTime.Today.AddYears(1);
-
-        fromDate = fromDate.Value.Date;
-        toDate = toDate.Value.Date;
+        fromDate = fromDate.Date;
+        toDate = toDate.Date;
 
         var filterStringBuilder = new StringBuilder("&sort=most_purchased");
         var cinemaList = cinemaIds.ToList();
@@ -51,10 +45,10 @@ public class FilterApiHandler : IFilterApiHandler
             filterStringBuilder.Append($"&genres[{i}]={genreList[i]}");
         }
 
-        filterStringBuilder.Append($"&date[start]={fromDate.Value.ToString("s")}"); //format: 2008-04-18T06:30:00
-        filterStringBuilder.Append($"&date[end]={toDate.Value.ToString("s")}");
+        filterStringBuilder.Append($"&date[start]={fromDate.ToString("s")}"); //format: 2008-04-18T06:30:00, this is the format the API expects
+        filterStringBuilder.Append($"&date[end]={toDate.ToString("s")}");
 
-        var apiString = BaseUrl + filterStringBuilder;
+        var apiString = ApiBaseUrl + filterStringBuilder;
 
         var json = await _httpClient.GetStringAsync(apiString);
         var apiResultObject = JsonConvert.DeserializeObject<ShowtimeApiRoot>(json);
@@ -78,6 +72,8 @@ public class FilterApiHandler : IFilterApiHandler
 
         foreach (var jsonCinema in apiResultObject.ShowtimeApiContent.ShowtimeApiContent.Content)
         {
+            
+            //if cinemaIdsToNames does not contain the id it may be a different kind of entity
             if (!cinemaIdsToNames.ContainsKey(jsonCinema.Id))
                 continue;
 
@@ -187,20 +183,22 @@ public class FilterApiHandler : IFilterApiHandler
         }
 
         //include movies that had no show times
-        var filterString = new StringBuilder("&sort=most_purchased");
         var notIncludedMovieIds = movieIds
             .Where(movieId => showtimes.All(f => f.Movie.Id != movieId))
             .ToList();
         var index = 0;
+        
+        if (notIncludedMovieIds.Count == 0)
+            return (showtimes, []); //all movies had showtimes
+        
+        //we call the API again to get information on the missing movies, now without the rest of the filters, to make sure we get all the movies
+        var filterString = new StringBuilder("&sort=most_purchased");
         foreach (var movieId in notIncludedMovieIds)
         {
             filterString.Append($"&movies[{index++}]={movieId}");
         }
 
-        if (notIncludedMovieIds.Count == 0)
-            return (showtimes, []); //all movies had showtimes
-
-        var movieApiString = BaseUrl + filterString;
+        var movieApiString = ApiBaseUrl + filterString;
         var movieJson = await _httpClient.GetStringAsync(movieApiString);
         var root = JsonConvert.DeserializeObject<ShowtimeApiRoot>(movieJson);
         if (root == null)
@@ -248,9 +246,6 @@ public class FilterApiHandler : IFilterApiHandler
         DateTime toDate
     )
     {
-        var fromDateString = fromDate.ToString("s"); //format: 2008-04-18T06:30:00
-        var toDateString = toDate.ToString("s");
-
         var filterStringBuilder = new StringBuilder("sort=most_purchased");
 
         foreach (var id in movieIds)
@@ -268,8 +263,8 @@ public class FilterApiHandler : IFilterApiHandler
             filterStringBuilder.Append($"&genres={id}");
         }
 
-        filterStringBuilder.Append($"&date={fromDateString}");
-        filterStringBuilder.Append($"&date={toDateString}");
+        filterStringBuilder.Append($"&date={fromDate}");
+        filterStringBuilder.Append($"&date={toDate}");
 
         return filterStringBuilder.ToString();
     }

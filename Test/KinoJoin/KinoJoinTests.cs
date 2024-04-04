@@ -336,8 +336,8 @@ public class KinoJoinTests : IAsyncLifetime
         var filterApiHandler = new FilterApiHandler();
         var (showtimesWithCinemaFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
             cinemasToCheck,
-            null,
-            null,
+            [],
+            [],
             fromDate,
             toDate
         );
@@ -346,9 +346,9 @@ public class KinoJoinTests : IAsyncLifetime
 
         var moviesToCheck = showtimesWithCinemaFilter.Select(s => s.MovieId).Take(3).ToList();
         var (showtimesWithMovieFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
-            null,
+            [],
             moviesToCheck,
-            null,
+            [],
             fromDate,
             toDate
         );
@@ -362,8 +362,8 @@ public class KinoJoinTests : IAsyncLifetime
         }
 
         var (showtimesWithGenreFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
-            null,
-            null,
+            [],
+            [],
             genresToCheck,
             fromDate,
             toDate
@@ -376,7 +376,7 @@ public class KinoJoinTests : IAsyncLifetime
         var (showtimesWithCombinedFilters, _) = await filterApiHandler.GetShowtimesFromFilters(
             new List<int> { specificshowtime.CinemaId },
             new List<int> { specificshowtime.MovieId },
-            null,
+            [],
             fromDate,
             toDate
         );

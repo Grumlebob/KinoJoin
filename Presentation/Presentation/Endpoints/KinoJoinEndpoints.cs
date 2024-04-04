@@ -64,7 +64,7 @@ public class KinoJoinEndpoints : ICarterModule
     {
         try
         {
-            var joinEvents = await kinoJoinDbService.GetAllAsync();
+            var joinEvents = await kinoJoinDbService.GetAllJoinEventsAsync();
             return TypedResults.Ok(joinEvents);
         }
         catch (Exception)
@@ -82,7 +82,7 @@ public class KinoJoinEndpoints : ICarterModule
     {
         try
         {
-            var joinEvents = await kinoJoinDbService.GetAllAsync(j => j.HostId == hostId);
+            var joinEvents = await kinoJoinDbService.GetAllJoinEventsAsync(j => j.HostId == hostId);
             return TypedResults.Ok(joinEvents);
         }
         catch (Exception)
@@ -98,7 +98,7 @@ public class KinoJoinEndpoints : ICarterModule
     {
         try
         {
-            var joinEvent = await kinoJoinDbService.GetAsync(id);
+            var joinEvent = await kinoJoinDbService.GetJoinEventAsync(id);
             return joinEvent == null ? TypedResults.NotFound() : TypedResults.Ok(joinEvent);
         }
         catch (Exception)
@@ -113,7 +113,7 @@ public class KinoJoinEndpoints : ICarterModule
     {
         try
         {
-            var cinemas = await kinoKinoJoinService.GetAllCinemas();
+            var cinemas = await kinoKinoJoinService.GetAllCinemasAsync();
             return TypedResults.Ok(cinemas);
         }
         catch (Exception)
@@ -128,7 +128,7 @@ public class KinoJoinEndpoints : ICarterModule
     {
         try
         {
-            var movies = await kinoKinoJoinService.GetAllMovies();
+            var movies = await kinoKinoJoinService.GetAllMoviesAsync();
             return TypedResults.Ok(movies);
         }
         catch (Exception)
@@ -143,7 +143,7 @@ public class KinoJoinEndpoints : ICarterModule
     {
         try
         {
-            var genres = await kinoKinoJoinService.GetAllGenres();
+            var genres = await kinoKinoJoinService.GetAllGenresAsync();
             return TypedResults.Ok(genres);
         }
         catch (Exception)

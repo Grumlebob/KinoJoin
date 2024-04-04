@@ -5,23 +5,24 @@ namespace Infrastructure.Services;
 
 public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
 {
-    public async Task<ICollection<Cinema>> GetAllCinemas()
+    public async Task<ICollection<Cinema>> GetAllCinemasAsync()
     {
         return await context.Cinemas.AsNoTracking().ToListAsync();
     }
 
-    public async Task<ICollection<Movie>> GetAllMovies()
+    public async Task<ICollection<Movie>> GetAllMoviesAsync()
     {
         return await context.Movies.AsNoTracking().ToListAsync();
     }
 
-    public async Task<ICollection<Genre>> GetAllGenres()
+    public async Task<ICollection<Genre>> GetAllGenresAsync()
     {
         return await context.Genres.AsNoTracking().ToListAsync();
     }
 
-    public async Task<JoinEvent?> GetAsync(int id)
+    public async Task<JoinEvent?> GetJoinEventAsync(int id)
     {
+        //Include all related entities, otherwise these would be set to null
         var result = await context
             .JoinEvents.AsNoTracking()
             .Include(j => j.Showtimes)
@@ -45,7 +46,7 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
         return result;
     }
 
-    public async Task<List<JoinEvent>> GetAllAsync(Expression<Func<JoinEvent, bool>>? filter = null)
+    public async Task<List<JoinEvent>> GetAllJoinEventsAsync(Expression<Func<JoinEvent, bool>>? filter = null)
     {
         IQueryable<JoinEvent> query = context.JoinEvents.AsNoTracking();
 
@@ -53,7 +54,8 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
         {
             query = query.Where(filter);
         }
-
+        
+        //Include all related entities, otherwise these would be set to null
         var joinEvents = await query
             .Include(j => j.Showtimes)
             .ThenInclude(s => s.Movie)
@@ -93,7 +95,7 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
     }
 
     /*
-     * The overall goal is to save the entire workpage of a JoinEvent, regardless of creating or filling
+     * The overall goal is to save all data of a JoinEvent, regardless of creating or filling
      *
      * Stages:
      * 1. We need to upsert entities that needs to exist in the database before JoinEvent is added.
@@ -111,7 +113,7 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
             return await UpdateJoinEventAsync(updatedJoinEvent);
         }
 
-        //Attempt without preloaded data
+        //Attempt assuming all necessary nested entities  are in the database
         try
         {
             var newId = await InsertJoinEventAsync(updatedJoinEvent);

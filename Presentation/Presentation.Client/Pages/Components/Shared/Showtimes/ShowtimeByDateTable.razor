@@ -107,7 +107,7 @@
     [Parameter] public required List<SelectOption> SelectOptions { get; set; }
     [Parameter] public required SelectOption DefaultSelectOption { get; set; }
 
-    [Parameter] public EventCallback<ICollection<ParticipantVote>> VotesChanged { get; set; }
+    [Parameter] public EventCallback<ICollection<ParticipantVote>> ChoicesChanged { get; set; }
 
     [Parameter] public bool HasAnswered { get; set; }
 
@@ -128,7 +128,7 @@
         voteToIncrement.SelectedOption = SelectOptions[next];
         voteToIncrement.SelectedOptionId = SelectOptions[next].Id;
 
-        await VotesChanged.InvokeAsync(ShowtimeChoices);
+        await ChoicesChanged.InvokeAsync(ShowtimeChoices);
     }
 
     private string CapitalizeStart(string s)

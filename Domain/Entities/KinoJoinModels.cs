@@ -62,6 +62,8 @@ public class Movie
     [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int Id { get; set; }
 
+    public int? AgeRatingId { get; set; }
+
     [MaxLength(500, ErrorMessage = "Title kan højst være 260 tegn.")]
     public required string Title { get; set; }
 
@@ -70,10 +72,12 @@ public class Movie
 
     [MaxLength(500, ErrorMessage = "Kino's info url kan højst være 260 tegn.")]
     public string? KinoUrl { get; set; } = string.Empty;
-    public int? DurationInMinutes { get; set; }
+    public int DurationInMinutes { get; set; }
 
     [MaxLength(100, ErrorMessage = "PremiereDate kan højst være 260 tegn.")]
     public string? PremiereDate { get; set; }
+
+    [ForeignKey("AgeRatingId")]
     public AgeRating? AgeRating { get; set; }
 }
 

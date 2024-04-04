@@ -34,7 +34,7 @@
     </h1>
     @if (_isLoggedInUserAdmin)
     {
-        <button class="rounded-full bg-yellow-100 p-1 text-black hover:bg-success-dark focus:outline-none focus:ring-2 focus:ring-green-400" @onclick="KinoJoinHttpClient.UpdateBaseDataFromKinoDkAsync">Update from kino.dk</button>
+        <button class="rounded-full bg-yellow-100 p-1 text-black hover:bg-success-dark focus:outline-none focus:ring-2 focus:ring-green-400" onclick="@KinoJoinHttpClient.UpdateBaseDataFromKinoDkAsync(1, 71)">Update from kino.dk</button>
     }
 </div>
 

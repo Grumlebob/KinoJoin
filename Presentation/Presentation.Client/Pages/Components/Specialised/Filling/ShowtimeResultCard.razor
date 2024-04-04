@@ -47,13 +47,13 @@
                     @Showtime.Playtime.StartTime.ToString("dd. MMM").
                 </p>
 
-                <p class="md:hidden"> - @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes(Showtime.Movie.DurationInMinutes ?? 0).ToString("HH:mm") </p>
+                <p class="md:hidden"> - @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes(Showtime.Movie.DurationInMinutes).ToString("HH:mm") </p>
 
             </div>
 
             <div class="hidden w-full items-center gap-1 md:flex">
                 <p class="text-sm font-normal">
-                    @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes(Showtime.Movie.DurationInMinutes ?? 0).ToString("HH:mm")
+                    @Showtime.Playtime.StartTime.ToString("HH:mm") - @Showtime.Playtime.StartTime.AddMinutes(Showtime.Movie.DurationInMinutes).ToString("HH:mm")
                 </p>
             </div>
         </div>

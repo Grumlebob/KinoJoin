@@ -26,7 +26,7 @@ public class KinoJoinEndpoints : ICarterModule
         kinoDataGroup.MapGet("cinemas", GetCinemas);
         kinoDataGroup.MapGet("movies", GetMovies);
         kinoDataGroup.MapGet("genres", GetGenres);
-        kinoDataGroup.MapPost("update-all", UpdateAllBaseDataFromKinoDk);
+        kinoDataGroup.MapPost("update-all/{fromId}/{toId}", UpdateAllBaseDataFromKinoDk);
     }
 
     private static async Task<Results<Ok<int>, BadRequest<string>>> UpsertJoinEvent(
@@ -175,17 +175,19 @@ public class KinoJoinEndpoints : ICarterModule
     }
 
     private static async Task<Results<Ok, BadRequest<string>>> UpdateAllBaseDataFromKinoDk(
-        [FromServices] IFetchNewestKinoDkDataService service
+        [FromServices] IFetchNewestKinoDkDataService service,
+        [FromRoute] int fromId,
+        [FromRoute] int toId
     )
     {
         try
         {
-            await service.UpdateBaseDataFromKinoDk(1, 71);
+            await service.UpdateBaseDataFromKinoDk(fromId, toId);
             return TypedResults.Ok();
         }
         catch (Exception e)
         {
-            return TypedResults.BadRequest(DefaultErrorMessage);
+            return TypedResults.BadRequest(e.Message);
         }
     }
 }

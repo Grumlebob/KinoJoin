@@ -91,7 +91,7 @@ public class FilterApiHandler : IFilterApiHandler
                 var jsonMovie in jsonCinema.Movies.Where(jsonMovie =>
                     movieIdsToNames.ContainsKey(jsonMovie.Id)
                 )
-            ) //if not contains key it is not a movie (there are events with different ids)
+            ) //if not contains key it is not a movie (there are events with different ids, example "særvisninger" are excluded)
             {
                 if (!int.TryParse(jsonMovie.Content.FieldPlayingTime, out var duration))
                     duration = 0;

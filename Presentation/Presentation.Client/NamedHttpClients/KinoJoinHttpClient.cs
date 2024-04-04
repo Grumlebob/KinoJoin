@@ -12,7 +12,9 @@ public interface IKinoJoinHttpClient
     Task<ICollection<Cinema>?> GetCinemasAsync();
     Task<ICollection<Movie>?> GetMoviesAsync();
     Task<ICollection<Genre>?> GetGenresAsync();
-    Task<HttpResponseMessage> UpdateBaseDataFromKinoDkAsync();
+
+    /// <remarks>Both ids are inclusive</remarks>
+    Task<HttpResponseMessage> UpdateBaseDataFromKinoDkAsync(int fromId, int toId);
 }
 
 public class KinoJoinHttpClient : IKinoJoinHttpClient
@@ -65,8 +67,8 @@ public class KinoJoinHttpClient : IKinoJoinHttpClient
         return await _httpClient.GetFromJsonAsync<ICollection<Genre>>("api/kino-data/genres");
     }
 
-    public async Task<HttpResponseMessage> UpdateBaseDataFromKinoDkAsync()
+    public async Task<HttpResponseMessage> UpdateBaseDataFromKinoDkAsync(int fromId, int toId)
     {
-        return await _httpClient.PostAsync("api/kino-data/update-all", null);
+        return await _httpClient.PostAsync($"api/kino-data/update-all/{fromId}/{toId}", null);
     }
 }

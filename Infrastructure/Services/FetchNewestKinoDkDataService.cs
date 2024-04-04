@@ -15,7 +15,7 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
         //Several cinemas may have the same movie. No need to create the movie object every time. Instead we save unique movies in a dictionary,
         //and add them to the database after all cinemas have been iterated.
         var movieIdsToObjects = new Dictionary<int, Movie>();
-        
+
         for (var i = lowestCinemaId; i <= highestCinemaId; i++)
         {
             try
@@ -59,7 +59,7 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                             movieOption => movieOption.Value
                         );
                 }
-                
+
                 //Add movies to movieIdsToObjects
                 //if movieIdsToNames does not contain the id it may be a different kind of event like "særvisninger"
                 foreach (
@@ -108,7 +108,6 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                     };
                     movieIdsToObjects.Add(movieObject.Id, movieObject);
                 }
-                
             }
             catch (Exception)
             {
@@ -116,9 +115,9 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                     $"Failed to fetch data for cinema {i}. Skipping to next. Usually Kino.dk is down 5% of the day."
                 );
             }
-            
+
             //Save age ratings and movies to database
-            
+
             List<AgeRating> ageRatings = movieIdsToObjects
                 .Values.Where(v => v.AgeRating != null)
                 .Select(v => v.AgeRating)

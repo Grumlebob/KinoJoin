@@ -11,6 +11,11 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
     public async Task UpdateBaseDataFromKinoDk(int lowestCinemaId, int highestCinemaId)
     {
         var movieIdsToNames = new Dictionary<int, string>();
+
+        //Several cinemas may have the same movie. No need to create the movie object every time. Instead we save unique movies in a dictionary,
+        //and add them to the database after all cinemas have been iterated.
+        var movieIdsToObjects = new Dictionary<int, Movie>();
+        
         for (var i = lowestCinemaId; i <= highestCinemaId; i++)
         {
             try
@@ -54,11 +59,8 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                             movieOption => movieOption.Value
                         );
                 }
-
-                //MOVIES
-                //several cinemas may have the same movie. No need to create the movie object every time
-                var moviesOnKinoDk = new Dictionary<int, Movie>();
-
+                
+                //Add movies to movieIdsToObjects
                 //if movieIdsToNames does not contain the id it may be a different kind of event like "særvisninger"
                 foreach (
                     var jsonMovie in apiResultObject.ShowtimeApiContent.ShowtimeApiContent.Content.SelectMany(
@@ -69,7 +71,7 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                     )
                 )
                 {
-                    if (moviesOnKinoDk.TryGetValue(jsonMovie.Id, out var movieObject))
+                    if (movieIdsToObjects.TryGetValue(jsonMovie.Id, out var movieObject))
                         continue; //already added
 
                     if (!int.TryParse(jsonMovie.Content.FieldPlayingTime, out var duration))
@@ -104,26 +106,9 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                         ImageUrl = imageUrl,
                         DurationInMinutes = duration,
                     };
-                    moviesOnKinoDk.Add(movieObject.Id, movieObject);
+                    movieIdsToObjects.Add(movieObject.Id, movieObject);
                 }
-
-                List<AgeRating> ageRatings = moviesOnKinoDk
-                    .Values.Where(v => v.AgeRating != null)
-                    .Select(v => v.AgeRating)
-                    .DistinctBy(a => a!.Censorship)
-                    .ToList()!;
-                await context.AgeRatings.UpsertRange(ageRatings).On(a => a.Censorship).RunAsync();
-
-                var ageRatingsFromDb = await context.AgeRatings.ToListAsync();
-
-                foreach (var movie in moviesOnKinoDk.Values.Where(m => m.AgeRating != null))
-                {
-                    movie.AgeRatingId = ageRatingsFromDb
-                        .First(a => a.Censorship == movie.AgeRating!.Censorship)
-                        .Id;
-                }
-
-                await context.Movies.UpsertRange(moviesOnKinoDk.Values).RunAsync();
+                
             }
             catch (Exception)
             {
@@ -131,6 +116,26 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                     $"Failed to fetch data for cinema {i}. Skipping to next. Usually Kino.dk is down 5% of the day."
                 );
             }
+            
+            //Save age ratings and movies to database
+            
+            List<AgeRating> ageRatings = movieIdsToObjects
+                .Values.Where(v => v.AgeRating != null)
+                .Select(v => v.AgeRating)
+                .DistinctBy(a => a!.Censorship)
+                .ToList()!;
+            await context.AgeRatings.UpsertRange(ageRatings).On(a => a.Censorship).RunAsync();
+
+            var ageRatingsFromDb = await context.AgeRatings.ToListAsync();
+
+            foreach (var movie in movieIdsToObjects.Values.Where(m => m.AgeRating != null))
+            {
+                movie.AgeRatingId = ageRatingsFromDb
+                    .First(a => a.Censorship == movie.AgeRating!.Censorship)
+                    .Id;
+            }
+
+            await context.Movies.UpsertRange(movieIdsToObjects.Values).RunAsync();
         }
     }
 }

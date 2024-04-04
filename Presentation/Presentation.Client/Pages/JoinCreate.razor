@@ -146,7 +146,7 @@
         </div>
 
         <div class="mt-5 mb-5 flex justify-end space-x-3">
-            <button type="button" class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog"))">Annuller</button>
+            <button type="button" class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("hideDialog", "eventDetailsDialog"))">Annuller</button>
             <button type="submit" class="btn-black">Opret</button>
         </div>
     </EditForm>
@@ -185,7 +185,7 @@
         @if (!_uploadingEvent)
         {
             <div class="flex justify-end space-x-3">
-                <button type="button" class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog"))">Rediger videre</button>
+                <button type="button" class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("hideDialog", "eventConfirmDialog"))">Rediger videre</button>
                 <button type="submit" class="btn-black" @onclick="FinishJoinEvent">Opret</button>
             </div>
         }
@@ -506,14 +506,14 @@
         }
         else
         {
-            await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventDetailsDialog");
+            await JsRuntime.InvokeVoidAsync("showDialog", "eventDetailsDialog");
         }
     }
 
     //used to open the final dialog, where the user can confirm the creation of the event
     private async Task OpenConfirmationDialog()
     {
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventConfirmDialog");
+        await JsRuntime.InvokeVoidAsync("showDialog", "eventConfirmDialog");
     }
 
     //Used to upload the event to the database, and navigate to the filling page

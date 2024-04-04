@@ -1,14 +1,6 @@
 using Application;
-using Application.Interfaces;
 using Carter;
-using Domain.Entities;
-using Domain.ExternalApiModels;
 using Infrastructure;
-using Infrastructure.Persistence;
-using Infrastructure.Services;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using Presentation;
 using Presentation.Client;
 using Presentation.Components;
 using _Imports = Presentation.Client._Imports;
@@ -20,18 +12,13 @@ builder.Services.AddRazorComponents().AddInteractiveWebAssemblyComponents();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(
         "AllowAllOrigins",
-        builder =>
+        corsPolicyBuilder =>
         {
-            builder
-                .AllowAnyOrigin() // This allows requests from any origin
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-            // Do not call AllowCredentials() when using AllowAnyOrigin()
+            corsPolicyBuilder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
         }
     );
 });
@@ -69,4 +56,4 @@ app.MapCarter();
 app.Run();
 
 //A hacky solution to use Testcontainers with WebApplication.CreateBuilder for integration tests
-public partial class Program { }
+public partial class Program;

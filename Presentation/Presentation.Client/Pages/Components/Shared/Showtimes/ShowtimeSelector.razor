@@ -167,7 +167,7 @@ The main purpose is to group showtimes by their Cinema, Version and Movie, and d
                                                     <div class="w-fit">
                                                         <p class="bg-gray-300 px-2 py-1 font-label">@showtimesByVersionTag.Key</p>
                                                     </div>
-                                                    <ShowtimeByDateTable SelectOptions="SelectOptions" DefaultSelectOption="DefaultSelectOption" UniqueTableId="@($"{movie.Id}-{cinema.Id}-{showtimesByVersionTag.Key}")" ShowtimeChoices="ShowtimeChoices" ChoicesChanged="VotesChanged" Showtimes="@showtimesByVersionTag.ToList()" HasAnswered="HasAnswered" StartDate="@Showtimes.Min(s => s.Playtime.StartTime.Date)"/>
+                                                    <ShowtimeByDateTable SelectOptions="SelectOptions" DefaultSelectOption="DefaultSelectOption" UniqueTableId="@($"{movie.Id}-{cinema.Id}-{showtimesByVersionTag.Key}")" ShowtimeChoices="ShowtimeChoices" ChoicesChanged="ChoicesChanged" Showtimes="@showtimesByVersionTag.ToList()" HasAnswered="HasAnswered" StartDate="@Showtimes.Min(s => s.Playtime.StartTime.Date)"/>
                                                 </div>
                                             </ItemContent>
                                             <Placeholder>

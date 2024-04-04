@@ -122,7 +122,7 @@
     </div>
 </div>
 
-<ShowtimeSelector HasAnswered="@_currentParticipantAlreadyAnswered" SelectOptions="@_joinEvent.SelectOptions" DefaultSelectOption="@_joinEvent.DefaultSelectOption" Showtimes="@_joinEvent.Showtimes" LegendTitle="Tryk på de tider du kan" ShowtimeChoices="@_currentParticipant.VotedFor" VotesChanged="OnVotesChanged"/>
+<ShowtimeSelector HasAnswered="@_currentParticipantAlreadyAnswered" SelectOptions="@_joinEvent.SelectOptions" DefaultSelectOption="@_joinEvent.DefaultSelectOption" Showtimes="@_joinEvent.Showtimes" LegendTitle="Tryk på de tider du kan" ShowtimeChoices="@_currentParticipant.VotedFor" ChoicesChanged="OnVotesChanged"/>
 
 @if (!_currentParticipantAlreadyAnswered)
 {

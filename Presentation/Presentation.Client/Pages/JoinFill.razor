@@ -27,7 +27,7 @@
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
         <div class="mx-4 mb-40 rounded-lg bg-white p-6 shadow-xl">
             <div class="flex flex-col justify-center space-y-2">
-                <h2 class="text-xl font-bold">@_joinEvent!.Host.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h2>
+                <h2 class="text-xl font-bold">@_joinEvent.Host!.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h2>
                 <div class="flex md:items-end md:justify-end">
                     <div class="flex w-full flex-col gap-2 md:w-fit md:flex-row">
                         <button class="btn-white" onclick="@(() => { _showFirstLoginDialog = false; })">Uden login</button>
@@ -38,68 +38,78 @@
         </div>
     </div>
 }
+
+
+@* Title and share boxes *@
 <div class="flex justify-center">
     <div class="my-2 flex flex-col gap-2 md:flex-row">
+
+        @* join event title and information box *@
         <div class="w-full rounded bg-gray-50 p-3 shadow-md md:w-fit md:max-w-md">
             <div class="space-y-3">
-                <div class="flex flex-row gap-1">
-                    @if (_isEditing)
-                    {
-                        <input class="w-full rounded-full border p-1 md:w-60" type="text" @bind="_joinEvent!.Title"/>
-                    }
-                    else
-                    {
-                        <h1 class="text-2xl font-label">@_joinEvent!.Title</h1>
-                    }
 
-                    @if (_isHost)
-                    {
-                        if (_isEditing)
-                        {
-                            <button class="btn-white" onclick="@(async () => { await UpdateJoinEvent(); _isEditing = false; })">Gem ændringer</button>
-                        }
-                        else
+                @if (!_isEditing)
+                {
+                    @* show information about join event staticaly *@
+
+                    <div class="flex flex-row gap-1">
+                        <h1 class="text-2xl font-label">@_joinEvent!.Title</h1>
+
+                        @if (_isHost)
                         {
                             <button onclick="@(() => { _isEditing = true; })">
-                                <img src="Icons/EditIcon.svg" alt="edit" Class="hover:bg-gray-200 rounded p-1"/>
+                                <img src="Icons/EditIcon.svg" alt="edit" Class="hover:bg-gray-200 h-6 w-6 rounded p-1"/>
                             </button>
                         }
-                    }
-                </div>
+                    </div>
 
-                @if (_isEditing)
-                {
-                    <textarea class="w-full rounded-2xl border p-1 md:w-60" type="text" cols="5" placeholder="Beskrivelse"  @bind="_joinEvent.Description"></textarea>
-                }
-                else
-                {
                     if (_joinEvent.Description != "")
                     {
                         <p>@_joinEvent.Description</p>
                         <br/>
                     }
-                }
 
-                <div class="flex w-full space-x-1 md:w-60">
-                    <span class="font-medium">Svarfrist:</span>
-                    @if (_isEditing)
-                    {
-                        <input class="w-full rounded-2xl border" type="date" placeholder="Deadline" min="@DateTime.Now.Date.ToString("yyyy-MM-dd")" max="@_joinEvent!.Showtimes.Max(s => s.Playtime.StartTime).ToString("yyyy-MM-dd")" @bind="@_deadline"/>
-                    }
-                    else
-                    {
-                        <span>
-                            @_deadline.ToString("dd. MMM")
-                        </span>
-                    }
-                </div>
+                    <div class="flex w-full space-x-1 md:w-60">
+                        <span class="font-medium">Svarfrist:</span>
+                        <span> @_joinEvent.Deadline.ToString("dd. MMM") </span>
+                    </div>
+                }
+                else if (_isEditing)
+                {
+                    @* Form for host to edit title description and deadline *@
+
+                    <EditForm OnValidSubmit="@(async () => { await KinoJoinHttpClient.PutJoinEventAsync(_joinEvent); _isEditing = false; })" model="@_joinEvent">
+                        <DataAnnotationsValidator/>
+
+                        <div class="text-error">
+                            <ValidationSummary/>
+                        </div>
+
+                        <div class="mb-1 flex flex-row gap-1">
+                            <InputText class="w-full rounded-full border px-4 py-2 md:w-60" @bind-Value="_joinEvent!.Title"/>
+                            <button class="btn-black" type="submit">Gem ændringer</button>
+                        </div>
+
+                        <InputTextArea class="w-full rounded-3xl border px-4 py-2 md:w-60" @bind-Value="_joinEvent.Description" placeholder="Beskrivelse (valgfrit)"/>
+
+                        <div class="flex w-full space-x-1 md:w-60">
+                            <span class="font-medium">Svarfrist:</span>
+                            <input type="date" class="w-full rounded-2xl border" value="@_joinEvent.Deadline.ToString("yyyy-MM-dd")" @oninput="@(v => { if (DateTime.TryParse(v.Value?.ToString(), CultureInfo.InvariantCulture, out var parsedDate)) _joinEvent.Deadline = parsedDate; })"/>
+                        </div>
+
+                    </EditForm>
+                }
 
                 <span class="font-medium">Tidsinterval:</span>
                 <span> @_joinEvent.Showtimes.Min(s => s.Playtime.StartTime).ToString("dd. MMM") - @_joinEvent.Showtimes.Max(s => s.Playtime.StartTime).ToString("dd. MMM")</span>
+
                 <br/>
+
                 <a class="btn-white font-label" href="@(NavigationManager.Uri + "#results")">Se Resultater</a>
             </div>
         </div>
+
+        @* Share box*@
         @if (_isHost)
         {
             <div class="w-full rounded border bg-gray-50 p-3 shadow-md space-y-1 md:w-fit md:max-w-md">
@@ -108,11 +118,13 @@
                     <a href="@(_baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id))" class="text-lg text-blue-600 hover:text-blue-700">
                         @((_baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id)).Replace("https://", ""))
                     </a>
+
                     <div class="group">
                         <button class="btn-white min-w-6" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id)); })">
                             <img src="Icons/CopyIcon.svg" alt="copy" class="h-full rounded-full group-hover:invert"/>
                         </button>
                     </div>
+
                     <button class="btn-black min-w-6 lg:hidden" onclick="@(async () => { await ShareEvent(); })">
                         <img src="Icons/ShareIcon.svg" alt="share" class="h-full"/>
                     </button>
@@ -122,12 +134,14 @@
     </div>
 </div>
 
-<ShowtimeSelector HasAnswered="@_currentParticipantAlreadyAnswered" SelectOptions="@_joinEvent.SelectOptions" DefaultSelectOption="@_joinEvent.DefaultSelectOption" Showtimes="@_joinEvent.Showtimes" LegendTitle="Tryk på de tider du kan" ShowtimeChoices="@_currentParticipant.VotedFor" ChoicesChanged="OnVotesChanged"/>
+@* showtime selection *@
+<ShowtimeSelector HasAnswered="@_currentParticipantAlreadyAnswered" SelectOptions="@_joinEvent.SelectOptions" DefaultSelectOption="@_joinEvent.DefaultSelectOption" Showtimes="@_joinEvent.Showtimes" LegendTitle="Tryk på de tider du kan" ShowtimeChoices="@_currentParticipant.VotedFor" ChoicesChanged="votes => _currentParticipant.VotedFor = votes"/>
 
+@* "Send Svar" button, or text saying you hsave answered*@
 @if (!_currentParticipantAlreadyAnswered)
 {
     <div class="flex justify-center">
-        <button class="btn-red p-4 text-xl font-bold" @onclick="OpenParticipantInfoDialog">
+        <button class="p-4 text-xl font-bold btn-red" @onclick="OpenParticipantInfoDialog">
             Send svar
         </button>
     </div>
@@ -142,11 +156,10 @@ else
     <p class="text-2xl font-semibold text-success-darkest md:mt-7">Dit svar er registreret</p>
 }
 
-
 <br/>
 <br/>
 
-
+@* Dialog appearing if the user trys to send and answer when no showtimes are picked *@
 <dialog class="rounded p-5" id="NoShowtimesDialog">
     <div class="flex flex-col items-end gap-4 text-center">
         <h4 class="w-full text-xl font-bold">Obs! Du har ikke valgt nogen tider</h4>
@@ -158,7 +171,7 @@ else
     </div>
 </dialog>
 
-
+@* Dialog where the user can enter their information when sending an answer*@
 <dialog id="ParticipantInfoDialog" class="mx-auto my-12 max-w-lg rounded-lg bg-white p-6 shadow-xl">
     <EditForm Model="@_currentParticipant" OnValidSubmit="@SaveParticipantAnswer" class="w-full space-y-4 md:mt-7 md:w-80">
         <DataAnnotationsValidator/>
@@ -188,42 +201,42 @@ else
     </EditForm>
 </dialog>
 
-
-<div id="results" class="pt-2"></div>
+@* results *@
 <JoinEventResults @ref="_joinEventResults" CurrentParticipant="_currentParticipant" JoinEvent="_joinEvent" IsHost="_isHost"/>
 
 @code {
     [Parameter] public required string JoinEventId { get; set; }
 
+    //Used to get info on the currently logged in user
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = null!;
 
     private JoinEvent? _joinEvent;
 
-    private bool _loading = true;
+    private Participant _currentParticipant = new() { VotedFor = [] };
 
-    string _baseUrl = "";
+    private JoinEventResults _joinEventResults = null!;
 
     private bool _currentParticipantAlreadyAnswered;
+
+    private bool _showFirstLoginDialog;
+
+    private bool _loading = true;
+
+    private bool _isLoggedIn;
 
     private bool _isHost;
 
     private bool _isEditing;
 
-    private bool _showFirstLoginDialog;
-
-    private DateTime _deadline;
-
-    private bool _isLoggedIn;
-
-    private Participant _currentParticipant = new() { VotedFor = [] };
-
     private bool _somethingWentWrong;
 
-    private JoinEventResults _joinEventResults;
+    string _baseUrl = "";
 
     protected override async Task OnInitializedAsync()
     {
         _baseUrl = NavigationManager.BaseUri;
+
+        //To prevent people guessing the Id of join events they are not invited to, we encode the Id
         var id = SqidsEncoder.Decode(JoinEventId).FirstOrDefault();
         if (SqidsEncoder.Encode(id) == JoinEventId) //avoid false positives
         {
@@ -247,7 +260,6 @@ else
             }).ToList(); // a default vote for each showtime
 
 
-        //check if user is host
         var userInfo = await UserInfoService.GetUserInfoAsync(AuthenticationStateTask);
 
         _isLoggedIn = userInfo != null;
@@ -269,19 +281,26 @@ else
             StateHasChanged();
         }
 
-        _deadline = _joinEvent!.Deadline;
         _loading = false;
     }
 
-    private async Task UpdateJoinEvent()
+    private async Task OpenParticipantInfoDialog()
     {
-        _joinEvent!.Deadline = _deadline;
-        await KinoJoinHttpClient.PutJoinEventAsync(_joinEvent);
+        //If the user has not selected any showtimes, ask if they want to send an empty answer
+        if (_currentParticipant.VotedFor.All(v => v.SelectedOptionId == _joinEvent!.DefaultSelectOptionId))
+        {
+            await JsRuntime.InvokeVoidAsync("showDialog", "NoShowtimesDialog");
+            return;
+        }
+
+        await JsRuntime.InvokeVoidAsync("showDialog", "ParticipantInfoDialog");
     }
 
     private async Task SaveParticipantAnswer()
     {
         await JsRuntime.InvokeVoidAsync("hideDialog", "ParticipantInfoDialog");
+
+        //Dont save votes for the default option
         _currentParticipant.VotedFor = _currentParticipant.VotedFor.Where(v => v.SelectedOptionId != _joinEvent!.DefaultSelectOptionId).ToList();
         _joinEvent!.Participants.Add(_currentParticipant);
 
@@ -300,11 +319,6 @@ else
         }
     }
 
-    private void OnVotesChanged(ICollection<ParticipantVote> votes)
-    {
-        _currentParticipant.VotedFor = votes;
-    }
-
     private async Task ShareEvent()
     {
         var data = new
@@ -315,17 +329,6 @@ else
         };
 
         await JsRuntime.InvokeVoidAsync("navigator.share", data);
-    }
-
-    private async Task OpenParticipantInfoDialog()
-    {
-        if (_currentParticipant.VotedFor.All(v => v.SelectedOptionId == _joinEvent!.DefaultSelectOptionId))
-        {
-            await JsRuntime.InvokeVoidAsync("showDialog", "NoShowtimesDialog");
-            return;
-        }
-
-        await JsRuntime.InvokeVoidAsync("showDialog", "ParticipantInfoDialog");
     }
 
 }

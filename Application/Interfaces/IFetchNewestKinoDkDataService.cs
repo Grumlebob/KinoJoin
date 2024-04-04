@@ -10,5 +10,6 @@ public interface IFetchNewestKinoDkDataService
     /// </summary>
     /// <param name="lowestCinemaId">First cinema to start from</param>
     /// <param name="highestCinemaId">Last cinema to include</param>
+    /// <remarks>The purpose of lowestCinemaId and highestCinemaId is that in testing we can avoid loading all data, to save time.</remarks>
     Task UpdateBaseDataFromKinoDk(int lowestCinemaId, int highestCinemaId);
 }

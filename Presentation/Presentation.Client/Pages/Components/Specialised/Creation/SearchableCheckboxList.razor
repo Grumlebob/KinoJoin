@@ -25,10 +25,9 @@ private SearchableCheckboxList _cinemaCheckBoxList = new();
         <div class="max-h-40 overflow-y-auto">
             @foreach (var (id, label) in IdsToLabels.Where(item => item.Value.ToLowerInvariant().Contains(_searchTerm.ToLowerInvariant())).Select(item => (item.Key, item.Value)))
             {
-                var checkBoxId = $"{_uniqueId.ToString()}-{id}";
                 <div class="mb-2 flex items-center overflow-hidden whitespace-nowrap">
-                    <input type="checkbox" id="@checkBoxId" value="@id" @onchange="@(e => HandleCheckboxChange(e, id))" checked="@(SelectedItems.Contains(id))" class="mr-2 h-5 bg-gray-50 min-w-5 accent-secondary"/>
-                    <label for="@checkBoxId" class="ml-1 flex-grow truncate">@label</label>
+                    <input type="checkbox"  value="@id" @onchange="@(e => HandleCheckboxChange(e, id))" checked="@(SelectedItems.Contains(id))" class="mr-2 h-5 bg-gray-50 min-w-5 accent-secondary"/>
+                    <label  class="ml-1 flex-grow truncate">@label</label>
                 </div>
             }
         </div>
@@ -63,7 +62,6 @@ private SearchableCheckboxList _cinemaCheckBoxList = new();
     [Parameter] public string? IconPath { get; set; }
 
     private string _searchTerm = string.Empty;
-    private readonly Guid _uniqueId = Guid.NewGuid(); //this is used to generate unique ids for checkbox items
 
     private bool _isAccordionOpen = false;
 

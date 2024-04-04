@@ -5,7 +5,7 @@
 <div class="flex flex-col gap-2">
     <div class="flex justify-between">
         <h2 class="text-2xl text-bold">Resultater</h2>
-        <button class="btn-black gap-1 md:hidden" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "participants-dialog"))">
+        <button class="btn-black gap-1 md:hidden" onclick="@(async () => await JsRuntime.InvokeVoidAsync("showDialog", "participants-dialog"))">
             <img src="Icons/ParticipantsIcon.svg" alt="participants"/>
             <span>Deltagere</span>
         </button>
@@ -29,7 +29,7 @@
     <div class="space-y-3 md:hidden">
         @foreach (var showtime in _orderedShowtimes)
         {
-            <ShowtimeResultCard IsHost="IsHost" JoinEvent="JoinEvent" Showtime="showtime" OnShowtimeSelected="SetShowtimeForConfirmation" OnShowParticipantVotes="OpenVotesDialog" OnOpenEventActions="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "after-confirm-actions-dialog"))" HasVoted="@(CurrentParticipant != null)" Vote="@(CurrentParticipant?.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id))"/>
+            <ShowtimeResultCard IsHost="IsHost" JoinEvent="JoinEvent" Showtime="showtime" OnShowtimeSelected="SetShowtimeForConfirmation" OnShowParticipantVotes="OpenVotesDialog" OnOpenEventActions="@(async () => await JsRuntime.InvokeVoidAsync("showDialog", "after-confirm-actions-dialog"))" HasVoted="@(CurrentParticipant != null)" Vote="@(CurrentParticipant?.VotedFor.FirstOrDefault(pv => pv.ShowtimeId == showtime.Id))"/>
         }
     </div>
 
@@ -43,7 +43,7 @@
                     @foreach (var showtime in _orderedShowtimes)
                     {
                         <th class="max-w-48 min-w-48">
-                            <ShowtimeResultCard JoinEvent="JoinEvent" Showtime="showtime" OnShowtimeSelected="SetShowtimeForConfirmation" OnShowParticipantVotes="OpenVotesDialog" OnOpenEventActions="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "after-confirm-actions-dialog"))" IsHost="IsHost"/>
+                            <ShowtimeResultCard JoinEvent="JoinEvent" Showtime="showtime" OnShowtimeSelected="SetShowtimeForConfirmation" OnShowParticipantVotes="OpenVotesDialog" OnOpenEventActions="@(async () => await JsRuntime.InvokeVoidAsync("showDialog", "after-confirm-actions-dialog"))" IsHost="IsHost"/>
                         </th>
                     }
                 </tr>
@@ -112,7 +112,7 @@
 
     <div class="mb-4 flex justify-between">
         <h4 class="text-lg font-bold">Deltagere</h4>
-        <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "participants-dialog"))">
+        <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("hideDialog", "participants-dialog"))">
             <img src="Icons/CrossIcon.svg" alt="close"/>
         </button>
     </div>
@@ -155,8 +155,8 @@
         <div class="flex flex-col items-end gap-4">
             <p class="text-xl font-bold">Er du sikker på at du vil slette @_participantToDelete.Nickname's svar?</p>
             <div class="flex gap-1">
-                <button class="btn-white w-16" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Nej</button>
-                <button class="btn-black w-16" onclick="@(async () => { await DeleteParticipant(_participantToDelete.Id); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-delete-dialog"); })">Ja</button>
+                <button class="btn-white w-16" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("hideDialog", "confirm-delete-dialog"); })">Nej</button>
+                <button class="btn-black w-16" onclick="@(async () => { await DeleteParticipant(_participantToDelete.Id); await JsRuntime.InvokeVoidAsync("hideDialog", "confirm-delete-dialog"); })">Ja</button>
             </div>
         </div>
     }
@@ -167,7 +167,7 @@
     {
         <div class="mb-4 flex justify-between">
             <p class="font-bold">@_participantToShowNoteFor.Nickname's Note</p>
-            <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "note-dialog"))">
+            <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("hideDialog", "note-dialog"))">
                 <img src="Icons/CrossIcon.svg" alt="close"/>
             </button>
         </div>
@@ -180,7 +180,7 @@
 
     <div class="mb-4 flex justify-between">
         <h4 class="text-lg font-bold">Stemmer</h4>
-        <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "votes-dialog"))">
+        <button onclick="@(async () => await JsRuntime.InvokeVoidAsync("hideDialog", "votes-dialog"))">
             <img src="Icons/CrossIcon.svg" alt="close"/>
         </button>
     </div>
@@ -198,8 +198,8 @@
     <div class="flex flex-col items-end gap-4">
         <h2 class="text-xl font-bold">Ønsker du at bekræfte forestillingen for dette event?</h2>
         <div class="flex gap-1">
-            <button class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-event-dialog"))">Nej</button>
-            <button class="btn-black" onclick="@(async () => { await ConfirmShowtimeAndOpenActionDialog(_selectedShowtimeId); await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "confirm-event-dialog"); })">Ja</button>
+            <button class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("hideDialog", "confirm-event-dialog"))">Nej</button>
+            <button class="btn-black" onclick="@(async () => { await ConfirmShowtimeAndOpenActionDialog(_selectedShowtimeId); await JsRuntime.InvokeVoidAsync("hideDialog", "confirm-event-dialog"); })">Ja</button>
         </div>
     </div>
 </dialog>
@@ -212,12 +212,12 @@
         <div class="space-y-3">
             <div class="flex flex-col gap-2 md:gap-1">
                 <button class="btn-red w-full" onclick="@(async () => await JsRuntime.InvokeVoidAsync("open", $"https://kino.dk/ticketflow/showtimes/{JoinEvent.ChosenShowtimeId}", "_blank"))">Bestil Billetter</button>
-                <button class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "calendar-dialog"))">Tilføj til egen kalender</button>
+                <button class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("showDialog", "calendar-dialog"))">Tilføj til egen kalender</button>
                 <button class="btn-white" onclick="@(async () => await GoToMailToLink(JoinEvent.Showtimes.First(s => s.Id == JoinEvent.ChosenShowtimeId)))">Send mail til deltagere</button>
                 <button class="btn-white md:hidden" @onclick="ShareEvent">Del</button>
             </div>
             <div class="flex w-full justify-end">
-                <button class="btn-black" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "after-confirm-actions-dialog"))">Luk</button>
+                <button class="btn-black" onclick="@(async () => await JsRuntime.InvokeVoidAsync("hideDialog", "after-confirm-actions-dialog"))">Luk</button>
             </div>
         </div>
     </div>
@@ -232,7 +232,7 @@
             <button class="btn-white w-full" @onclick="DownloadCalendarFile">Download til andre kalendre</button>
         </div>
         <div class="flex w-full justify-end">
-            <button class="btn-black" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog"))">Luk</button>
+            <button class="btn-black" onclick="@(async () => await JsRuntime.InvokeVoidAsync("hideDialog", "calendar-dialog"))">Luk</button>
         </div>
     </div>
 </dialog>
@@ -294,14 +294,14 @@
     {
         _participantToDelete = participant;
         StateHasChanged();
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirm-delete-dialog");
+        await JsRuntime.InvokeVoidAsync("showDialog", "confirm-delete-dialog");
     }
 
     private async Task OpenVotesDialog(int showtimeId)
     {
         _selectedShowtimeId = showtimeId;
         StateHasChanged();
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "votes-dialog");
+        await JsRuntime.InvokeVoidAsync("showDialog", "votes-dialog");
     }
 
     private void SortShowtimes(SortBy option)
@@ -347,14 +347,14 @@
     private async Task SetShowtimeForConfirmation(int showtimeId)
     {
         _selectedShowtimeId = showtimeId;
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "confirm-event-dialog");
+        await JsRuntime.InvokeVoidAsync("showDialog", "confirm-event-dialog");
     }
 
     private async Task ConfirmShowtimeAndOpenActionDialog(int showtimeId)
     {
         JoinEvent.ChosenShowtimeId = showtimeId;
         await KinoJoinHttpClient.PutJoinEventAsync(JoinEvent);
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "after-confirm-actions-dialog");
+        await JsRuntime.InvokeVoidAsync("showDialog", "after-confirm-actions-dialog");
     }
 
     private async Task OpenGoogleCalendar()
@@ -367,7 +367,7 @@
                   + $"&details={JoinEvent.Description} %0AFilm: {showtime.Movie.Title}, {showtime.Room.Name}, {showtime.VersionTag.Type}";
 
         await JsRuntime.InvokeVoidAsync("open", url, "_blank");
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
+        await JsRuntime.InvokeVoidAsync("hideDialog", "calendar-dialog");
     }
 
     private async Task DownloadCalendarFile()
@@ -421,8 +421,8 @@
         var bytes = Encoding.UTF8.GetBytes(calenderStringBuilder.ToString());
         var stream = new MemoryStream(bytes);
         using var streamRef = new DotNetStreamReference(stream);
-        await JsRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "calendar-dialog");
+        await JsRuntime.InvokeVoidAsync("downloadCalendarFile", fileName, streamRef);
+        await JsRuntime.InvokeVoidAsync("hideDialog", "calendar-dialog");
     }
 
 }

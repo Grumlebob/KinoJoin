@@ -3,7 +3,7 @@ using Infrastructure.Persistence;
 
 namespace Infrastructure.Services;
 
-public class KinoKinoJoinDbService(KinoContext context) : IKinoJoinDbService
+public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
 {
     public async Task<ICollection<Cinema>> GetAllCinemas()
     {

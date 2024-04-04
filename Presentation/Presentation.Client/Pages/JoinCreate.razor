@@ -51,13 +51,13 @@
     @*Filter checkbox lists*@
     <div class="flex flex-col lg:space-x-4 lg:flex-row">
         <div class="mt-4 lg:mt-0 lg:w-1/3">
-            <SearchableCheckboxList @ref="_cinemaCheckBoxList" IconPath="/Icons/CinemaFilterIcon.svg" FilterTitle="Vælg biografer" SelectedItems="_selectedCinemas" IdsToLabels="@_cinemaIdsToNames"/>
+            <SearchableCheckboxList @ref="_cinemaCheckBoxList" IconPath="/Icons/CinemaFilterIcon.svg" Title="Vælg biografer" SelectedItems="_selectedCinemas" IdsToLabels="@_cinemaIdsToNames"/>
         </div>
         <div class="lg:w-1/3">
-            <SearchableCheckboxList @ref="_movieCheckBoxList" IconPath="Icons/MovieFilterIcon.svg" FilterTitle="Vælg film" SelectedItems="_selectedMovies" IdsToLabels="@_movieIdsToNames"/>
+            <SearchableCheckboxList @ref="_movieCheckBoxList" IconPath="Icons/MovieFilterIcon.svg" Title="Vælg film" SelectedItems="_selectedMovies" IdsToLabels="@_movieIdsToNames"/>
         </div>
         <div class="lg:mt-0 lg:w-1/3">
-            <SearchableCheckboxList @ref="_genreCheckBoxList" IconPath="Icons/GenreFilterIcon.svg" FilterTitle="Vælg genrer" SelectedItems="_selectedGenres" IdsToLabels="@_genreIdsToNames"/>
+            <SearchableCheckboxList @ref="_genreCheckBoxList" IconPath="Icons/GenreFilterIcon.svg" Title="Vælg genrer" SelectedItems="_selectedGenres" IdsToLabels="@_genreIdsToNames"/>
         </div>
     </div>
 
@@ -146,7 +146,7 @@
         </div>
 
         <div class="mt-5 mb-5 flex justify-end space-x-3">
-            <button type="button" class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventDetailsDialog"))">Annuller</button>
+            <button type="button" class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("hideDialog", "eventDetailsDialog"))">Annuller</button>
             <button type="submit" class="btn-black">Opret</button>
         </div>
     </EditForm>
@@ -185,7 +185,7 @@
         @if (!_uploadingEvent)
         {
             <div class="flex justify-end space-x-3">
-                <button type="button" class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "eventConfirmDialog"))">Rediger videre</button>
+                <button type="button" class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("hideDialog", "eventConfirmDialog"))">Rediger videre</button>
                 <button type="submit" class="btn-black" @onclick="FinishJoinEvent">Opret</button>
             </div>
         }
@@ -449,7 +449,7 @@
 
         //Set the filter string in the url to match the selected filters,
         //so the page will save filters on reload
-        var urlFilterString = FilterHandler.GetUrlFilterString(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
+        var urlFilterString = FilterHandler.ConvertFiltersToUrlString(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
         var newUrl = "create-event/" + urlFilterString;
         NavigationManager.NavigateTo(newUrl);
 
@@ -511,14 +511,14 @@
         }
         else
         {
-            await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventDetailsDialog");
+            await JsRuntime.InvokeVoidAsync("showDialog", "eventDetailsDialog");
         }
     }
 
     //used to open the final dialog, where the user can confirm the creation of the event
     private async Task OpenConfirmationDialog()
     {
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "eventConfirmDialog");
+        await JsRuntime.InvokeVoidAsync("showDialog", "eventConfirmDialog");
     }
 
     //Used to upload the event to the database, and navigate to the filling page

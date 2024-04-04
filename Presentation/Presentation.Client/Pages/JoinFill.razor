@@ -152,8 +152,8 @@ else
         <h4 class="w-full text-xl font-bold">Obs! Du har ikke valgt nogen tider</h4>
         <h4 class="font-bold">Vil du indsende et tomt svar, der viser du ikke kan nogen tider?</h4>
         <div class="flex gap-1">
-            <button class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"))">Nej</button>
-            <button class="btn-black" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "NoShowtimesDialog"); await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "ParticipantInfoDialog"); })">Ja</button>
+            <button class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("hideDialog", "NoShowtimesDialog"))">Nej</button>
+            <button class="btn-black" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("hideDialog", "NoShowtimesDialog"); await JsRuntime.InvokeVoidAsync("showDialog", "ParticipantInfoDialog"); })">Ja</button>
         </div>
     </div>
 </dialog>
@@ -182,7 +182,7 @@ else
             <InputTextArea class="h-32 w-full resize-none rounded-3xl border bg-gray-50 p-2" @bind-Value="@_currentParticipant.Note" placeholder="Note (valgfrit)"/>
         </div>
         <div class="mt-5 mb-5 flex justify-end space-x-3">
-            <button type="button" class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "ParticipantInfoDialog"))">Annuller</button>
+            <button type="button" class="btn-white" onclick="@(async () => await JsRuntime.InvokeVoidAsync("hideDialog", "ParticipantInfoDialog"))">Annuller</button>
             <button type="submit" class="btn-black">Send svar</button>
         </div>
     </EditForm>
@@ -273,11 +273,6 @@ else
         _loading = false;
     }
 
-    private async Task ScrollToBottom()
-    {
-        await JsRuntime.InvokeVoidAsync("customFunctions.scrollToBottom");
-    }
-
     private async Task UpdateJoinEvent()
     {
         _joinEvent!.Deadline = _deadline;
@@ -286,7 +281,7 @@ else
 
     private async Task SaveParticipantAnswer()
     {
-        await JsRuntime.InvokeVoidAsync("customFunctions.hideDialog", "ParticipantInfoDialog");
+        await JsRuntime.InvokeVoidAsync("hideDialog", "ParticipantInfoDialog");
         _currentParticipant.VotedFor = _currentParticipant.VotedFor.Where(v => v.SelectedOptionId != _joinEvent!.DefaultSelectOptionId).ToList();
         _joinEvent!.Participants.Add(_currentParticipant);
 
@@ -326,11 +321,11 @@ else
     {
         if (_currentParticipant.VotedFor.All(v => v.SelectedOptionId == _joinEvent!.DefaultSelectOptionId))
         {
-            await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "NoShowtimesDialog");
+            await JsRuntime.InvokeVoidAsync("showDialog", "NoShowtimesDialog");
             return;
         }
 
-        await JsRuntime.InvokeVoidAsync("customFunctions.showDialog", "ParticipantInfoDialog");
+        await JsRuntime.InvokeVoidAsync("showDialog", "ParticipantInfoDialog");
     }
 
 }

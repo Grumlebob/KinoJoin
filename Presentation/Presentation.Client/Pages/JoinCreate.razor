@@ -111,10 +111,10 @@
     <p>Der er ingen forestillinger for de valgte filtre</p>
 }
 
-<ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de spilletider du vil have med i dit event" MoviesWithOutShowTimes="@_moviesWithoutShowtimes" Votes="@_showtimeVotes" VotesChanged="OnVoteChange" SelectOptions="@_selectOptionsForCreatePage" DefaultSelectOption="@_selectOptionsForCreatePage.First()"/>
+<ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de spilletider du vil have med i dit event" MoviesWithoutShowTimes="@_moviesWithoutShowtimes" ShowtimeChoices="@_showtimeVotes" ChoicesChanged="OnVoteChange" SelectOptions="@_selectOptionsForCreatePage" DefaultSelectOption="@_selectOptionsForCreatePage.First()"/>
 
 @*Create button*@
-<button class="btn-red fixed right-6 text-sm bottom-6 z-50 flex gap-1" @onclick="OpenEventDetailsDialog" >
+<button class="btn-red fixed right-6 text-sm bottom-6 z-50 flex gap-1" @onclick="OpenEventDetailsDialog">
     <img src="Icons/CreateIcon.svg" alt="create"/>
     <span class="text-white">
         Opret og del
@@ -367,6 +367,11 @@
         foreach (var movie in _availableShowtimes.Select(s => s.Movie).DistinctBy(m => m.Id))
         {
             if (_movieIdsToNames.ContainsKey(movie.Id)) continue;
+            _movieIdsToNames[movie.Id] = movie.Title;
+        }
+
+        foreach (var movie in _moviesWithoutShowtimes.Where(m => !_movieIdsToNames.ContainsKey(m.Id)))
+        {
             _movieIdsToNames[movie.Id] = movie.Title;
         }
 

@@ -1,0 +1,307 @@
+@inject IJSRuntime JsRuntime
+
+@*
+This is the parent component, rendering ShowtimeByDateTable components.
+The main purpose is to group showtimes by their Cinema, Version and Movie, and display a clickable button for each showtime.
+*@
+
+@if (Showtimes.Count == 0)
+{
+    return;
+}
+
+@*Displays Legend, such as "kan ikke" "kan godt" *@
+<div class="mt-16 flex flex-col items-center justify-center gap-1">
+    <p class="text-3xl font-bold">@LegendTitle</p>
+    <div class=" @(HasAnswered ? "mb-5" : "mb-7") w-fit space-y-1  ">
+        <div class="mb-2 flex w-fit items-center divide-x-2">
+            @foreach (var option in SelectOptions)
+            {
+                var sidePadding = option == SelectOptions.First() ? "pr-2" :
+                    option == SelectOptions.Last() ? "pl-2" : "px-2";
+                <div class="@sidePadding">
+                    @*  This comment is needed to generate the following dynamic tailwind classes. 
+                        The colors are taken from the select options in the database.
+                        bg-success bg-warning bg-gray-300 *@
+                    <div class="rounded text-base md:text-xl px-1 shadow-md bg-@option.Color">
+                        <p>@option.VoteOption</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@*Warn people who already answered*@
+@if (HasAnswered)
+{
+    <div class="mb-5 flex w-full content-center items-center justify-center">
+        <div class="w-fit bg-gray-100 p-3 shadow">
+            <p class="text-2xl font-bold text-success-darkest">Du har allerede indsendt et svar på dette event</p>
+        </div>
+    </div>
+}
+
+@* The main content of the component, showing all the showtimes using virtualization, to only load what is neccessary *@
+<div class="space-y-5">
+    @{
+        var showtimeByMovieList = Showtimes.GroupBy(s => s.Movie.Id).ToList();
+
+        //create a default showtime for each movie that has no showtimes to include it in the groupings.
+        //This makes sure empty movies are rendered at the bottom.
+        var emptyMovieGroups = MoviesWithoutShowTimes.Select(m => new Showtime { MovieId = m.Id, Movie = m })
+            .GroupBy(s => s.MovieId).ToList();
+        showtimeByMovieList.AddRange(emptyMovieGroups);
+    }
+    <Virtualize Items="showtimeByMovieList" Context="showtimesByMovie" OverscanCount="3">
+        <ItemContent>
+            @{ var movie = showtimesByMovie.First().Movie; }
+
+            <div class="grid gap-4 grid-cols-[0.5fr_1fr] grid-rows-[min-content_auto] md:grid-cols-[200px_1fr]">
+                <!-- PosterImage -->
+                @if (!_collapsedMovies.Contains(movie.Id))
+                {
+                    <div class="row-span-2 space-y-2 md:min-w-48 md:sticky md:top-4 md:row-span-3 md:self-start">
+                        <a href=@($"https://kino.dk{movie.KinoUrl}") target="_blank">
+                            <img src="@(movie.ImageUrl is not null ? ImageBasePath + movie.ImageUrl : FallbackImageUrl)" alt="Movie Poster" class="max-h-full w-full rounded-sm shadow hover:opacity-50"/>
+                        </a>
+                        <!--Læs mere og trailer desktop-->
+                        <div class="hidden flex-col items-center px-3 space-y-1 md:flex">
+                            <a class="w-full btn-white font-label" href="@($"https://kino.dk{movie.KinoUrl}")" target="_blank">Læs mere</a>
+                            <button class="w-full btn-white font-label" onclick="@(async () => await ShowMovieTrailer(movie))">Se trailer</button>
+                        </div>
+                    </div>
+                }
+
+                <!-- MovieHeader -->
+                <div class="col-start-2">
+                    <div class="flex flex-col space-y-2">
+                        <div class="flex justify-between">
+                            <a href=@($"https://kino.dk{movie.KinoUrl}") target="_blank" class="block text-black no-underline divide-y-8">
+                                <h2 class="text-2xl font-bold hover:underline md:text-4xl">@movie.Title</h2>
+                            </a>
+                            <button @onclick="() => ToggleCollapseMovie(movie.Id)" class="translate-x-8">
+                                <svg class="transition-transform" style="@(!_collapsedMovies.Contains(movie.Id) ? "transform: rotate(0deg)" : "transform: rotate(-180deg)")" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    @if (!_collapsedMovies.Contains(movie.Id))
+                    {
+                        <div class="inline-flex flex-col items-start justify-between gap-2 rounded md:flex-row md:items-center md:gap-4 md:py-2">
+                            <!-- movie-info -->
+                            @if (movie.PremiereDate != null)
+                            {
+                                <div class="flex space-x-1">
+                                    <span class="hidden text-sm text-neutral-400 font-label md:block">Premiere</span>
+                                    <span class="text-sm text-neutral-400 font-label">@movie.PremiereDate </span>
+                                </div>
+                            }
+                            @if (movie.PremiereDate != null && movie.DurationInMinutes != 0)
+                            {
+                                <span class="hidden text-sm text-neutral-400 md:block">|</span>
+                            }
+                            @if (movie.DurationInMinutes != 0)
+                            {
+                                <div class="flex space-x-1">
+                                    <span class="hidden text-sm text-neutral-400 font-label md:block">Varighed</span>
+                                    <span class="text-sm text-neutral-400 font-label">@movie.DurationInMinutes min</span>
+                                </div>
+                            }
+                            @if (movie.AgeRating != null)
+                            {
+                                <div class="flex space-x-1">
+                                    <a href="https://medieraadet.dk/" target="_blank">
+                                        <img src=@_censorshipToIcon[movie.AgeRating.Censorship] alt="@movie.AgeRating.Censorship" class="h-5 w-5"/>
+                                    </a>
+                                </div>
+                            }
+
+                            <!--Læs mere og trailer mobile-->
+                            <div class="block md:hidden">
+                                <a class="btn-white font-label" href="@($"https://kino.dk{movie.KinoUrl}")" target="_blank">Læs mere</a>
+                            </div>
+                            <div class="block md:hidden">
+                                <button class="btn-white font-label" onclick="@(async () => await ShowMovieTrailer(movie))">Se trailer</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="col-span-3 md:col-start-2 md:row-start-2 md:row-end-3">
+                    @if (!_collapsedMovies.Contains(movie.Id))
+                    {
+                        //empty movies only displays a label
+                        if (MoviesWithoutShowTimes.Any(m => m.Id == movie.Id))
+                        {
+                            <div class="inline-flex items-center justify-center gap-4 rounded bg-gray-300 p-2">
+                                <span>Ingen forestillinger fundet for denne film med de valgte filtre</span>
+                            </div>
+                        }
+                        //else display the showtimes
+                        else
+                        {
+                            var showtimeByCinemaList = showtimesByMovie.GroupBy(s => s.Cinema.Id).ToList();
+                            <Virtualize Items="showtimeByCinemaList" OverscanCount="8" Context="showtimesByCinema" ItemSize="300">
+                                <ItemContent>
+                                    @{ var cinema = showtimesByCinema.First().Cinema; }
+                                    <div class="mb-2 flex justify-between">
+                                        <!-- CinemaLocation -->
+                                        <h3 id="@cinema.Id" class="text-xl font-bold mb-2.5">@cinema.Name</h3>
+                                        <button @onclick="() => ToggleCollapse(movie.Id, cinema.Id)">
+                                            <svg class="transition-transform" style="@(_collapsedCinemasAtMovies.Contains((movie.Id, cinema.Id)) ? "transform: rotate(0deg);" : "transform: rotate(-180deg);")" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    @* Don't render collapsed cinemas and movies*@
+                                    @if (!_collapsedCinemasAtMovies.Contains((movie.Id, cinema.Id)))
+                                    {
+                                        var showtimeByVersionTagList = showtimesByCinema.GroupBy(s => s.VersionTag.Type).ToList();
+
+                                        <Virtualize Items="showtimeByVersionTagList" Context="showtimesByVersionTag" OverscanCount="5" ItemSize="300">
+                                            <ItemContent>
+                                                <div class="mb-4 max-w-screen-md">
+                                                    <div class="w-fit">
+                                                        <p class="bg-gray-300 px-2 py-1 font-label">@showtimesByVersionTag.Key</p>
+                                                    </div>
+                                                    <ShowtimeByDateTable SelectOptions="SelectOptions" DefaultSelectOption="DefaultSelectOption" UniqueTableId="@($"{movie.Id}-{cinema.Id}-{showtimesByVersionTag.Key}")" ShowtimeChoices="ShowtimeChoices" ChoicesChanged="ChoicesChanged" Showtimes="@showtimesByVersionTag.ToList()" HasAnswered="HasAnswered" StartDate="@Showtimes.Min(s => s.Playtime.StartTime.Date)"/>
+                                                </div>
+                                            </ItemContent>
+                                            <Placeholder>
+                                                <LoadingIndicator/>
+                                            </Placeholder>
+                                        </Virtualize>
+                                    }
+                                </ItemContent>
+                                <Placeholder>
+                                    <LoadingIndicator/>
+                                </Placeholder>
+                            </Virtualize>
+                        }
+                    }
+                </div>
+            </div>
+            <hr class="my-5 h-px w-full rounded-full bg-gray-300"/>
+        </ItemContent>
+        <Placeholder>
+            <LoadingIndicator/>
+        </Placeholder>
+    </Virtualize>
+</div>
+
+@* Trailer display window *@
+@if (_trailerUrl != null)
+{
+    <div class="fixed top-0 left-0 flex h-screen w-screen items-center justify-center">
+        <div class="relative h-3/5 w-3/5">
+            <iframe src="@_trailerUrl" width="100%" height="100%" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
+            </iframe>
+            <button class="absolute top-0 right-0 mt-2 mr-2 rounded bg-error hover:bg-error-dark" onclick="@(() => { _trailerUrl = null; })">
+                <img src="Icons/CrossIcon.svg" alt="close" class="invert"/>
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+
+    [Parameter] public string LegendTitle { get; set; } = "";
+
+    [Parameter] public List<Showtime> Showtimes { get; set; } = [];
+
+    ///<summary>If filters lead to a combination where a movie has no showtimes, we want to display the movie with relevant info</summary>
+    [Parameter]
+    public List<Movie> MoviesWithoutShowTimes { get; set; } = [];
+
+    ///<summary>This collection has EVERY showtime, with their status.</summary>
+    /// <example>100 showtimes, only 1 is selected. Then 99 votes in this list will have no, and 1 will have yes </example>
+    [Parameter]
+    public ICollection<ParticipantVote> ShowtimeChoices { get; set; } = [];
+
+    [Parameter] public EventCallback<ICollection<ParticipantVote>> ChoicesChanged { get; set; }
+
+    [Parameter] public List<SelectOption> SelectOptions { get; set; } = [new SelectOption { VoteOption = "Kan ikke", Color = "gray-300" }, new SelectOption { VoteOption = "Kan godt", Color = "success" }];
+
+    ///<summary>If user has not clicked on a showtime, that showtimes default choice will be this</summary>
+    [Parameter]
+    public SelectOption DefaultSelectOption { get; set; } = null!;
+
+    [Parameter] public bool HasAnswered { get; set; }
+
+    ///<summary>Cinemas under movies that are toggled away: (MovieId, CinemaId).
+    /// Example if they collapse Atlas Biografferne under the movie "Dune" it will be added to this list, with
+    /// CinemaId = 'Atlas Biografferne' and MovieId = 'Dune'
+    /// </summary>
+    private HashSet<(int, int)> _collapsedCinemasAtMovies = [];
+
+    private HashSet<int> _collapsedMovies = [];
+
+    private string? _trailerUrl;
+
+    //IMAGES AND ICONS
+    const string ImageBasePath = "https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/";
+    const string FallbackImageUrl = "https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/2023-05/Kino-fallback-poster.webp?h=6c02f54b&itok=efsQLlFH½";
+
+    private Dictionary<string, string> _censorshipToIcon = new()
+    {
+        { "censorship--all", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAVBSURBVHgB7VdbTBxVGP7OzOwut1obb0BtqD4IVqURL1GxCSKXllvDQ2kCrVzahNakjcHEtEQaXkz1QX1oasSW5fJAVVK1IQREAiaiMdFqrNraF6NGgraYGAIsu+zM8TuHhtsCZXdpmph+ycz+c85/+eY//znzL/C/RFt+DlpKcrEGsLAmsF6HYSvhM0QJA9HCW1QNx3hEX0qOEgLR4MNdboz7LkCIVP0s5WUkxKajrDOACBFdhsZ9L5PMfWTSpy8lq7EoEHmGOorvhN/5BlJshnAe1WPS+B5C/gaP8QTKu0YRASLP0BQaaE4y8h1I817Km7SsxvRcZIgsQ94dWyBcvYBzF0yxBbb8QI+bYjfliyR1FXJ6O2p6LiJMRJYh6RzhfROXqx6OXcD3SteXktWYmoN9FBEg/Ax5i7Np1QG1aO7JbPhjuiGMtGtML8PtK0AgboAPMZDBcmZpIBz34WdIyEO838PrJZKpJJnN8yZT9JiaUzrCPIQwER6h5uIyBs2FxCCvPyjvgcrEHJS8h0v3J3+ZGZHHw3I3wsDqCTVmWcxODYnEw416mLKa505KiJ4wUmAalXDhCHXjuLw1aHrMtdowqyeUkrCfBPJJ6l0EcRscUcRRcwlNk4VdRJ0NWldlybNx/yqjrJLQyYJEkuFScA/Ejp+EOV3O0c3L6uvDMlihdZUNZIX2sWaEXKpWZCbTX4+pdakIulZuNYTkEWXlaF1lA2Syr9iLNSHUXvggLKsSDovYBLc4VHaSZ+edYAGquwQCSW4SOT7PMhmOUwE70K03gNusxGn6ipoQnF38Vj1MoZHBt5LY87NTAWsMZV+c13Lte9P8hPQsMBVGNixjK7uARmb4IS572fWirUyotehJBM2DdDbE0/lHqldwdP2cguxBwvg4zuSWoqUqBgHnEgdH5nlYzw9uBevpJ8pDzO4B7TMiQpLmUpbxLVmMvjdhBjOonrdAJxa91JrEhNp9o5nYEDOhSc6HoI3uBugDIlH7lMt/IZYn1FayjQ7qWBdnIT0jcNyVavvMzquONXHiy5mgIofP+WzMfAzWs+jNhLZVPgyc1T6173AINWeuo2GVCsXW9BQM61lKzyzQETyJY32jaM1nbbiT4A7m6/HS/m/hd/kX6gramttY5Ke0pfKtY4Ri6Sbf9DzN1FaTbhMz9A+CjjoUsSjIpxhJmkBV5898ip97xakxFj47SBQvNJD7YJl7WYtNcGQtY7zPwb7FoUMz1J53N2T8YTr4m8YdsO0SBk9b6NsBEjyfL9k7f5c1hrhASCDmJY1Ed8IWZ2Z8M4aKtQihGbI9amkK2Wgdh7AmYTovsi4W4weeLzO7qaX4V97ZV/NjYTon8Fx3HfqyhvD7ukXeVYadg9x157h0XjZzR6/F+gTLZqi5JJlLxfZT/sKd8RFn97Em7wihI4x+XA1cgbfwfswdAxYC5uMzousKfXwVYqd8KZ8uu5MPl/iiDThRkrw0IbUVbbVFRQYC8jQmpYf1cyDUKdNlOYM43OOnhTpT3LNzpkzVXcG/t49S7sdSUD7HZTymdX1mMFP584+BuUqdjN2I9u1fc7cMM7XlnHmLfHfihsA5RxJ19N/B034jXuh9CnG+4TlCql9xJ7HLM15jKVRReYyv2xXl38iVYQZLWOCq0FoZ51X4h99G7fnpmSVzxfMEFawdewCWPUjtYzeUjELQapiJxZiqbhUHqAyp7LgS32ChsoCDpeE25VHDu4N/GqyPuYxeBP56RaCt4AGexhfIzYObCumH4aQbsM2Gm09GgRwc4xhu4Tr4D1v1yEhXRd2MAAAAAElFTkSuQmCC" },
+        { "censorship--7", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAATcSURBVHgB7VddaFxFFP7m/uw2fwWx1mhaEkFsGjXFiGIaCyFtkzZNNiokhbSaX6gKFa0oNZg2oII+WB+kYoi7NnmImFpLicWokCIoSEWUQlsLPkg1VKl50e1usnvvHb+ZFBNx/zelIP3g7s7OnDnnm2/OmZ0L/C8x2rQF7we2YhlgYVlgvQ7DVY0vkCcM5ItQSw884179qHaeEMgHE+0+hKNnIMQ6/VvKCyguqEbH0RhyRH4KhaPPk8wdZPK5flRb9eWB3BUab12Fee9bSFEB4d2n+6TxPYT8GX7jAXRO/oEckLtCcxjkdJKR70Caa9heq9uqT4/lhtwUCm2vgrCnAO8WmKIKrvxQ95tiJ9vnSOoyZHwbej89hyyRm0LS28/PtdyuAXhuM9dVrR/VVn1qDO5LyAHZKxRqbeCscahN80UaML/iJIRReZXpBfiizYgVTvPHCkinkypNZ+M+e4WE3MvPW/k8SzJdJFOxZLBc96kxZSPMvcgS2REKtnYw6FZInOJzke3dUEosQrV3c+t+5TeVEY08LHciC2ROaKjeojq9JFIEHwZgyh6eO+X/sRNGOUyjCzb207aQ29uL4fvtTMNkTqi8uJ8EmkjqXThYCU+0sNdMYGkysVtoc5O2VSr5y/ozjJIhocPNpSTDrWANFIQPw4x3srciqb0+LJ1d2lbNgdylfSwbIVvliqyj/AOYK1kHx0591RCSR5S1RduqOUAd7xWPIwOkL/uxHevhWBM8V1YyN1pJ7CA8PMazaA+KC4P8I3X/ZT/RbiIc6WMuDdPmOFx3CJY9yZG/4Hrt6D95PlW4DBSiE+Hdw8YQPGcDyWzW3VLJkABXLttc5hrdFkYDLGMDbwFDnHA3t70jXbTUCh1peZAETtDqJ3jeczCMVzmlKaGtF59G39RmjD5Sy7L/+h/fUn7GfOJ/m3WIVXcnJWhD9yenk4VMrpCkQyk7uEomY/RNmE4NzRsTG4s48+YFBAMlVPEVLF2o4Bx9G6APiFLtUyYXIjmh0cAmOtjHQMcg/Zfg+brUPiW0le5HuFj7A3mR9NUtXRwUeq7yYeCY9ql9Z0MoWFfCid1qfbyajsCwHmZrYzInXPEIqs7y4DQ6EmaBEJxrbuK2j2ifyreOkSkh019LaXs4OgxLztJRf4p0uwQ7fhoFc+qFoR7JWffBMme1T+VbxciI0FjjasiiZ+jgd5btOMs2wBVWJo+Dr7DKdOCYPrpbn9ROoJIF0gZXfLDgmzFUrLSEXL/amh28aIXgWhGSeRqpIORZFERdRCOlSFm1ash7iil1RfvWMfwbUxMKBm6nnCxR+SMr42OO9tHBzUgJ+Qu+rPcQsVYjHZQv5dN2j/LHeao7iLcZMyEhVYquKlFRg5h8DxHp5+qfTBvEMGZxcEjC9IqRCZTPsCxCnLkkZA2vvU1Lj4FFiSMFZRjb9g18zgyl7eTIIUZrwzWBd4Ik9tH/OGJWGZ6YegiF0ZlFQuq+4ruNtzzjNcDppvGfLLXJPF8jU8N0Akxwlr51hHFexvzMW9jzXXxhy+winqCCueNOw3JP0frANSWj4FiDC7EYU+Wt4gClkFLHLn2DhxoT2Hk020t53ght50uDdZzbGELstxcFRpvv4ml8htz8uK6Q8zC8agOuOXj9ySiQg2ccwA2kwd9MDKUUHF3ZJgAAAABJRU5ErkJggg==" },
+        { "censorship--11", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADFSURBVHgB7ZhBDsIgEEU/ho03clnPoDs3rvVsegav40KvMNIYElORP4mUQjJv1dC/eBRmaAsYeVy8kBsEC+KGt8sKjeGnA9G0FtOV8ZrQXKQm39ySmRDDhBidCwkeoVAPY7n+7FeCZ7hzzGYyeHVScMEaZ7fBPZO6hsyJZMoIuS32NDNghz/pdw+Nxwk7UjSZYkK1MCGGCTH0fSjRdeNYrCxNhtHvE9LMsMSrr21qhgkxTIiRLPvan9OffAkt/RekuSUzGC+hLi+VPZOolgAAAABJRU5ErkJggg==" },
+        { "censorship--15", "data:image/png;base64,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" },
+    };
+
+    protected override void OnInitialized()
+    {
+        DefaultSelectOption = SelectOptions.First();
+    }
+
+    private void ToggleCollapse(int movieId, int cinemaId)
+    {
+        if (!_collapsedCinemasAtMovies.Add((movieId, cinemaId)))
+        {
+            _collapsedCinemasAtMovies.Remove((movieId, cinemaId));
+        }
+
+        StateHasChanged();
+    }
+
+    private void ToggleCollapseMovie(int movieId)
+    {
+        if (!_collapsedMovies.Add(movieId))
+        {
+            _collapsedMovies.Remove(movieId);
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task ShowMovieTrailer(Movie movie)
+    {
+        var client = new HttpClient();
+        var apiString = $"https://api.kino.dk{movie.KinoUrl}?region=content&format=json";
+        var json = await client.GetStringAsync(apiString);
+
+        var movieRoot = JsonConvert.DeserializeObject<MovieApiRoot>(json);
+        if (movieRoot?.ApiContent?.MovieApiFieldTrailer?.MovieApiFieldMediaOembedVideo?.TrailerUrl == null) //no video found
+        {
+            await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
+            return;
+        }
+
+        var uri = new Uri(movieRoot.ApiContent.MovieApiFieldTrailer.MovieApiFieldMediaOembedVideo.TrailerUrl);
+        var videoId = uri.Segments.Last() == "watch" ? HttpUtility.ParseQueryString(uri.Query)["v"] : uri.Segments.Last();
+
+        if (videoId == null)
+        {
+            await JsRuntime.InvokeVoidAsync("open", $"https://www.youtube.com/results?search_query={movie.Title}+trailer", "_blank"); //search in youtube
+            return;
+        }
+
+        _trailerUrl = $"https://www.youtube.com/embed/{videoId}";
+        StateHasChanged();
+    }
+
+}

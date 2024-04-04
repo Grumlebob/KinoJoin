@@ -45,7 +45,7 @@ public class FilterApiHandler : IFilterApiHandler
             filterStringBuilder.Append($"&genres[{i}]={genreList[i]}");
         }
 
-        filterStringBuilder.Append($"&date[start]={fromDate.ToString("s")}"); //format: 2008-04-18T06:30:00, this is the format the API expects
+        filterStringBuilder.Append($"&date[start]={fromDate.ToString("s")}"); //format: 2008-04-18T06:30:00, this is the format the kino API expects
         filterStringBuilder.Append($"&date[end]={toDate.ToString("s")}");
 
         var apiString = ApiBaseUrl + filterStringBuilder;
@@ -72,7 +72,6 @@ public class FilterApiHandler : IFilterApiHandler
 
         foreach (var jsonCinema in apiResultObject.ShowtimeApiContent.ShowtimeApiContent.Content)
         {
-            
             //if cinemaIdsToNames does not contain the id it may be a different kind of entity
             if (!cinemaIdsToNames.ContainsKey(jsonCinema.Id))
                 continue;
@@ -106,10 +105,13 @@ public class FilterApiHandler : IFilterApiHandler
                                 {
                                     Censorship = jsonMovie.Content.FieldCensorshipIcon
                                 },
-                        ImageUrl =
-                            jsonMovie.Content.ShowtimeApiFieldPoster.FieldMediaImage?.Sources?[
-                                0
-                            ].Srcset,
+                        ImageUrl = jsonMovie
+                            .Content
+                            .ShowtimeApiFieldPoster
+                            .FieldMediaImage
+                            ?.Sources
+                            ?[0]
+                            .Srcset,
                         DurationInMinutes = duration,
                     };
                     existingMovies.Add(movieObject.Id, movieObject);
@@ -184,10 +186,10 @@ public class FilterApiHandler : IFilterApiHandler
             .Where(movieId => showtimes.All(f => f.Movie.Id != movieId))
             .ToList();
         var index = 0;
-        
+
         if (notIncludedMovieIds.Count == 0)
             return (showtimes, []); //all movies had showtimes
-        
+
         //we call the API again to get information on the missing movies, now without the rest of the filters, to make sure we get all the movies
         var filterString = new StringBuilder("&sort=most_purchased");
         foreach (var movieId in notIncludedMovieIds)
@@ -221,9 +223,7 @@ public class FilterApiHandler : IFilterApiHandler
                     movie.Content.FieldCensorshipIcon == null
                         ? null
                         : new AgeRating { Censorship = movie.Content.FieldCensorshipIcon },
-                ImageUrl = movie.Content.ShowtimeApiFieldPoster.FieldMediaImage?.Sources?[
-                    0
-                ].Srcset,
+                ImageUrl = movie.Content.ShowtimeApiFieldPoster.FieldMediaImage?.Sources?[0].Srcset,
                 DurationInMinutes = duration
             };
             missingMovies.Add(movieObject);
@@ -242,7 +242,7 @@ public class FilterApiHandler : IFilterApiHandler
     {
         var fromDateString = fromDate.ToString("s"); //format: 2008-04-18T06:30:00, this format is needed so there is no slashes in the string, which would be interpreted as paths in the url
         var toDateString = toDate.ToString("s");
-        
+
         var filterStringBuilder = new StringBuilder("sort=most_purchased");
 
         foreach (var id in movieIds)

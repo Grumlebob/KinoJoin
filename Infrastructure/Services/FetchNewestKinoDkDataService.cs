@@ -83,7 +83,10 @@ public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKin
                     )
                     {
                         imageUrl = jsonMovie
-                            .Content.ShowtimeApiFieldPoster.FieldMediaImage.Sources[0]
+                            .Content
+                            .ShowtimeApiFieldPoster
+                            .FieldMediaImage
+                            .Sources[0]
                             .Srcset;
                     }
 

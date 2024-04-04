@@ -10,7 +10,7 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
-        services.AddScoped<IKinoJoinDbService, KinoKinoJoinDbService>();
+        services.AddScoped<IKinoJoinDbService, KinoJoinDbService>();
         services.AddScoped<IFetchNewestKinoDkDataService, FetchNewestKinoDkDataService>();
         services.AddDbContextFactory<KinoContext>(options =>
         {

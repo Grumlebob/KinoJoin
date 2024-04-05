@@ -1,9 +1,10 @@
 ﻿@page "/filling/{JoinEventId}"
-@using Presentation.Client.Services
+@using Infrastructure.Services
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
 @inject SqidsEncoder<int> SqidsEncoder
+@inject UserInfoService UserInfoService
 
 <PageTitle>JoinEvent</PageTitle>
 
@@ -51,7 +52,6 @@
                 @if (!_isEditing)
                 {
                     @* show information about join event staticaly *@
-
                     <div class="flex flex-row gap-1">
                         <h1 class="text-2xl font-label">@_joinEvent!.Title</h1>
 
@@ -77,7 +77,6 @@
                 else if (_isEditing)
                 {
                     @* Form for host to edit title description and deadline *@
-
                     <EditForm OnValidSubmit="@(async () => { await KinoJoinHttpClient.PutJoinEventAsync(_joinEvent); _isEditing = false; })" model="@_joinEvent">
                         <DataAnnotationsValidator/>
 
@@ -96,7 +95,6 @@
                             <span class="font-medium">Svarfrist:</span>
                             <input type="date" class="w-full rounded-2xl border" value="@_joinEvent.Deadline.ToString("yyyy-MM-dd")" @oninput="@(v => { if (DateTime.TryParse(v.Value?.ToString(), CultureInfo.InvariantCulture, out var parsedDate)) _joinEvent.Deadline = parsedDate; })"/>
                         </div>
-
                     </EditForm>
                 }
 
@@ -109,7 +107,7 @@
             </div>
         </div>
 
-        @* Share box*@
+        @* Share event card*@
         @if (_isHost)
         {
             <div class="w-full rounded border bg-gray-50 p-3 shadow-md space-y-1 md:w-fit md:max-w-md">
@@ -134,7 +132,7 @@
     </div>
 </div>
 
-@* showtime selection *@
+@* The showtimes they can vote on *@
 <ShowtimeSelector HasAnswered="@_currentParticipantAlreadyAnswered" SelectOptions="@_joinEvent.SelectOptions" DefaultSelectOption="@_joinEvent.DefaultSelectOption" Showtimes="@_joinEvent.Showtimes" LegendTitle="Tryk på de tider du kan" ShowtimeChoices="@_currentParticipant.VotedFor" ChoicesChanged="votes => _currentParticipant.VotedFor = votes"/>
 
 @* "Send Svar" button, or text saying you hsave answered*@
@@ -201,7 +199,7 @@ else
     </EditForm>
 </dialog>
 
-@* results *@
+@* Results of the join event *@
 <JoinEventResults @ref="_joinEventResults" CurrentParticipant="_currentParticipant" JoinEvent="_joinEvent" IsHost="_isHost"/>
 
 @code {
@@ -228,6 +226,7 @@ else
 
     private bool _isEditing;
 
+    //If something went wrong when saving the participant answer, this will be true
     private bool _somethingWentWrong;
 
     string _baseUrl = "";

@@ -12,6 +12,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IKinoJoinDbService, KinoJoinDbService>();
         services.AddScoped<IFetchNewestKinoDkDataService, FetchNewestKinoDkDataService>();
+        services.AddScoped<IUserInfoService, UserInfoService>();
         services.AddDbContextFactory<KinoContext>(options =>
         {
             var secret = configuration["PostgresConnection"];

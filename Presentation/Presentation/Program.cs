@@ -1,11 +1,3 @@
-using Application;
-using Carter;
-using Infrastructure;
-using Presentation;
-using Presentation.Client;
-using Presentation.Components;
-using _Imports = Presentation.Client._Imports;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

@@ -1,8 +1,4 @@
-﻿using System.Net;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-
-namespace Presentation;
+﻿namespace Presentation;
 
 ///<summary>
 /// The main idea is to not have a lot of try catch blocks inside the endpoints doing the same job.

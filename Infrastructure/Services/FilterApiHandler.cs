@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using System.Web;
 using Domain.ExternalApiModels;
 using Newtonsoft.Json;
 
@@ -283,5 +284,59 @@ public class FilterApiHandler : IFilterApiHandler
         filterStringBuilder.Append($"&date={toDateString}");
 
         return filterStringBuilder.ToString();
+    }
+
+    public (
+        ISet<int> selectedCinemas,
+        ISet<int> selectedMovies,
+        ISet<int> selectedGenres,
+        DateTime startDate,
+        DateTime endDate
+    ) GetFiltersFromUrlFilterString(string filterString)
+    {
+        var selectedCinemas = new HashSet<int>();
+        var selectedMovies = new HashSet<int>();
+        var selectedGenres = new HashSet<int>();
+        DateTime startDate = default;
+        DateTime endDate = default;
+
+        var query = "?" + filterString;
+        var queryParams = HttpUtility.ParseQueryString(query);
+
+        var firstDate = true;
+        foreach (var key in queryParams.AllKeys)
+        {
+            if (key == null)
+                continue;
+            foreach (var value in queryParams.GetValues(key)!)
+            {
+                switch (key)
+                {
+                    case "cinemas" when int.TryParse(value, out var cinemaId):
+                        selectedCinemas.Add(cinemaId);
+                        break;
+                    case "movies" when int.TryParse(value, out var movieId):
+                        selectedMovies.Add(movieId);
+                        break;
+                    case "genres" when int.TryParse(value, out var genreId):
+                        selectedGenres.Add(genreId);
+                        break;
+                    case "date" when DateTime.TryParse(value, out var parsedDate):
+                        if (firstDate)
+                        {
+                            startDate = parsedDate.Date;
+                            firstDate = false;
+                        }
+                        else
+                        {
+                            endDate = parsedDate.Date;
+                        }
+
+                        break;
+                }
+            }
+        }
+
+        return (selectedCinemas, selectedMovies, selectedGenres, startDate, endDate);
     }
 }

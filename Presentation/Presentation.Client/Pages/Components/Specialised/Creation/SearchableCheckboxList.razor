@@ -55,7 +55,7 @@ private SearchableCheckboxList _cinemaCheckBoxList = new();
     [Parameter]
     public Dictionary<int, string> IdsToLabels { get; set; } = new();
 
-    [Parameter] public HashSet<int> SelectedItems { get; set; } = [];
+    [Parameter] public ISet<int> SelectedItems { get; set; } = new HashSet<int>();
 
     [Parameter] public string Title { get; set; } = "";
 

@@ -113,7 +113,7 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
             return await UpdateJoinEventAsync(updatedJoinEvent);
         }
 
-        //Attempt assuming all necessary nested entities  are in the database
+        //Attempt assuming all necessary nested entities are in the database
         try
         {
             var newId = await InsertJoinEventAsync(updatedJoinEvent);
@@ -121,6 +121,7 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
         }
         catch (Exception)
         {
+            Console.WriteLine("UpsertJoinEventAsync failed.");
             //Add missing entities and try again.
             var movies = updatedJoinEvent.Showtimes.Select(st => st.Movie).DistinctBy(m => m.Id);
             await context.Movies!.UpsertRange(movies).RunAsync();

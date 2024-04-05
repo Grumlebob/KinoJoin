@@ -73,7 +73,7 @@ public class CalendarService : ICalendarService
         return new Uri(
             "https://calendar.google.com/calendar/u/0/r/eventedit?"
             + $"text={joinEvent.Title}"
-            + $"&dates={showtime.Playtime.StartTime:yyyyMMddTHHmmss}/{showtime.Playtime.StartTime.AddMinutes(showtime.Movie.DurationInMinutes).ToString("yyyyMMddTHHmmss")}"
+            + $"&dates={showtime.Playtime.StartTime:yyyyMMddTHHmmss}/{showtime.Playtime.StartTime.AddMinutes(showtime.Movie.DurationInMinutes):yyyyMMddTHHmmss}"
             + $"&location={showtime.Cinema.Name}"
             + $"&details={joinEvent.Description} %0AFilm: {showtime.Movie.Title}, {showtime.Room.Name}, {showtime.VersionTag.Type}"
         );

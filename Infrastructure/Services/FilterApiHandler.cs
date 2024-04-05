@@ -26,9 +26,11 @@ public class FilterApiHandler : IFilterApiHandler
         cinemaIds ??= [];
         movieIds ??= [];
         genreIds ??= [];
-        if (fromDate == default) fromDate = DateTime.Today;
-        if (toDate == default) toDate = DateTime.Today.AddYears(1);
-        
+        if (fromDate == default)
+            fromDate = DateTime.Today;
+        if (toDate == default)
+            toDate = DateTime.Today.AddYears(1);
+
         fromDate = fromDate.Date;
         toDate = toDate.Date;
 
@@ -249,12 +251,14 @@ public class FilterApiHandler : IFilterApiHandler
         cinemaIds ??= [];
         movieIds ??= [];
         genreIds ??= [];
-        if (fromDate == default) fromDate = DateTime.Today;
-        if (toDate == default) toDate = DateTime.Today.AddYears(1);
-        
+        if (fromDate == default)
+            fromDate = DateTime.Today;
+        if (toDate == default)
+            toDate = DateTime.Today.AddYears(1);
+
         fromDate = fromDate.Date;
         toDate = toDate.Date;
-        
+
         var fromDateString = fromDate.ToString("s"); //format: 2008-04-18T06:30:00, this format is needed so there is no slashes in the string, which would be interpreted as paths in the url
         var toDateString = toDate.ToString("s");
 

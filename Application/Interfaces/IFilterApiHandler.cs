@@ -6,10 +6,10 @@
 public interface IFilterApiHandler
 {
     /// <summary>
-    /// Use the given filters to call kino.dk's api and fetch their data. 
+    /// Use the given filters to call kino.dk's api and fetch their data.
     /// </summary>
     ///<returns>
-    /// A tuple with a list of Showtimes matching the filters and a list with all the selected movies which had no matching showtimes 
+    /// A tuple with a list of Showtimes matching the filters and a list with all the selected movies which had no matching showtimes
     /// </returns>
     Task<(List<Showtime> showtimes, List<Movie> moviesWithoutShowtimes)> GetShowtimesFromFilters(
         ICollection<int> cinemaIds = null!,

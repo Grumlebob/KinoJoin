@@ -38,10 +38,15 @@ public class KinoJoinHttpClient : IKinoJoinHttpClient
     {
         return await _httpClient.PutAsJsonAsync("/api/events", joinEvent);
     }
-    
-    public async Task<HttpResponseMessage> MakeParticipantNotExistsAsync(int joinEventId, int participantId)
+
+    public async Task<HttpResponseMessage> MakeParticipantNotExistsAsync(
+        int joinEventId,
+        int participantId
+    )
     {
-        return await _httpClient.DeleteAsync($"/api/events/{joinEventId}/participants/{participantId}");
+        return await _httpClient.DeleteAsync(
+            $"/api/events/{joinEventId}/participants/{participantId}"
+        );
     }
 
     public async Task<ICollection<Cinema>?> GetCinemasAsync()

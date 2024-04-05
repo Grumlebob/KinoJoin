@@ -46,7 +46,6 @@ public class KinoJoinEndpoints : ICarterModule
         var result = await kinoJoinDbService.UpsertJoinEventAsync(joinEvent);
         return TypedResults.Ok(result);
     }
-    
 
     private static async Task<
         Results<Ok<List<JoinEvent>>, NotFound, BadRequest<string>>
@@ -56,7 +55,7 @@ public class KinoJoinEndpoints : ICarterModule
     )
     {
         var joinEvents = await kinoJoinDbService.GetAllJoinEventsAsync(j => j.HostId == hostId);
-        return TypedResults.Ok(joinEvents); 
+        return TypedResults.Ok(joinEvents);
     }
 
     private static async Task<Results<NotFound, Ok<JoinEvent>, BadRequest<string>>> GetJoinEvent(
@@ -91,7 +90,7 @@ public class KinoJoinEndpoints : ICarterModule
         var genres = await kinoKinoJoinService.GetAllGenresAsync();
         return TypedResults.Ok(genres);
     }
-    
+
     private static async Task<Results<Ok, NotFound, BadRequest<string>>> MakeParticipantNotExist(
         [FromRoute] int joinEventId,
         [FromRoute] int participantId,

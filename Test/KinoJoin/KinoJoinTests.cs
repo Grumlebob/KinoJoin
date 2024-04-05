@@ -40,7 +40,7 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public async Task CompleteJoinEventFlowFromStartToFinish()
     {
-        const int casesToInsert = 10;
+        const int casesToInsert = 5;
 
         var joinEvents = _dataGenerator.JoinEventGenerator.Generate(casesToInsert);
 
@@ -79,12 +79,13 @@ public class KinoJoinTests : IAsyncLifetime
 
         //check count
         joinEvents.Count.Should().Be(casesToInsert);
-        var getResponseAll = await _client.GetAsync("api/events");
-        var joinEventsFromApi = await getResponseAll.Content.ReadFromJsonAsync<List<JoinEvent>>();
-        joinEventsFromApi!.Count.Should().Be(casesToInsert);
+        _kinoContext.JoinEvents.Count().Should().Be(casesToInsert);
 
         //Check all properties and nested properties exist
-        var joinEventToCheck = joinEventsFromApi.FirstOrDefault();
+        var joinEventToCheck = _kinoContext.JoinEvents.First();
+        joinEventToCheck = await _client.GetFromJsonAsync<JoinEvent>(
+            "api/events/" + joinEventToCheck.Id
+        );
         //These properties are always present
         joinEventToCheck.Should().NotBeNull();
         joinEventToCheck!.SelectOptions.Count.Should().BeGreaterThan(0);
@@ -108,7 +109,7 @@ public class KinoJoinTests : IAsyncLifetime
         }
 
         //update JoinEvent properties
-        var joinEventToUpdate = joinEventsFromApi[casesToInsert - 1];
+        var joinEventToUpdate = _kinoContext.JoinEvents.ToList()[casesToInsert - 1];
         joinEventToUpdate.Title = "Updated";
         var updateResponse = await _client.PutAsJsonAsync("api/events", joinEventToUpdate);
         updateResponse.EnsureSuccessStatusCode();

@@ -23,7 +23,7 @@ public class JoinEvent
     public DateTime Deadline { get; set; }
 
     [ForeignKey("HostId")]
-    public Host? Host { get; set; }
+    public Host Host { get; set; } = null!;
 
     [ForeignKey("DefaultSelectOptionId")]
     public SelectOption DefaultSelectOption { get; set; } = null!;

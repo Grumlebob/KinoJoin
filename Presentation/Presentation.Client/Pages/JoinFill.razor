@@ -1,10 +1,9 @@
 ﻿@page "/filling/{JoinEventId}"
-@using Infrastructure.Services
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
 @inject SqidsEncoder<int> SqidsEncoder
-@inject UserInfoService UserInfoService
+@inject IUserInfoService UserInfoService
 
 <PageTitle>JoinEvent</PageTitle>
 

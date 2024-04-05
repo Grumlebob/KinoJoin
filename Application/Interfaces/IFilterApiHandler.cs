@@ -1,7 +1,13 @@
 ﻿namespace Application.Interfaces;
 
+/// <summary>
+/// The main idea of this interface is to handle the filters namely, cinemas, movies, genres and dates.
+/// </summary>
 public interface IFilterApiHandler
 {
+    /// <summary>
+    /// Fetches matching showtimes, and provides a list of movies that don't have any matching showtimes, but are included in the movie filters.
+    /// </summary>
     Task<(List<Showtime> showtimes, List<Movie> moviesWithoutShowtimes)> GetShowtimesFromFilters(
         ICollection<int> cinemaIds,
         ICollection<int> movieIds,

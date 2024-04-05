@@ -55,7 +55,7 @@ public class FilterApiHandler : IFilterApiHandler
         if (apiResultObject == null)
             return ([], []);
 
-        //names are stored in facets
+        //names are stored in facets object in kino.dk api data
         var cinemaIdsToNames =
             apiResultObject.ShowtimeApiContent.ShowtimeApiFacets.ShowtimeApiCinemas.Options.ToDictionary(
                 cinemaOption => cinemaOption.Key,
@@ -72,7 +72,7 @@ public class FilterApiHandler : IFilterApiHandler
 
         foreach (var jsonCinema in apiResultObject.ShowtimeApiContent.ShowtimeApiContent.Content)
         {
-            //if cinemaIdsToNames does not contain the id it may be a different kind of entity
+            //if cinemaIdsToNames does not contain the id it may be a different unhandled entity, such as "særvisninger"
             if (!cinemaIdsToNames.ContainsKey(jsonCinema.Id))
                 continue;
 

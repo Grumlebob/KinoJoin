@@ -1,11 +1,11 @@
 ﻿@page "/"
 @page "/create-event/{UrlFilterString?}"
-@using Presentation.Client.Services
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject IKinoJoinHttpClient KinoJoinHttpClient
 @inject IFilterApiHandler FilterHandler
 @inject SqidsEncoder<int> SqidsEncoder
+@inject IUserInfoService UserInfoService
 
 @if (_loadingPage)
 {

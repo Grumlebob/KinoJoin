@@ -5,10 +5,9 @@ namespace Presentation.Client.NamedHttpClients;
 
 public interface IKinoJoinHttpClient
 {
-    Task<List<JoinEvent>?> GetJoinEventsAsync();
     Task<JoinEvent?> GetJoinEventAsync(int id);
-    Task<HttpResponseMessage> PutJoinEventAsync(JoinEvent joinEvent);
-    Task<HttpResponseMessage> DeleteParticipantAsync(int eventId, int participantId);
+    Task<HttpResponseMessage> UpsertJoinEventAsync(JoinEvent joinEvent);
+    Task<HttpResponseMessage> MakeParticipantNotExistsAsync(int joinEventId, int participantId);
     Task<ICollection<Cinema>?> GetCinemasAsync();
     Task<ICollection<Movie>?> GetMoviesAsync();
     Task<ICollection<Genre>?> GetGenresAsync();
@@ -26,12 +25,6 @@ public class KinoJoinHttpClient : IKinoJoinHttpClient
         _httpClient = httpClient;
     }
 
-    //get
-    public async Task<List<JoinEvent>?> GetJoinEventsAsync()
-    {
-        return await _httpClient.GetFromJsonAsync<List<JoinEvent>>("/api/events");
-    }
-
     //get by id
     public async Task<JoinEvent?> GetJoinEventAsync(int id)
     {
@@ -41,15 +34,19 @@ public class KinoJoinHttpClient : IKinoJoinHttpClient
             : null;
     }
 
-    public async Task<HttpResponseMessage> PutJoinEventAsync(JoinEvent joinEvent)
+    public async Task<HttpResponseMessage> UpsertJoinEventAsync(JoinEvent joinEvent)
     {
         return await _httpClient.PutAsJsonAsync("/api/events", joinEvent);
     }
 
-    //delete participant
-    public async Task<HttpResponseMessage> DeleteParticipantAsync(int eventId, int participantId)
+    public async Task<HttpResponseMessage> MakeParticipantNotExistsAsync(
+        int joinEventId,
+        int participantId
+    )
     {
-        return await _httpClient.DeleteAsync($"/api/events/{eventId}/participants/{participantId}");
+        return await _httpClient.DeleteAsync(
+            $"/api/events/{joinEventId}/participants/{participantId}"
+        );
     }
 
     public async Task<ICollection<Cinema>?> GetCinemasAsync()

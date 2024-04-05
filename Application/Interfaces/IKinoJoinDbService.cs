@@ -4,14 +4,14 @@ namespace Application.Interfaces;
 
 /**
  * <summary>
- * Handles the interaction with the database for join events.
+ * Handles the interaction with the database for join events, and other entities.
  * </summary>
  **/
 public interface IKinoJoinDbService
 {
     /**
      * <summary>
-     * If the database already has a join event with the same id as the dto,
+     * If the database already has a join event with the same id,
      * it will update that entry, otherwise it will insert a new entry.
      * </summary>
      *
@@ -26,10 +26,9 @@ public interface IKinoJoinDbService
      *
      * <returns>
      * The join event with the given id, or null if no such join event exists.
-     * A non-dto is returned to include all nested data.
      * </returns>
      */
-    Task<JoinEvent?> GetAsync(int id);
+    Task<JoinEvent?> GetJoinEventAsync(int id);
 
     /**
      * <summary>
@@ -42,16 +41,16 @@ public interface IKinoJoinDbService
      *
      * <returns>
      * A list of all join events in the database.
-     * Non-dtos are returned to include all nested data.
      * </returns>
      */
-    //TODO På andre skriver hvad det er er, her gør vi ikke. Ex "get all cinemas" og her er det bare "get all" gør ensartet
-    Task<List<JoinEvent>> GetAllAsync(Expression<Func<JoinEvent, bool>>? filter = null);
+    Task<List<JoinEvent>> GetAllJoinEventsAsync(Expression<Func<JoinEvent, bool>>? filter = null);
 
-    //Delete participant
+    /// <summary>
+    ///  Deletes the participant with the given id for the join event with the given id, if it exists.
+    /// </summary>
     Task MakeParticipantNotExistAsync(int joinEventId, int participantId);
 
-    Task<ICollection<Cinema>> GetAllCinemas();
-    Task<ICollection<Movie>> GetAllMovies();
-    Task<ICollection<Genre>> GetAllGenres();
+    Task<ICollection<Cinema>> GetAllCinemasAsync();
+    Task<ICollection<Movie>> GetAllMoviesAsync();
+    Task<ICollection<Genre>> GetAllGenresAsync();
 }

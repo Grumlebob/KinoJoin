@@ -17,8 +17,8 @@
 
 @if (!_isLoggedIn && !GlobalSettings.HostOnNgrokWithNoHttpsAndSetDefaultUser)
 {
-    <div class="flex flex-col w-full h-full h-fit justify-center items-center bg-black bg-opacity-50  fixed inset-0 z-50">
-        <div class="w-fit h-fit shadow-md p-3 bg-gray-50 rounded ">
+    <div class="fixed inset-0 z-50 flex h-full w-full flex-col items-center justify-center bg-black bg-opacity-50">
+        <div class="h-fit w-fit rounded bg-gray-50 p-3 shadow-md">
             <p class="text-2xl font-semibold">Du skal være logget ind for at oprette et event</p>
             <div class="w-fit">
                 <button class="btn-black" onclick="@(() => { NavigationManager.NavigateToLogin("authentication/login", new InteractiveRequestOptions { Interaction = InteractionType.SignIn, ReturnUrl = "/create-event/" + UrlFilterString }); })">Log ind</button>
@@ -67,13 +67,13 @@
             <div class="w-1/2 pt-3 pr-1.5">
                 <div class="rounded-lg bg-gray-100 shadow">
                     <label for="start-date" class="block rounded-t-lg text-center text-sm font-medium text-white bg-secondary">Start dato</label>
-                    <input id="start-date" type="date" @bind="_startDate" class="mt-1 block w-full text-center bg-transparent"/>
+                    <input id="start-date" type="date" @bind="_startDate" class="mt-1 block w-full bg-transparent text-center"/>
                 </div>
             </div>
             <div class="w-1/2 pt-3 pl-1.5">
                 <div class="rounded-lg bg-gray-100 shadow">
                     <label for="end-date" class="block rounded-t-lg text-center text-sm font-medium text-white bg-secondary">Slut dato</label>
-                    <input id="end-date" type="date" @bind="_endDate" class="mt-1 block w-full text-center bg-transparent"/>
+                    <input id="end-date" type="date" @bind="_endDate" class="mt-1 block w-full bg-transparent text-center"/>
                 </div>
             </div>
         </div>
@@ -106,7 +106,7 @@
     return;
 }
 
-@if (_availableShowtimes.Count == 0 && (_selectedCinemas.Any() || _selectedMovies.Any() || _selectedGenres.Any()))
+@if (_availableShowtimes.Count == 0 && !NoFiltersSelected)
 {
     <p>Der er ingen forestillinger for de valgte filtre</p>
 }
@@ -114,7 +114,7 @@
 <ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de spilletider du vil have med i dit event" MoviesWithoutShowTimes="@_moviesWithoutShowtimes" ShowtimeChoices="@_showtimeVotes" ChoicesChanged="OnVoteChange" SelectOptions="@_selectOptionsForCreatePage" DefaultSelectOption="@_selectOptionsForCreatePage.First()"/>
 
 @*Create button*@
-<button class="btn-red fixed right-6 text-sm bottom-6 z-50 flex gap-1" @onclick="OpenEventDetailsDialog">
+<button class="fixed right-6 bottom-6 z-50 flex gap-1 text-sm btn-red" @onclick="OpenEventDetailsDialog">
     <img src="Icons/CreateIcon.svg" alt="create"/>
     <span class="text-white">
         Opret og del
@@ -127,7 +127,7 @@
         <DataAnnotationsValidator/>
 
         <p class="text-lg font-semibold mb-0.5">Event Titel</p>
-        <InputText class="mb-2 w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:ring-2 focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
+        <InputText class="mb-2 w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm focus:ring-secondary focus:border-transparent focus:outline-none focus:ring-2 md:w-96"
                    type="text" placeholder="Titel" required
                    @bind-Value="_joinEvent.Title"/>
 
@@ -199,7 +199,7 @@
 @*Snackbar*@
 @if (_snackbarMessage != null)
 {
-    <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-error text-white p-2.5 rounded-md">
+    <div class="fixed bottom-10 left-1/2 -translate-x-1/2 transform rounded-md text-white bg-error p-2.5">
         @_snackbarMessage
     </div>
 }
@@ -242,9 +242,9 @@
     private Dictionary<int, string> _genreIdsToNames = new();
 
     //Used to keep track of which movies, cinemas and genres are selected in the filters
-    private HashSet<int> _selectedMovies = [];
-    private HashSet<int> _selectedCinemas = [];
-    private HashSet<int> _selectedGenres = [];
+    private ISet<int> _selectedMovies = new HashSet<int>();
+    private ISet<int> _selectedCinemas = new HashSet<int>();
+    private ISet<int> _selectedGenres = new HashSet<int>();
 
     //Used to keep track of the start and end date that is selected in the filters
     private DateTime _startDate = DateTime.Today;
@@ -293,6 +293,7 @@
         var host = new Host();
         if (userInfo is null)
         {
+            //this is only used for when we are hosting on http with ngrok
             if (GlobalSettings.HostOnNgrokWithNoHttpsAndSetDefaultUser)
             {
                 host.AuthId = "1";
@@ -321,7 +322,10 @@
         _joinEvent.DefaultSelectOption = _joinEvent.SelectOptions[NoVoteIndex];
 
         //Set filters to match the filter string in the url
-        SetFiltersFromUrlFilterString(UrlFilterString);
+        (_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate) = FilterHandler.GetFiltersFromUrlFilterString(UrlFilterString);
+        if (_startDate == default) _startDate = DateTime.Today;
+        if (_endDate == default) _endDate = DateTime.Today.AddYears(1);
+        
 
         //get data for filter checklists
         var cinemasTask = KinoJoinHttpClient.GetCinemasAsync();
@@ -376,51 +380,6 @@
         }
 
         _loadingShowtimes = false;
-    }
-
-    /**
-     * <summary>
-     * This will set the selected movies, cinemas, and genres used for the filters,
-     * based on the filter string taken from the url.
-     * </summary>
-     */
-    private void SetFiltersFromUrlFilterString(string filterString)
-    {
-        var query = "?" + filterString;
-        var queryParams = HttpUtility.ParseQueryString(query);
-
-        var firstDate = true;
-        foreach (var key in queryParams.AllKeys)
-        {
-            if (key == null) continue;
-            foreach (var value in queryParams.GetValues(key)!)
-            {
-                switch (key)
-                {
-                    case "cinemas" when int.TryParse(value, out var cinemaId):
-                        _selectedCinemas.Add(cinemaId);
-                        break;
-                    case "movies" when int.TryParse(value, out var movieId):
-                        _selectedMovies.Add(movieId);
-                        break;
-                    case "genres" when int.TryParse(value, out var genreId):
-                        _selectedGenres.Add(genreId);
-                        break;
-                    case "date" when DateTime.TryParse(value, out var parsedDate):
-                        if (firstDate)
-                        {
-                            _startDate = parsedDate.Date;
-                            firstDate = false;
-                        }
-                        else
-                        {
-                            _endDate = parsedDate.Date;
-                        }
-
-                        break;
-                }
-            }
-        }
     }
 
     /**
@@ -530,14 +489,14 @@
         {
             _joinEvent.Participants.Add(new Participant
             {
-                AuthId = _joinEvent.Host!.AuthId,
+                AuthId = _joinEvent.Host.AuthId,
                 Nickname = _joinEvent.Host.Username, Email = _joinEvent.Host.Email, Note = null,
                 VotedFor = _joinEvent.Showtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _joinEvent.SelectOptions[YesVoteIndex] }).ToList(),
                 JoinEventId = _joinEvent.Id
             });
         }
 
-        var response = await KinoJoinHttpClient.PutJoinEventAsync(_joinEvent);
+        var response = await KinoJoinHttpClient.UpsertJoinEventAsync(_joinEvent);
 
         var id = await response.Content.ReadAsStringAsync();
         _joinEvent.Id = int.Parse(id);

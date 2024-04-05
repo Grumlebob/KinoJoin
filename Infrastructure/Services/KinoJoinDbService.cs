@@ -1,27 +1,25 @@
-﻿using System.Linq.Expressions;
-using Infrastructure.Persistence;
-
-namespace Infrastructure.Services;
+﻿namespace Infrastructure.Services;
 
 public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
 {
-    public async Task<ICollection<Cinema>> GetAllCinemas()
+    public async Task<ICollection<Cinema>> GetAllCinemasAsync()
     {
         return await context.Cinemas.AsNoTracking().ToListAsync();
     }
 
-    public async Task<ICollection<Movie>> GetAllMovies()
+    public async Task<ICollection<Movie>> GetAllMoviesAsync()
     {
         return await context.Movies.AsNoTracking().ToListAsync();
     }
 
-    public async Task<ICollection<Genre>> GetAllGenres()
+    public async Task<ICollection<Genre>> GetAllGenresAsync()
     {
         return await context.Genres.AsNoTracking().ToListAsync();
     }
 
-    public async Task<JoinEvent?> GetAsync(int id)
+    public async Task<JoinEvent?> GetJoinEventAsync(int id)
     {
+        //Include all related entities, otherwise these would be set to null
         var result = await context
             .JoinEvents.AsNoTracking()
             .Include(j => j.Showtimes)
@@ -35,7 +33,7 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
             .ThenInclude(s => s.VersionTag)
             .Include(j => j.Showtimes)
             .ThenInclude(s => s.Room)
-            .Include(j => j.Participants)!
+            .Include(j => j.Participants)
             .ThenInclude(p => p.VotedFor)
             .ThenInclude(pv => pv.SelectedOption)
             .Include(j => j.SelectOptions)
@@ -45,7 +43,9 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
         return result;
     }
 
-    public async Task<List<JoinEvent>> GetAllAsync(Expression<Func<JoinEvent, bool>>? filter = null)
+    public async Task<List<JoinEvent>> GetAllJoinEventsAsync(
+        Expression<Func<JoinEvent, bool>>? filter = null
+    )
     {
         IQueryable<JoinEvent> query = context.JoinEvents.AsNoTracking();
 
@@ -54,6 +54,7 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
             query = query.Where(filter);
         }
 
+        //Include all related entities, otherwise these would be set to null
         var joinEvents = await query
             .Include(j => j.Showtimes)
             .ThenInclude(s => s.Movie)
@@ -66,7 +67,7 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
             .ThenInclude(s => s.VersionTag)
             .Include(j => j.Showtimes)
             .ThenInclude(s => s.Room)
-            .Include(j => j.Participants)!
+            .Include(j => j.Participants)
             .ThenInclude(p => p.VotedFor)
             .ThenInclude(pv => pv.SelectedOption)
             .Include(j => j.SelectOptions)
@@ -92,26 +93,17 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
         }
     }
 
-    /*
-     * The overall goal is to save the entire workpage of a JoinEvent, regardless of creating or filling
-     *
-     * Stages:
-     * 1. We need to upsert entities that needs to exist in the database before JoinEvent is added.
-     * 2. Upon program startup, the DB is loaded with Kino's data.
-     * 2.1 We try to upsert the joinEvent using the preloaded data in the database.
-     * 2.2 In unlikely scenario it fails, Kino have updated their database with new data, which will be added.
-     * It is then reattempted to upsert the joinEvent.
-     */
     public async Task<int> UpsertJoinEventAsync(JoinEvent updatedJoinEvent)
     {
         var isUpdate = updatedJoinEvent.Id != 0;
 
         if (isUpdate)
         {
-            return await UpdateJoinEventAsync(updatedJoinEvent);
+            await UpdateJoinEventAsync(updatedJoinEvent);
+            return updatedJoinEvent.Id;
         }
 
-        //Attempt without preloaded data
+        //Attempt assuming all necessary nested entities are in the database
         try
         {
             var newId = await InsertJoinEventAsync(updatedJoinEvent);
@@ -120,9 +112,6 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
         catch (Exception)
         {
             //Add missing entities and try again.
-            var movies = updatedJoinEvent.Showtimes.Select(st => st.Movie).DistinctBy(m => m.Id);
-            await context.Movies!.UpsertRange(movies).RunAsync();
-
             var cinemas = updatedJoinEvent.Showtimes.Select(st => st.Cinema).DistinctBy(c => c.Id);
             await context.Cinemas.UpsertRange(cinemas).RunAsync();
 
@@ -136,7 +125,7 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
         }
     }
 
-    private async Task<int> UpdateJoinEventAsync(JoinEvent updatedJoinEvent)
+    private async Task UpdateJoinEventAsync(JoinEvent updatedJoinEvent)
     {
         await context
             .JoinEvents.Where(b => b.Id == updatedJoinEvent.Id)
@@ -149,6 +138,7 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
             );
 
         context.ChangeTracker.Clear();
+
         // Fetch existing participants from the database
         var existingParticipants = await context
             .Participants.Where(p => p.JoinEventId == updatedJoinEvent.Id)
@@ -168,31 +158,27 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
         }
 
         // Identify and add new participants
-        if (updatedJoinEvent.Participants != null)
+        var newParticipants = updatedJoinEvent.Participants!.Where(p => p.Id == 0).ToList();
+
+        if (newParticipants.Count != 0)
         {
-            var newParticipants = updatedJoinEvent.Participants.Where(p => p.Id == 0).ToList();
-
-            if (newParticipants.Count != 0)
+            foreach (var newParticipant in newParticipants)
             {
-                foreach (var newParticipant in newParticipants)
+                foreach (var option in newParticipant.VotedFor)
                 {
-                    foreach (var option in newParticipant.VotedFor)
-                    {
-                        option.SelectedOptionId = option.SelectedOption.Id;
-                        option.SelectedOption = null!; //don't track
-                    }
-
-                    newParticipant.JoinEventId = updatedJoinEvent.Id;
-                    await context.Participants.AddAsync(newParticipant);
+                    option.SelectedOptionId = option.SelectedOption.Id;
+                    //don't track navigation property, because it is already tracked, which would make ef core try to insert it again
+                    option.SelectedOption = null!;
                 }
 
-                await context.Participants.AddRangeAsync(newParticipants);
+                //Make sure the new participant is linked to the updated join event
+                newParticipant.JoinEventId = updatedJoinEvent.Id;
             }
+
+            await context.Participants.AddRangeAsync(newParticipants);
         }
 
         await context.SaveChangesAsync();
-
-        return updatedJoinEvent.Id;
     }
 
     private async Task<int> InsertJoinEventAsync(JoinEvent joinEvent)
@@ -200,58 +186,75 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
         context.ChangeTracker.Clear();
 
         //---The Order matters, certain entities need to be added before others---
-        await HandleStaticKinoData(joinEvent); //mangler optimize playtimes
-        await HandleMovies(joinEvent);
+        await HandleCinemaAndVersionTag(joinEvent);
+        await HandlePlaytimeAndRoom(joinEvent);
+        await HandleMoviesAndAgeRatings(joinEvent);
         await HandleHost(joinEvent);
         await HandleShowtimes(joinEvent);
-        await HandleSelectOptions(joinEvent); //mangler optimization
-        await HandleDefaultSelectOptions(joinEvent);
-        var addedId = await HandleJoinEvent(joinEvent);
-        await HandleParticipants(joinEvent); //mangler optimization
+        await HandleSelectOptions(joinEvent);
+        var newJoinEventId = await HandleJoinEvent(joinEvent);
+        await HandleParticipants(joinEvent);
 
-        return addedId;
+        return newJoinEventId;
     }
 
     /// <summary>
-    ///  Handles independent data that came from Kino.dk, like cinemas, movies, playtimes...
+    /// Set the cinemas and version tags to ef core references
     /// </summary>
-    private async Task HandleStaticKinoData(JoinEvent joinEvent)
+    private async Task HandleCinemaAndVersionTag(JoinEvent joinEvent)
     {
         var cinemaIds = joinEvent.Showtimes.Select(st => st.Cinema.Id).Distinct().ToList();
-        var playtimeStartTimes = joinEvent.Showtimes.Select(st => st.Playtime.StartTime).Distinct();
         var versionTypes = joinEvent.Showtimes.Select(st => st.VersionTag.Type).Distinct().ToList();
-        var roomIds = joinEvent.Showtimes.Select(st => st.Room.Id).Distinct().ToList();
 
         var existingCinemas = await context
             .Cinemas.Where(c => cinemaIds.Contains(c.Id))
             .ToDictionaryAsync(c => c.Id);
-        var existingPlaytimes = await context
-            .Playtimes.Where(p => playtimeStartTimes.Contains(p.StartTime))
-            .ToDictionaryAsync(p => p.StartTime);
         var existingVersionTags = await context
             .Versions.Where(v => versionTypes.Contains(v.Type))
             .ToDictionaryAsync(v => v.Type);
+
+        foreach (var showtime in joinEvent.Showtimes)
+        {
+            if (!existingCinemas.TryGetValue(showtime.Cinema.Id, out var existingCinema))
+            {
+                throw new Exception($"Cinema {showtime.Cinema.Id} not in database");
+            }
+
+            showtime.Cinema = existingCinema;
+
+            if (
+                !existingVersionTags.TryGetValue(
+                    showtime.VersionTag.Type,
+                    out var existingVersionTag
+                )
+            )
+            {
+                throw new Exception($"Version {showtime.VersionTag.Type} not in database");
+            }
+
+            showtime.VersionTag = existingVersionTag;
+        }
+
+        await context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    ///  Upserts playtimes and rooms and sets them as ef core references
+    /// </summary>
+    private async Task HandlePlaytimeAndRoom(JoinEvent joinEvent)
+    {
+        var playtimeStartTimes = joinEvent.Showtimes.Select(st => st.Playtime.StartTime).Distinct();
+        var roomIds = joinEvent.Showtimes.Select(st => st.Room.Id).Distinct().ToList();
+
+        var existingPlaytimes = await context
+            .Playtimes.Where(p => playtimeStartTimes.Contains(p.StartTime))
+            .ToDictionaryAsync(p => p.StartTime);
         var existingRooms = await context
             .Rooms.Where(r => roomIds.Contains(r.Id))
             .ToDictionaryAsync(r => r.Id);
 
         foreach (var showtime in joinEvent.Showtimes)
         {
-            // Handle Cinema
-            if (!existingCinemas.TryGetValue(showtime.Cinema.Id, out var existingCinema))
-            {
-                existingCinema = new Cinema
-                {
-                    Id = showtime.Cinema.Id,
-                    Name = showtime.Cinema.Name
-                };
-                context.Cinemas.Add(existingCinema);
-                existingCinemas[existingCinema.Id] = existingCinema;
-            }
-
-            showtime.Cinema = existingCinema;
-
-            //For some reason context.playtimes.Where doesn't work. It returns null.
             // Handle Playtime
             if (
                 !existingPlaytimes.TryGetValue(
@@ -264,22 +267,8 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
                 context.Playtimes.Add(existingPlaytime);
                 existingPlaytimes[existingPlaytime.StartTime] = existingPlaytime;
             }
+
             showtime.Playtime = existingPlaytime;
-
-            // Handle VersionTag
-            if (
-                !existingVersionTags.TryGetValue(
-                    showtime.VersionTag.Type,
-                    out var existingVersionTag
-                )
-            )
-            {
-                existingVersionTag = new VersionTag { Type = showtime.VersionTag.Type };
-                context.Versions.Add(existingVersionTag);
-                existingVersionTags[existingVersionTag.Type] = existingVersionTag;
-            }
-
-            showtime.VersionTag = existingVersionTag;
 
             // Handle Room
             if (!existingRooms.TryGetValue(showtime.Room.Id, out var existingRoom))
@@ -295,20 +284,28 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
         await context.SaveChangesAsync();
     }
 
-    private async Task HandleMovies(JoinEvent joinEvent)
+    /// <summary>
+    /// Upsert movies and age ratings and set them as ef core references
+    /// </summary>
+    private async Task HandleMoviesAndAgeRatings(JoinEvent joinEvent)
     {
+        // Upsert all age ratings
+        List<AgeRating> distinctAgeRatings = joinEvent
+            .Showtimes.Where(st => st.Movie.AgeRating != null)
+            .Select(st => st.Movie.AgeRating)
+            .DistinctBy(a => a!.Censorship)
+            .ToList()!;
+        await context.AgeRatings.UpsertRange(distinctAgeRatings).On(a => a.Censorship).RunAsync();
+        var existingAgeRatings = await context.AgeRatings.AsNoTracking().ToListAsync();
+
         // Collect all distinct movie IDs from the joinEvent's showtimes
         var movieIds = joinEvent.Showtimes.Select(st => st.Movie.Id).Distinct().ToList();
 
         // Fetch all existing movies in a single query
         var existingMovies = await context.Movies.Where(m => movieIds.Contains(m.Id)).ToListAsync();
 
-        var existingAgeRatings = await context.AgeRatings.ToListAsync();
-
-        foreach (var movie in joinEvent.Showtimes.Select(st => st.Movie).Distinct())
+        foreach (var movie in joinEvent.Showtimes.Select(st => st.Movie).DistinctBy(m => m.Id))
         {
-            if (movie == null)
-                continue;
             var existingMovie = existingMovies.FirstOrDefault(m => m.Id == movie.Id);
 
             if (existingMovie != null)
@@ -326,28 +323,41 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
                 );
                 if (existingAgeRating != null)
                 {
-                    existingMovie.AgeRating = existingAgeRating;
+                    movie.AgeRatingId = existingAgeRating.Id;
+                    movie.AgeRating = null;
                 }
             }
             else
             {
-                // Add the new movie
-                context.Movies.Add(movie);
-
                 // Update age rating
                 var existingAgeRating = existingAgeRatings.FirstOrDefault(ar =>
                     ar.Censorship == movie.AgeRating?.Censorship
                 );
                 if (existingAgeRating != null)
                 {
-                    movie.AgeRating = existingAgeRating;
+                    movie.AgeRatingId = existingAgeRating.Id;
+                    movie.AgeRating = null;
                 }
+
+                // Add the new movie
+                context.Movies.Add(movie);
             }
+        }
+
+        //make sure the age rating is not tracked, because it is already tracked,
+        //which would make ef core try to insert it again.
+        //The loop above uses DistinctBy, which means it might not handle all movies
+        foreach (var movie in joinEvent.Showtimes.Select(st => st.Movie))
+        {
+            movie.AgeRating = null;
         }
 
         await context.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Upsert the host and set it as ef core reference
+    /// </summary>
     private async Task HandleHost(JoinEvent joinEvent)
     {
         var existingHost = await context.Hosts.FindAsync(joinEvent.Host.AuthId);
@@ -363,6 +373,9 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
         await context.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Upsert showtimes and set them as ef core references
+    /// </summary>
     private async Task HandleShowtimes(JoinEvent joinEvent)
     {
         var showtimeIds = joinEvent.Showtimes.Select(s => s.Id).ToList();
@@ -408,6 +421,12 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
         joinEvent.Showtimes = showtimesWithEfCoreTracking;
     }
 
+    /// <summary>
+    /// Upsert select options and set them as ef core references.
+    /// Set the default select option to one of the upserted options.
+    /// </summary>
+    /// <remarks>Does not save to database, since it is saved afterwards in the HandleJoinEvent method,
+    /// for optimization purposes by reducing amount of DB calls. </remarks>
     private async Task HandleSelectOptions(JoinEvent joinEvent)
     {
         await context
@@ -426,48 +445,23 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
             .ToList();
 
         joinEvent.SelectOptions = upsertedSelectOptions;
-    }
 
-    //It will first check the joinEvent.SelectOptions, as that list has been processed in previous method and includes references to DB entities
-    private async Task HandleDefaultSelectOptions(JoinEvent joinEvent)
-    {
+        //Handle default select option
         var defaultSelectOption = joinEvent.DefaultSelectOption;
 
-        // Check if the DefaultSelectOption is already in the prefetched list
-        var existingDefaultSelectOption = joinEvent.SelectOptions.FirstOrDefault(so =>
+        // Get the existing default select option from the join event's list
+        var existingDefaultSelectOption = joinEvent.SelectOptions.First(so =>
             so.VoteOption == defaultSelectOption.VoteOption && so.Color == defaultSelectOption.Color
         );
 
-        if (existingDefaultSelectOption != null)
-        {
-            // Use the existing option
-            joinEvent.DefaultSelectOption = existingDefaultSelectOption;
-            joinEvent.DefaultSelectOptionId = existingDefaultSelectOption.Id;
-        }
-        else
-        {
-            // Check if it exists in the database (in case it's not in the prefetched list)
-            existingDefaultSelectOption = await context.SelectOptions.FirstOrDefaultAsync(so =>
-                so.VoteOption == defaultSelectOption.VoteOption
-                && so.Color == defaultSelectOption.Color
-            );
-
-            if (existingDefaultSelectOption != null)
-            {
-                // Use the existing option from the database
-                joinEvent.DefaultSelectOption = existingDefaultSelectOption;
-                joinEvent.DefaultSelectOptionId = existingDefaultSelectOption.Id;
-            }
-            else
-            {
-                // It doesn't exist in either the prefetched list or the database, so add it
-                context.SelectOptions.Add(defaultSelectOption);
-                await context.SaveChangesAsync();
-                joinEvent.DefaultSelectOptionId = defaultSelectOption.Id;
-            }
-        }
+        // Use the existing option
+        joinEvent.DefaultSelectOption = existingDefaultSelectOption;
+        joinEvent.DefaultSelectOptionId = existingDefaultSelectOption.Id;
     }
 
+    /// <summary>
+    /// Insert the joinEvent and return the new id of the joinEvent
+    ///</summary>
     private async Task<int> HandleJoinEvent(JoinEvent joinEvent)
     {
         var newJoinEvent = new JoinEvent
@@ -481,25 +475,29 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
             ChosenShowtimeId = joinEvent.ChosenShowtimeId,
             DefaultSelectOptionId = joinEvent.DefaultSelectOptionId,
             SelectOptions = joinEvent.SelectOptions,
-            Participants = null,
+            Participants = [], //Participants are handled afterwards, but a joinEvent must exist beforehand
         };
 
-        var addedId = context.JoinEvents.Add(newJoinEvent);
+        var newJointEventId = context.JoinEvents.Add(newJoinEvent);
         await context.SaveChangesAsync();
-        joinEvent.Id = addedId.Entity.Id;
-        return addedId.Entity.Id;
+        joinEvent.Id = newJointEventId.Entity.Id;
+        return newJointEventId.Entity.Id;
     }
 
+    /// <summary>
+    /// Insert participants
+    /// </summary>
     private async Task HandleParticipants(JoinEvent joinEvent)
     {
-        if (joinEvent.Participants != null)
+        if (joinEvent.Participants.Any())
         {
-            var allSelectoptions = await context.SelectOptions.ToListAsync();
+            // Set selectOptions of participants to the ef core references
+            var allSelectOptions = await context.SelectOptions.ToListAsync();
             foreach (
                 var vote in joinEvent.Participants.SelectMany(participant => participant.VotedFor)
             )
             {
-                var selectOption = allSelectoptions.FirstOrDefault(so =>
+                var selectOption = allSelectOptions.FirstOrDefault(so =>
                     so.VoteOption == vote.SelectedOption.VoteOption
                     && so.Color == vote.SelectedOption.Color
                 );
@@ -510,7 +508,8 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
                 }
             }
 
-            //Handle participants
+            //Insert participants, this does not check if the participant already exists,
+            //because this method is only called when a new joinEvent is inserted.
             foreach (var p in joinEvent.Participants)
             {
                 var participant = new Participant

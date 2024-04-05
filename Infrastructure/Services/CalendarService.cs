@@ -2,8 +2,9 @@ namespace Infrastructure.Services;
 
 public class CalendarService : ICalendarService
 {
-    public DotNetStreamReference GetCalendarFileStream(JoinEvent joinEvent, Showtime showtime)
+    public DotNetStreamReference GenerateCalendarFileStream(JoinEvent joinEvent, Showtime showtime)
     {
+        //We used this thread to help us with how to do it https://stackoverflow.com/questions/46033843/how-to-create-ics-file-using-c
         var startTime = showtime.Playtime.StartTime;
         var endTime = showtime.Playtime.StartTime.AddMinutes(showtime.Movie.DurationInMinutes);
         var summary = joinEvent.Title;
@@ -60,7 +61,7 @@ public class CalendarService : ICalendarService
         return new DotNetStreamReference(stream);
     }
 
-    public Uri GetGoogleCalendarUrl(JoinEvent joinEvent, Showtime showtime)
+    public Uri GenerateGoogleCalendarUrl(JoinEvent joinEvent, Showtime showtime)
     {
         return new Uri(
             "https://calendar.google.com/calendar/u/0/r/eventedit?"

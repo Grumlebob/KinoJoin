@@ -363,7 +363,7 @@
     private async Task OpenGoogleCalendar()
     {
         var showtime = JoinEvent.Showtimes.First(s => s.Id == JoinEvent.ChosenShowtimeId);
-        var url = CalendarService.GetGoogleCalendarUrl(JoinEvent, showtime);
+        var url = CalendarService.GenerateGoogleCalendarUrl(JoinEvent, showtime);
 
         await JsRuntime.InvokeVoidAsync("open", url, "_blank");
         await JsRuntime.InvokeVoidAsync("hideDialog", "calendar-dialog");
@@ -373,7 +373,7 @@
     {
         var showtime = JoinEvent.Showtimes.First(s => s.Id == JoinEvent.ChosenShowtimeId);
 
-        using var calendarFileStream = CalendarService.GetCalendarFileStream(JoinEvent, showtime);
+        using var calendarFileStream = CalendarService.GenerateCalendarFileStream(JoinEvent, showtime);
 
         const string fileName = "Begivenhed";
         await JsRuntime.InvokeVoidAsync("downloadCalendarFile", fileName + ".ics", calendarFileStream);

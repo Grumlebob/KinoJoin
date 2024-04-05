@@ -76,7 +76,7 @@
                 else if (_isEditing)
                 {
                     @* Form for host to edit title description and deadline *@
-                    <EditForm OnValidSubmit="@(async () => { await KinoJoinHttpClient.PutJoinEventAsync(_joinEvent); _isEditing = false; })" model="@_joinEvent">
+                    <EditForm OnValidSubmit="@(async () => { await KinoJoinHttpClient.UpsertJoinEventAsync(_joinEvent); _isEditing = false; })" model="@_joinEvent">
                         <DataAnnotationsValidator/>
 
                         <div class="text-error">

@@ -489,7 +489,7 @@
         {
             _joinEvent.Participants.Add(new Participant
             {
-                AuthId = _joinEvent.Host!.AuthId,
+                AuthId = _joinEvent.Host.AuthId,
                 Nickname = _joinEvent.Host.Username, Email = _joinEvent.Host.Email, Note = null,
                 VotedFor = _joinEvent.Showtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _joinEvent.SelectOptions[YesVoteIndex] }).ToList(),
                 JoinEventId = _joinEvent.Id

@@ -386,6 +386,36 @@ public class KinoJoinTests : IAsyncLifetime
         showtimesWithCombinedFilters.Count.Should().BeGreaterThan(1);
     }
 
+    [Fact]
+    public void ConvertFiltersToUrlString_ShouldReturnCorrectString()
+    {
+        var filterApiHandler = new FilterApiHandler();
+        var fakeCinemas = new List<int> { 1, 2, 3 };
+        var fakeMovies = new List<int> { 4, 5, 6 };
+        var fakeGenres = new List<int> { 7, 8, 9 };
+        var fromDate = DateTime.Now.AddYears(-1);
+        var toDate = DateTime.Now.AddYears(10);
+
+        var result = filterApiHandler.ConvertFiltersToUrlString(
+            fakeCinemas,
+            fakeMovies,
+            fakeGenres,
+            fromDate,
+            toDate
+        );
+        result.Should().Contain("cinemas=1");
+        result.Should().Contain("cinemas=2");
+        result.Should().Contain("cinemas=3");
+
+        result.Should().Contain("movies=4");
+        result.Should().Contain("movies=5");
+        result.Should().Contain("movies=6");
+
+        result.Should().Contain("genres=7");
+        result.Should().Contain("genres=8");
+        result.Should().Contain("genres=9");
+    }
+
     //From our external api Kino.DK, they sometimes have a single element,
     //and sometimes a list of elements, the convert class is used to handle this
     [Fact]

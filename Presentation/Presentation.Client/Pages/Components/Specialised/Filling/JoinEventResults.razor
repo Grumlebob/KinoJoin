@@ -363,7 +363,7 @@
     private async Task OpenGoogleCalendar()
     {
         var showtime = JoinEvent.Showtimes.First(s => s.Id == JoinEvent.ChosenShowtimeId);
-        var url = CalendarService.GetGoogleCalendarURL(JoinEvent, showtime);
+        var url = CalendarService.GetGoogleCalendarUrl(JoinEvent, showtime);
 
         await JsRuntime.InvokeVoidAsync("open", url, "_blank");
         await JsRuntime.InvokeVoidAsync("hideDialog", "calendar-dialog");

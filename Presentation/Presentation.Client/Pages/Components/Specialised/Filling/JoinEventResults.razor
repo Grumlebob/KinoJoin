@@ -1,6 +1,9 @@
+@using Presentation.Client.Services
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
 @inject IKinoJoinHttpClient KinoJoinHttpClient
+@inject CalendarService CalendarService
+
 
 <div class="flex flex-col gap-2">
     <div class="flex justify-between">
@@ -360,11 +363,7 @@
     private async Task OpenGoogleCalendar()
     {
         var showtime = JoinEvent.Showtimes.First(s => s.Id == JoinEvent.ChosenShowtimeId);
-        var url = "https://calendar.google.com/calendar/u/0/r/eventedit?"
-                  + $"text={JoinEvent.Title}"
-                  + $"&dates={showtime.Playtime.StartTime.ToString("yyyyMMddTHHmmss")}/{showtime.Playtime.StartTime.AddMinutes(showtime.Movie.DurationInMinutes).ToString("yyyyMMddTHHmmss")}"
-                  + $"&location={showtime.Cinema.Name}"
-                  + $"&details={JoinEvent.Description} %0AFilm: {showtime.Movie.Title}, {showtime.Room.Name}, {showtime.VersionTag.Type}";
+        var url = CalendarService.GetGoogleCalendarURL(JoinEvent, showtime);
 
         await JsRuntime.InvokeVoidAsync("open", url, "_blank");
         await JsRuntime.InvokeVoidAsync("hideDialog", "calendar-dialog");
@@ -373,55 +372,11 @@
     private async Task DownloadCalendarFile()
     {
         var showtime = JoinEvent.Showtimes.First(s => s.Id == JoinEvent.ChosenShowtimeId);
-        var dateStart = showtime.Playtime.StartTime;
-        var dateEnd = showtime.Playtime.StartTime.AddMinutes(showtime.Movie.DurationInMinutes);
-        var summary = JoinEvent.Title;
-        var location = showtime.Cinema.Name;
-        var description = JoinEvent.Description + "\n Film: " + showtime.Movie.Title + ", " + showtime.Room.Name + ", " + showtime.VersionTag.Type;
 
-        var calenderStringBuilder = new StringBuilder();
+        DotNetStreamReference calendarFileStream = CalendarService.GetCalendarFileStream(JoinEvent, showtime);
 
-        //start the calendar item
-        calenderStringBuilder.AppendLine("BEGIN:VCALENDAR");
-        calenderStringBuilder.AppendLine("VERSION:2.0");
-        calenderStringBuilder.AppendLine("PRODID:stackoverflow.com");
-        calenderStringBuilder.AppendLine("CALSCALE:GREGORIAN");
-        calenderStringBuilder.AppendLine("METHOD:PUBLISH");
-
-        //create a time zone if needed, TZID to be used in the event itself
-        calenderStringBuilder.AppendLine("BEGIN:VTIMEZONE");
-        calenderStringBuilder.AppendLine("TZID:Europe/Amsterdam");
-        calenderStringBuilder.AppendLine("BEGIN:STANDARD");
-        calenderStringBuilder.AppendLine("TZOFFSETTO:+0100");
-        calenderStringBuilder.AppendLine("TZOFFSETFROM:+0100");
-        calenderStringBuilder.AppendLine("END:STANDARD");
-        calenderStringBuilder.AppendLine("END:VTIMEZONE");
-
-        //add the event
-        calenderStringBuilder.AppendLine("BEGIN:VEVENT");
-
-        //with time zone specified
-        calenderStringBuilder.AppendLine("DTSTART;TZID=Europe/Amsterdam:" + dateStart.ToString("yyyyMMddTHHmm00"));
-        calenderStringBuilder.AppendLine("DTEND;TZID=Europe/Amsterdam:" + dateEnd.ToString("yyyyMMddTHHmm00"));
-        //or without
-        calenderStringBuilder.AppendLine("DTSTART:" + dateStart.ToString("yyyyMMddTHHmm00"));
-        calenderStringBuilder.AppendLine("DTEND:" + dateEnd.ToString("yyyyMMddTHHmm00"));
-
-        calenderStringBuilder.AppendLine("SUMMARY:" + summary + "");
-        calenderStringBuilder.AppendLine("LOCATION:" + location + "");
-        calenderStringBuilder.AppendLine("DESCRIPTION:" + description + "");
-        calenderStringBuilder.AppendLine("PRIORITY:3");
-        calenderStringBuilder.AppendLine("END:VEVENT");
-
-        //end calendar item
-        calenderStringBuilder.AppendLine("END:VCALENDAR");
-
-        const string fileName = "event.ics";
-
-        var bytes = Encoding.UTF8.GetBytes(calenderStringBuilder.ToString());
-        var stream = new MemoryStream(bytes);
-        using var streamRef = new DotNetStreamReference(stream);
-        await JsRuntime.InvokeVoidAsync("downloadCalendarFile", fileName, streamRef);
+        const string fileName = "Begivenhed";
+        await JsRuntime.InvokeVoidAsync("downloadCalendarFile", fileName + ".ics", calendarFileStream);
         await JsRuntime.InvokeVoidAsync("hideDialog", "calendar-dialog");
     }
 

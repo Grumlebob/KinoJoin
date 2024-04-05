@@ -537,7 +537,7 @@
             });
         }
 
-        var response = await KinoJoinHttpClient.PutJoinEventAsync(_joinEvent);
+        var response = await KinoJoinHttpClient.UpsertJoinEventAsync(_joinEvent);
 
         var id = await response.Content.ReadAsStringAsync();
         _joinEvent.Id = int.Parse(id);

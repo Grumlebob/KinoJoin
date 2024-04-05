@@ -276,7 +276,7 @@ else
     private async Task UpdateJoinEvent()
     {
         _joinEvent!.Deadline = _deadline;
-        await KinoJoinHttpClient.PutJoinEventAsync(_joinEvent);
+        await KinoJoinHttpClient.UpsertJoinEventAsync(_joinEvent);
     }
 
     private async Task SaveParticipantAnswer()
@@ -285,7 +285,7 @@ else
         _currentParticipant.VotedFor = _currentParticipant.VotedFor.Where(v => v.SelectedOptionId != _joinEvent!.DefaultSelectOptionId).ToList();
         _joinEvent!.Participants.Add(_currentParticipant);
 
-        var response = await KinoJoinHttpClient.PutJoinEventAsync(_joinEvent);
+        var response = await KinoJoinHttpClient.UpsertJoinEventAsync(_joinEvent);
         if (response.IsSuccessStatusCode)
         {
             _currentParticipant.Id = int.Parse(await response.Content.ReadAsStringAsync());

@@ -45,7 +45,9 @@ public interface IKinoJoinDbService
      */
     Task<List<JoinEvent>> GetAllJoinEventsAsync(Expression<Func<JoinEvent, bool>>? filter = null);
 
-    //Delete participant
+    /// <summary>
+    ///  Deletes the participant with the given id for the join event with the given id, if it exists.
+    /// </summary>
     Task MakeParticipantNotExistAsync(int joinEventId, int participantId);
 
     Task<ICollection<Cinema>> GetAllCinemasAsync();

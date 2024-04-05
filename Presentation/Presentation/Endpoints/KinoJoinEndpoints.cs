@@ -18,9 +18,8 @@ public class KinoJoinEndpoints : ICarterModule
         var eventGroup = app.MapGroup("api/events");
         eventGroup.MapGet("host/{hostId}", GetJoinEventsByHostId);
         eventGroup.MapGet("{id}", GetJoinEvent);
-        eventGroup.MapGet("", GetAllJoinEvent);
         eventGroup.MapPut("", UpsertJoinEvent);
-        eventGroup.MapDelete("{eventId}/participants/{participantId}", DeleteParticipant);
+        eventGroup.MapDelete("{joinEventId}/participants/{participantId}", MakeParticipantNotExist);
 
         var kinoDataGroup = app.MapGroup("api/kino-data");
         kinoDataGroup.MapGet("cinemas", GetCinemas);
@@ -51,21 +50,6 @@ public class KinoJoinEndpoints : ICarterModule
         {
             var result = await kinoJoinDbService.UpsertJoinEventAsync(joinEvent);
             return TypedResults.Ok(result);
-        }
-        catch (Exception)
-        {
-            return TypedResults.BadRequest(DefaultErrorMessage);
-        }
-    }
-
-    private static async Task<Results<Ok<List<JoinEvent>>, BadRequest<string>>> GetAllJoinEvent(
-        [FromServices] IKinoJoinDbService kinoJoinDbService
-    )
-    {
-        try
-        {
-            var joinEvents = await kinoJoinDbService.GetAllJoinEventsAsync();
-            return TypedResults.Ok(joinEvents);
         }
         catch (Exception)
         {
@@ -152,20 +136,20 @@ public class KinoJoinEndpoints : ICarterModule
         }
     }
 
-    private static async Task<Results<Ok, NotFound, BadRequest<string>>> DeleteParticipant(
-        [FromRoute] int eventId,
+    private static async Task<Results<Ok, NotFound, BadRequest<string>>> MakeParticipantNotExist(
+        [FromRoute] int joinEventId,
         [FromRoute] int participantId,
         [FromServices] IKinoJoinDbService kinoJoinDbService
     )
     {
-        if (eventId <= 0 || participantId <= 0)
+        if (joinEventId <= 0 || participantId <= 0)
         {
             return TypedResults.Ok();
         }
 
         try
         {
-            await kinoJoinDbService.MakeParticipantNotExistAsync(eventId, participantId);
+            await kinoJoinDbService.MakeParticipantNotExistAsync(joinEventId, participantId);
             return TypedResults.Ok();
         }
         catch (Exception)

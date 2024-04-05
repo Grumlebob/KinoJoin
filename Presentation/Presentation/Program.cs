@@ -1,6 +1,7 @@
 using Application;
 using Carter;
 using Infrastructure;
+using Presentation;
 using Presentation.Client;
 using Presentation.Components;
 using _Imports = Presentation.Client._Imports;
@@ -22,6 +23,11 @@ builder.Services.AddCors(options =>
         }
     );
 });
+
+builder.Services.AddLogging();
+
+//To use global exception handling, we need to register it as a service, and then in the app.UseMiddleware<GlobalExceptionHandler>() to use it.
+builder.Services.AddTransient<GlobalExceptionHandler>();
 
 builder.Services.AddCarter();
 
@@ -50,6 +56,8 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(_Imports).Assembly);
+
+app.UseMiddleware<GlobalExceptionHandler>();
 
 app.MapCarter();
 

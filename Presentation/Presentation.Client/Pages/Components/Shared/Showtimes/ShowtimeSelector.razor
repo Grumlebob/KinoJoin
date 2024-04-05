@@ -63,7 +63,7 @@ The main purpose is to group showtimes by their Cinema, Version and Movie, and d
                 {
                     <div class="row-span-2 space-y-2 md:min-w-48 md:sticky md:top-4 md:row-span-3 md:self-start">
                         <a href=@($"https://kino.dk{movie.KinoUrl}") target="_blank">
-                            <img src="@(movie.ImageUrl is not null ? ImageBasePath + movie.ImageUrl : FallbackImageUrl)" alt="Movie Poster" class="max-h-full w-full rounded-sm shadow hover:opacity-50"/>
+                            <img src="@(movie.ImageUrl is not null ? movie.ImageUrl : FallbackImageUrl)" alt="Movie Poster" class="max-h-full w-full rounded-sm shadow hover:opacity-50"/>
                         </a>
                         <!--Læs mere og trailer desktop-->
                         <div class="hidden flex-col items-center px-3 space-y-1 md:flex">
@@ -242,7 +242,6 @@ The main purpose is to group showtimes by their Cinema, Version and Movie, and d
     private string? _trailerUrl;
 
     //IMAGES AND ICONS
-    const string ImageBasePath = "https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/";
     const string FallbackImageUrl = "https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/2023-05/Kino-fallback-poster.webp?h=6c02f54b&itok=efsQLlFH½";
 
     private Dictionary<string, string> _censorshipToIcon = new()

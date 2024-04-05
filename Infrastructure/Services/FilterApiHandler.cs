@@ -9,28 +9,30 @@ public class FilterApiHandler : IFilterApiHandler
 {
     private readonly HttpClient _httpClient = new();
 
-    private const string BaseUrl =
+    private const string ApiBaseUrl =
         "https://api.kino.dk/ticketflow/showtimes?region=content&format=json";
 
     public async Task<(
         List<Showtime> showtimes,
         List<Movie> moviesWithoutShowtimes
     )> GetShowtimesFromFilters(
-        ICollection<int>? cinemaIds = null,
-        ICollection<int>? movieIds = null,
-        ICollection<int>? genreIds = null,
-        DateTime? fromDate = null,
-        DateTime? toDate = null
+        ICollection<int> cinemaIds = null!,
+        ICollection<int> movieIds = null!,
+        ICollection<int> genreIds = null!,
+        DateTime fromDate = default,
+        DateTime toDate = default
     )
     {
         cinemaIds ??= [];
         movieIds ??= [];
         genreIds ??= [];
-        fromDate ??= DateTime.Today;
-        toDate ??= DateTime.Today.AddYears(1);
+        if (fromDate == default)
+            fromDate = DateTime.Today;
+        if (toDate == default)
+            toDate = DateTime.Today.AddYears(1);
 
-        fromDate = fromDate.Value.Date;
-        toDate = toDate.Value.Date;
+        fromDate = fromDate.Date;
+        toDate = toDate.Date;
 
         var filterStringBuilder = new StringBuilder("&sort=most_purchased");
         var cinemaList = cinemaIds.ToList();
@@ -51,17 +53,17 @@ public class FilterApiHandler : IFilterApiHandler
             filterStringBuilder.Append($"&genres[{i}]={genreList[i]}");
         }
 
-        filterStringBuilder.Append($"&date[start]={fromDate.Value.ToString("s")}"); //format: 2008-04-18T06:30:00
-        filterStringBuilder.Append($"&date[end]={toDate.Value.ToString("s")}");
+        filterStringBuilder.Append($"&date[start]={fromDate.ToString("s")}"); //format: 2008-04-18T06:30:00, this is the format the kino API expects
+        filterStringBuilder.Append($"&date[end]={toDate.ToString("s")}");
 
-        var apiString = BaseUrl + filterStringBuilder;
+        var apiString = ApiBaseUrl + filterStringBuilder;
 
         var json = await _httpClient.GetStringAsync(apiString);
         var apiResultObject = JsonConvert.DeserializeObject<ShowtimeApiRoot>(json);
         if (apiResultObject == null)
             return ([], []);
 
-        //names are stored in facets
+        //names are stored in facets object in kino.dk api data
         var cinemaIdsToNames =
             apiResultObject.ShowtimeApiContent.ShowtimeApiFacets.ShowtimeApiCinemas.Options.ToDictionary(
                 cinemaOption => cinemaOption.Key,
@@ -78,6 +80,7 @@ public class FilterApiHandler : IFilterApiHandler
 
         foreach (var jsonCinema in apiResultObject.ShowtimeApiContent.ShowtimeApiContent.Content)
         {
+            //if cinemaIdsToNames does not contain the id it may be a different unhandled entity, such as "særvisninger"
             if (!cinemaIdsToNames.ContainsKey(jsonCinema.Id))
                 continue;
 
@@ -110,13 +113,13 @@ public class FilterApiHandler : IFilterApiHandler
                                 {
                                     Censorship = jsonMovie.Content.FieldCensorshipIcon
                                 },
-                        ImageUrl =
-                            jsonMovie.Content.ShowtimeApiFieldPoster.FieldMediaImage?.Sources?[
-                                0
-                            ].Srcset.Replace(
-                                "https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/",
-                                ""
-                            ),
+                        ImageUrl = jsonMovie
+                            .Content
+                            .ShowtimeApiFieldPoster
+                            .FieldMediaImage
+                            ?.Sources
+                            ?[0]
+                            .Srcset,
                         DurationInMinutes = duration,
                     };
                     existingMovies.Add(movieObject.Id, movieObject);
@@ -187,20 +190,22 @@ public class FilterApiHandler : IFilterApiHandler
         }
 
         //include movies that had no show times
-        var filterString = new StringBuilder("&sort=most_purchased");
         var notIncludedMovieIds = movieIds
             .Where(movieId => showtimes.All(f => f.Movie.Id != movieId))
             .ToList();
         var index = 0;
+
+        if (notIncludedMovieIds.Count == 0)
+            return (showtimes, []); //all movies had showtimes
+
+        //we call the API again to get information on the missing movies, now without the rest of the filters, to make sure we get all the movies
+        var filterString = new StringBuilder("&sort=most_purchased");
         foreach (var movieId in notIncludedMovieIds)
         {
             filterString.Append($"&movies[{index++}]={movieId}");
         }
 
-        if (notIncludedMovieIds.Count == 0)
-            return (showtimes, []); //all movies had showtimes
-
-        var movieApiString = BaseUrl + filterString;
+        var movieApiString = ApiBaseUrl + filterString;
         var movieJson = await _httpClient.GetStringAsync(movieApiString);
         var root = JsonConvert.DeserializeObject<ShowtimeApiRoot>(movieJson);
         if (root == null)
@@ -226,12 +231,7 @@ public class FilterApiHandler : IFilterApiHandler
                     movie.Content.FieldCensorshipIcon == null
                         ? null
                         : new AgeRating { Censorship = movie.Content.FieldCensorshipIcon },
-                ImageUrl = movie.Content.ShowtimeApiFieldPoster.FieldMediaImage?.Sources?[
-                    0
-                ].Srcset.Replace(
-                    "https://api.kino.dk/sites/kino.dk/files/styles/isg_focal_point_356_534/public/",
-                    ""
-                ),
+                ImageUrl = movie.Content.ShowtimeApiFieldPoster.FieldMediaImage?.Sources?[0].Srcset,
                 DurationInMinutes = duration
             };
             missingMovies.Add(movieObject);
@@ -241,14 +241,25 @@ public class FilterApiHandler : IFilterApiHandler
     }
 
     public string ConvertFiltersToUrlString(
-        ICollection<int> cinemaIds,
-        ICollection<int> movieIds,
-        ICollection<int> genreIds,
-        DateTime fromDate,
-        DateTime toDate
+        ICollection<int> cinemaIds = null!,
+        ICollection<int> movieIds = null!,
+        ICollection<int> genreIds = null!,
+        DateTime fromDate = default,
+        DateTime toDate = default
     )
     {
-        var fromDateString = fromDate.ToString("s"); //format: 2008-04-18T06:30:00
+        cinemaIds ??= [];
+        movieIds ??= [];
+        genreIds ??= [];
+        if (fromDate == default)
+            fromDate = DateTime.Today;
+        if (toDate == default)
+            toDate = DateTime.Today.AddYears(1);
+
+        fromDate = fromDate.Date;
+        toDate = toDate.Date;
+
+        var fromDateString = fromDate.ToString("s"); //format: 2008-04-18T06:30:00, this format is needed so there is no slashes in the string, which would be interpreted as paths in the url
         var toDateString = toDate.ToString("s");
 
         var filterStringBuilder = new StringBuilder("sort=most_purchased");

@@ -63,12 +63,6 @@ public class CalendarService
         calenderStringBuilder.AppendLine("END:VCALENDAR");
 
         return calenderStringBuilder.ToString();
-
-        //     var bytes = Encoding.UTF8.GetBytes(calenderStringBuilder.ToString());
-        //     var stream = new MemoryStream(bytes);
-        //     using var streamRef = new DotNetStreamReference(stream);
-        //     await JsRuntime.InvokeVoidAsync("downloadCalendarFile", fileName, streamRef);
-        //     await JsRuntime.InvokeVoidAsync("hideDialog", "calendar-dialog");
     }
 
     public DotNetStreamReference GetCalendarFileStream(JoinEvent joinEvent, Showtime showtime)

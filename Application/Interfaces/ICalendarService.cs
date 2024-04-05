@@ -1,5 +1,3 @@
-using Microsoft.JSInterop;
-
 namespace Application.Interfaces;
 
 /// <summary>
@@ -11,7 +9,7 @@ public interface ICalendarService
     ///<remarks>The description of the calendar event includes the showtime's title,
     /// room name and version </remarks>
     public DotNetStreamReference GetCalendarFileStream(JoinEvent joinEvent, Showtime showtime);
-    
+
     /// <returns>A Google Calendar URL for creating a new calendar event</returns>
     public Uri GetGoogleCalendarUrl(JoinEvent joinEvent, Showtime showtime);
 }

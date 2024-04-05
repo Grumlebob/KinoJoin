@@ -29,4 +29,24 @@ public interface IFilterApiHandler
         DateTime fromDate = default,
         DateTime toDate = default
     );
+
+    /// <summary>
+    /// This will determine the selected movies, cinemas, genres, start date and end date used for the filters,
+    /// based on the filter string taken from the url.
+    /// </summary>
+    /// <returns>
+    /// A tuple with the following: <br/>
+    /// - selected cinema ids <br/>
+    /// - selected movie ids <br/>
+    /// - selected genre ids <br/>
+    /// - start date or default if none found <br/>
+    /// - end date or default if none found
+    /// </returns>
+    public (
+        ISet<int> selectedCinemas,
+        ISet<int> selectedMovies,
+        ISet<int> selectedGenres,
+        DateTime startDate,
+        DateTime endDate
+    ) GetFiltersFromUrlFilterString(string filterString);
 }

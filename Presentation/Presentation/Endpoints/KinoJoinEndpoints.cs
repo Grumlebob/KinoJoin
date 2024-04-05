@@ -15,9 +15,8 @@ public class KinoJoinEndpoints : ICarterModule
         var eventGroup = app.MapGroup("api/events");
         eventGroup.MapGet("host/{hostId}", GetJoinEventsByHostId);
         eventGroup.MapGet("{id}", GetJoinEvent);
-        eventGroup.MapGet("", GetAllJoinEvent);
         eventGroup.MapPut("", UpsertJoinEvent);
-        eventGroup.MapDelete("{eventId}/participants/{participantId}", DeleteParticipant);
+        eventGroup.MapDelete("{joinEventId}/participants/{participantId}", MakeParticipantNotExist);
 
         var kinoDataGroup = app.MapGroup("api/kino-data");
         kinoDataGroup.MapGet("cinemas", GetCinemas);
@@ -48,14 +47,6 @@ public class KinoJoinEndpoints : ICarterModule
         return TypedResults.Ok(result);
     }
 
-    private static async Task<Results<Ok<List<JoinEvent>>, BadRequest<string>>> GetAllJoinEvent(
-        [FromServices] IKinoJoinDbService kinoJoinDbService
-    )
-    {
-        var joinEvents = await kinoJoinDbService.GetAllAsync();
-        return TypedResults.Ok(joinEvents);
-    }
-
     private static async Task<
         Results<Ok<List<JoinEvent>>, NotFound, BadRequest<string>>
     > GetJoinEventsByHostId(
@@ -63,7 +54,7 @@ public class KinoJoinEndpoints : ICarterModule
         [FromRoute] string hostId
     )
     {
-        var joinEvents = await kinoJoinDbService.GetAllAsync(j => j.HostId == hostId);
+        var joinEvents = await kinoJoinDbService.GetAllJoinEventsAsync(j => j.HostId == hostId);
         return TypedResults.Ok(joinEvents);
     }
 
@@ -72,7 +63,7 @@ public class KinoJoinEndpoints : ICarterModule
         [FromServices] IKinoJoinDbService kinoJoinDbService
     )
     {
-        var joinEvent = await kinoJoinDbService.GetAsync(id);
+        var joinEvent = await kinoJoinDbService.GetJoinEventAsync(id);
         return joinEvent == null ? TypedResults.NotFound() : TypedResults.Ok(joinEvent);
     }
 
@@ -80,7 +71,7 @@ public class KinoJoinEndpoints : ICarterModule
         Results<Ok<ICollection<Cinema>>, NotFound, BadRequest<string>>
     > GetCinemas([FromServices] IKinoJoinDbService kinoKinoJoinService)
     {
-        var cinemas = await kinoKinoJoinService.GetAllCinemas();
+        var cinemas = await kinoKinoJoinService.GetAllCinemasAsync();
         return TypedResults.Ok(cinemas);
     }
 
@@ -88,7 +79,7 @@ public class KinoJoinEndpoints : ICarterModule
         Results<Ok<ICollection<Movie>>, NotFound, BadRequest<string>>
     > GetMovies([FromServices] IKinoJoinDbService kinoKinoJoinService)
     {
-        var movies = await kinoKinoJoinService.GetAllMovies();
+        var movies = await kinoKinoJoinService.GetAllMoviesAsync();
         return TypedResults.Ok(movies);
     }
 
@@ -96,23 +87,22 @@ public class KinoJoinEndpoints : ICarterModule
         Results<Ok<ICollection<Genre>>, NotFound, BadRequest<string>>
     > GetGenres([FromServices] IKinoJoinDbService kinoKinoJoinService)
     {
-        var genres = await kinoKinoJoinService.GetAllGenres();
+        var genres = await kinoKinoJoinService.GetAllGenresAsync();
         return TypedResults.Ok(genres);
     }
 
-    //Todo: Giv samme navn som fra bogen.
-    private static async Task<Results<Ok, NotFound, BadRequest<string>>> DeleteParticipant(
-        [FromRoute] int eventId,
+    private static async Task<Results<Ok, NotFound, BadRequest<string>>> MakeParticipantNotExist(
+        [FromRoute] int joinEventId,
         [FromRoute] int participantId,
         [FromServices] IKinoJoinDbService kinoJoinDbService
     )
     {
-        if (eventId <= 0 || participantId <= 0)
+        if (joinEventId <= 0 || participantId <= 0)
         {
             return TypedResults.Ok();
         }
 
-        await kinoJoinDbService.MakeParticipantNotExistAsync(eventId, participantId);
+        await kinoJoinDbService.MakeParticipantNotExistAsync(joinEventId, participantId);
         return TypedResults.Ok();
     }
 

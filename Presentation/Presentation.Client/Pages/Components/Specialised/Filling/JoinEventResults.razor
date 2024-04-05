@@ -281,7 +281,7 @@
 
     private async Task DeleteParticipant(int participantId)
     {
-        var response = await KinoJoinHttpClient.DeleteParticipantAsync(JoinEvent.Id, participantId);
+        var response = await KinoJoinHttpClient.MakeParticipantNotExistsAsync(JoinEvent.Id, participantId);
         if (response.IsSuccessStatusCode)
         {
             JoinEvent.Participants.RemoveAll(p => p.Id == participantId);
@@ -353,7 +353,7 @@
     private async Task ConfirmShowtimeAndOpenActionDialog(int showtimeId)
     {
         JoinEvent.ChosenShowtimeId = showtimeId;
-        await KinoJoinHttpClient.PutJoinEventAsync(JoinEvent);
+        await KinoJoinHttpClient.UpsertJoinEventAsync(JoinEvent);
         await JsRuntime.InvokeVoidAsync("showDialog", "after-confirm-actions-dialog");
     }
 

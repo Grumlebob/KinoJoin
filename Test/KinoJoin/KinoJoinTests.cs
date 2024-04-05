@@ -16,7 +16,7 @@ using Npgsql;
 namespace Test.KinoJoin;
 
 [CollectionDefinition("KinoJoinCollection")]
-public class KinoTestCollection : ICollectionFixture<KinoJoinApiWebAppFactory> { }
+public class KinoTestCollection : ICollectionFixture<KinoJoinApiWebAppFactory>;
 
 [Collection("KinoJoinCollection")]
 public class KinoJoinTests : IAsyncLifetime
@@ -126,7 +126,7 @@ public class KinoJoinTests : IAsyncLifetime
         );
         var joinEventToUpdateParticipantFromApi =
             await joinEventToUpdateParticipant.Content.ReadFromJsonAsync<JoinEvent>();
-        joinEventToUpdateParticipantFromApi!.Participants!.Add(
+        joinEventToUpdateParticipantFromApi!.Participants.Add(
             new Participant
             {
                 AuthId = "New",
@@ -157,13 +157,13 @@ public class KinoJoinTests : IAsyncLifetime
             await getResponseUpdatedParticipant.Content.ReadFromJsonAsync<JoinEvent>();
         joinEventFromApiUpdatedParticipant.Should().NotBeNull();
         joinEventFromApiUpdatedParticipant!
-            .Participants!.Any(p => p.AuthId == "New")
+            .Participants.Any(p => p.AuthId == "New")
             .Should()
             .BeTrue();
         _kinoContext.ParticipantVotes.Count().Should().BeGreaterThan(0);
 
         //Update the participant we just added to a new name
-        joinEventFromApiUpdatedParticipant.Participants!.First().Nickname = "Updated";
+        joinEventFromApiUpdatedParticipant.Participants.First().Nickname = "Updated";
         var updateResponseParticipantName = await _client.PutAsJsonAsync(
             "api/events",
             joinEventFromApiUpdatedParticipant
@@ -177,7 +177,7 @@ public class KinoJoinTests : IAsyncLifetime
         var joinEventFromApiUpdatedParticipantName =
             await getResponseUpdatedParticipantName.Content.ReadFromJsonAsync<JoinEvent>();
         joinEventFromApiUpdatedParticipantName.Should().NotBeNull();
-        var participant = joinEventFromApiUpdatedParticipantName!.Participants!.First();
+        var participant = joinEventFromApiUpdatedParticipantName!.Participants.First();
         participant.Nickname.Should().Be("Updated");
 
         //Checking delete - find joinEventWithAtleast 1 participant
@@ -186,14 +186,14 @@ public class KinoJoinTests : IAsyncLifetime
         {
             var getResponse = await _client.GetAsync($"api/events/{i}");
             var joinEventFromApi = await getResponse.Content.ReadFromJsonAsync<JoinEvent>();
-            if (joinEventFromApi!.Participants!.Count > 0)
+            if (joinEventFromApi!.Participants.Count > 0)
             {
                 joinEventToDelete = joinEventFromApi;
                 break;
             }
         }
 
-        var participantCountBeforeDelete = joinEventToDelete.Participants!.Count;
+        var participantCountBeforeDelete = joinEventToDelete.Participants.Count;
         var participantToDelete = joinEventToDelete.Participants.Last();
         var deleteParticipantResponse = await _client.DeleteAsync(
             $"api/events/{joinEventToDelete.Id}/participants/{participantToDelete.Id}"
@@ -206,7 +206,7 @@ public class KinoJoinTests : IAsyncLifetime
         );
         var joinEventFromApiDeletedParticipant =
             await getResponseDeletedParticipant.Content.ReadFromJsonAsync<JoinEvent>();
-        var participantCountAfterDelete = joinEventFromApiDeletedParticipant!.Participants!.Count;
+        var participantCountAfterDelete = joinEventFromApiDeletedParticipant!.Participants.Count;
         participantCountAfterDelete.Should().Be(participantCountBeforeDelete - 1);
         //check that participantToDelete is not in the list of participants
         joinEventFromApiDeletedParticipant
@@ -219,6 +219,8 @@ public class KinoJoinTests : IAsyncLifetime
     public async Task UpsertJoinEvent_ShouldReturnBadRequest_IfValidationFails()
     {
         var joinEvent = new JoinEvent();
+        joinEvent.Title =
+            "Too looooooooooooooooooooong title here. AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
         var response = await _client.PutAsJsonAsync("api/events", joinEvent);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -384,6 +386,36 @@ public class KinoJoinTests : IAsyncLifetime
         showtimesWithCombinedFilters.Count.Should().BeGreaterThan(1);
     }
 
+    [Fact]
+    public void ConvertFiltersToUrlString_ShouldReturnCorrectString()
+    {
+        var filterApiHandler = new FilterApiHandler();
+        var fakeCinemas = new List<int> { 1, 2, 3 };
+        var fakeMovies = new List<int> { 4, 5, 6 };
+        var fakeGenres = new List<int> { 7, 8, 9 };
+        var fromDate = DateTime.Now.AddYears(-1);
+        var toDate = DateTime.Now.AddYears(10);
+
+        var result = filterApiHandler.ConvertFiltersToUrlString(
+            fakeCinemas,
+            fakeMovies,
+            fakeGenres,
+            fromDate,
+            toDate
+        );
+        result.Should().Contain("cinemas=1");
+        result.Should().Contain("cinemas=2");
+        result.Should().Contain("cinemas=3");
+
+        result.Should().Contain("movies=4");
+        result.Should().Contain("movies=5");
+        result.Should().Contain("movies=6");
+
+        result.Should().Contain("genres=7");
+        result.Should().Contain("genres=8");
+        result.Should().Contain("genres=9");
+    }
+
     //From our external api Kino.DK, they sometimes have a single element,
     //and sometimes a list of elements, the convert class is used to handle this
     [Fact]
@@ -391,12 +423,15 @@ public class KinoJoinTests : IAsyncLifetime
     {
         var fieldMediaImage = new FieldMediaImageConverter();
         var mediaSingleElement = new ShowtimeApiFieldMediaImage();
-        fieldMediaImage.CanConvert(mediaSingleElement.GetType()).Should().BeTrue();
         try
         {
+            fieldMediaImage.CanConvert(mediaSingleElement.GetType()).Should().BeTrue();
             fieldMediaImage.WriteJson(null!, null!, null!);
         }
-        catch (Exception) { } //WriteJson is only implemented to satisfy interface and throws an exception
+        catch (Exception)
+        {
+            // ignored - WriteJson is only implemented to satisfy interface and throws an exception
+        }
     }
 
     [Fact]
@@ -414,6 +449,7 @@ public class KinoJoinTests : IAsyncLifetime
                 //This is fine, as it means the database is already migrated
             }
         }
+
         //A test to ensure that you don't forget to add new migrations
         var modelDiffer = _kinoContext.GetService<IMigrationsModelDiffer>();
         var migrationsAssembly = _kinoContext.GetService<IMigrationsAssembly>();
@@ -423,6 +459,7 @@ public class KinoJoinTests : IAsyncLifetime
         {
             snapshotModel = mutableModel.FinalizeModel();
         }
+
         if (snapshotModel is not null)
         {
             snapshotModel = modelInitializer.Initialize(snapshotModel);
@@ -445,7 +482,7 @@ public class KinoJoinTests : IAsyncLifetime
         var createResponse = await _client.PutAsJsonAsync("api/events", joinEvent);
         createResponse.EnsureSuccessStatusCode();
 
-        var response = await _client.GetAsync($"api/events/host/{joinEvent.Host.AuthId}");
+        var response = await _client.GetAsync($"api/events/host/{joinEvent.Host!.AuthId}");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 

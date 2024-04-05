@@ -26,8 +26,8 @@ private SearchableCheckboxList _cinemaCheckBoxList = new();
             @foreach (var (id, label) in IdsToLabels.Where(item => item.Value.ToLowerInvariant().Contains(_searchTerm.ToLowerInvariant())).Select(item => (item.Key, item.Value)))
             {
                 <div class="mb-2 flex items-center overflow-hidden whitespace-nowrap">
-                    <input type="checkbox"  value="@id" @onchange="@(e => HandleCheckboxChange(e, id))" checked="@(SelectedItems.Contains(id))" class="mr-2 h-5 bg-gray-50 min-w-5 accent-secondary"/>
-                    <label  class="ml-1 flex-grow truncate">@label</label>
+                    <input id="@id" type="checkbox"  value="@id" @onchange="@(e => HandleCheckboxChange(e, id))" checked="@(SelectedItems.Contains(id))" class="mr-2 h-5 bg-gray-50 min-w-5 accent-secondary"/>
+                    <label for="@id"  class="ml-1 flex-grow truncate">@label</label>
                 </div>
             }
         </div>

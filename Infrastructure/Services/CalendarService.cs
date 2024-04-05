@@ -5,7 +5,8 @@ namespace Infrastructure.Services;
 
 public class CalendarService : ICalendarService
 {
-    public string GetCalendarFileString(JoinEvent joinEvent, Showtime showtime)
+
+    public DotNetStreamReference GetCalendarFileStream(JoinEvent joinEvent, Showtime showtime)
     {
         var startTime = showtime.Playtime.StartTime;
         var endTime = showtime.Playtime.StartTime.AddMinutes(showtime.Movie.DurationInMinutes);
@@ -56,12 +57,7 @@ public class CalendarService : ICalendarService
         //end calendar item
         calenderStringBuilder.AppendLine("END:VCALENDAR");
 
-        return calenderStringBuilder.ToString();
-    }
-
-    public DotNetStreamReference GetCalendarFileStream(JoinEvent joinEvent, Showtime showtime)
-    {
-        var calendarString = GetCalendarFileString(joinEvent, showtime);
+        var calendarString = calenderStringBuilder.ToString();
 
         var bytes = Encoding.UTF8.GetBytes(calendarString);
         var stream = new MemoryStream(bytes);
@@ -72,10 +68,10 @@ public class CalendarService : ICalendarService
     {
         return new Uri(
             "https://calendar.google.com/calendar/u/0/r/eventedit?"
-                + $"text={joinEvent.Title}"
-                + $"&dates={showtime.Playtime.StartTime:yyyyMMddTHHmmss}/{showtime.Playtime.StartTime.AddMinutes(showtime.Movie.DurationInMinutes):yyyyMMddTHHmmss}"
-                + $"&location={showtime.Cinema.Name}"
-                + $"&details={joinEvent.Description} %0AFilm: {showtime.Movie.Title}, {showtime.Room.Name}, {showtime.VersionTag.Type}"
+            + $"text={joinEvent.Title}"
+            + $"&dates={showtime.Playtime.StartTime:yyyyMMddTHHmmss}/{showtime.Playtime.StartTime.AddMinutes(showtime.Movie.DurationInMinutes):yyyyMMddTHHmmss}"
+            + $"&location={showtime.Cinema.Name}"
+            + $"&details={joinEvent.Description} %0AFilm: {showtime.Movie.Title}, {showtime.Room.Name}, {showtime.VersionTag.Type}"
         );
     }
 }

@@ -8,5 +8,5 @@ public static class GlobalSettings
      * Because we have no certificates, we need to disable some login features, https redirection,
      * and set a default user, to be able to test the application.
      */
-    public const bool HostOnNgrokWithNoHttpsAndSetDefaultUser = false;
+    public static bool HostOnNgrokWithNoHttpsAndSetDefaultUser = false;
 }

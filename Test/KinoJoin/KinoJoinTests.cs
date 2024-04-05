@@ -71,9 +71,11 @@ public class KinoJoinTests : IAsyncLifetime
         }
 
         //Upsert wrong joinEvent
-        var joinEventWrong = new JoinEvent();
-        joinEventWrong.Title =
-            "Too looooooooooooooooooooong title here. AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+        var joinEventWrong = new JoinEvent
+        {
+            Title =
+                "Too looooooooooooooooooooong title here. AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        };
         var createResponseWrong = await _client.PutAsJsonAsync("api/events", joinEventWrong);
         createResponseWrong.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
@@ -134,7 +136,7 @@ public class KinoJoinTests : IAsyncLifetime
                 Nickname = "New",
                 VotedFor =
                 [
-                    new ParticipantVote()
+                    new ParticipantVote
                     {
                         ShowtimeId = joinEventToUpdate.Showtimes.First().Id,
                         SelectedOptionId = joinEventToUpdate.SelectOptions.First().Id,
@@ -149,7 +151,7 @@ public class KinoJoinTests : IAsyncLifetime
         );
         updateResponseParticipant.EnsureSuccessStatusCode();
 
-        //check particpant got added
+        //check participant got added
         var getResponseUpdatedParticipant = await _client.GetAsync(
             $"api/events/{casesToInsert - 1}"
         );
@@ -180,17 +182,16 @@ public class KinoJoinTests : IAsyncLifetime
         var participant = joinEventFromApiUpdatedParticipantName!.Participants.First();
         participant.Nickname.Should().Be("Updated");
 
-        //Checking delete - find joinEventWithAtleast 1 participant
+        //Checking delete - find join Event With At least 1 participant
         JoinEvent joinEventToDelete = new();
         for (var i = casesToInsert - 1; i >= 0; i--)
         {
             var getResponse = await _client.GetAsync($"api/events/{i}");
             var joinEventFromApi = await getResponse.Content.ReadFromJsonAsync<JoinEvent>();
-            if (joinEventFromApi!.Participants.Count > 0)
-            {
-                joinEventToDelete = joinEventFromApi;
-                break;
-            }
+            if (joinEventFromApi!.Participants.Count <= 0)
+                continue;
+            joinEventToDelete = joinEventFromApi;
+            break;
         }
 
         var participantCountBeforeDelete = joinEventToDelete.Participants.Count;
@@ -218,9 +219,11 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public async Task UpsertJoinEvent_ShouldReturnBadRequest_IfValidationFails()
     {
-        var joinEvent = new JoinEvent();
-        joinEvent.Title =
-            "Too looooooooooooooooooooong title here. AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+        var joinEvent = new JoinEvent
+        {
+            Title =
+                "Too looooooooooooooooooooong title here. AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        };
         var response = await _client.PutAsJsonAsync("api/events", joinEvent);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -377,6 +380,30 @@ public class KinoJoinTests : IAsyncLifetime
         );
         showtimesWithCombinedFilters.Should().NotBeNull();
         showtimesWithCombinedFilters.Count.Should().BeGreaterThan(1);
+    }
+
+    [Fact]
+    public void GetFiltersFromStringContainsCorrectIdsAndDates()
+    {
+        var filterApiHandler = new FilterApiHandler();
+        const string filterUrl =
+            "sort=most_purchased&cinemas=23&movies=5&movies=5&genres=96&genres=1&cinemas=2&date=2024-04-05T00:00:00&date=2024-04-06T00:00:00";
+        var (cinemaIds, movieIds, genreIds, startDate, endDate) =
+            filterApiHandler.GetFiltersFromUrlFilterString(filterUrl);
+        cinemaIds.Should().Contain(23);
+        cinemaIds.Should().Contain(2);
+        movieIds.Should().Contain(5);
+        genreIds.Should().Contain(1);
+        startDate.Should().Be(new DateTime(2024, 4, 5));
+        endDate.Should().Be(new DateTime(2024, 4, 6));
+
+        (cinemaIds, movieIds, genreIds, startDate, endDate) =
+            filterApiHandler.GetFiltersFromUrlFilterString("");
+        cinemaIds.Should().BeEmpty();
+        movieIds.Should().BeEmpty();
+        genreIds.Should().BeEmpty();
+        startDate.Should().Be(default);
+        endDate.Should().Be(default);
     }
 
     [Fact]

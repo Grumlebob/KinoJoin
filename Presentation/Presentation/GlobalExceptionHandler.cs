@@ -30,7 +30,8 @@ public class GlobalExceptionHandler : IMiddleware
                     Status = (int)HttpStatusCode.InternalServerError,
                     Type = "Server error",
                     Title = "Server error",
-                    Detail = "An internal server has occurred"
+                    Detail =
+                        "An internal server has occurred. Sorry, we encountered an unexpected issue while processing your request. Please ensure that the data is correct. We suggest you try again later or contact support if the problem persists."
                 };
 
             var json = JsonConvert.SerializeObject(problem);

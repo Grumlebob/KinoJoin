@@ -16,13 +16,19 @@ public class FilterApiHandler : IFilterApiHandler
         List<Showtime> showtimes,
         List<Movie> moviesWithoutShowtimes
     )> GetShowtimesFromFilters(
-        ICollection<int> cinemaIds,
-        ICollection<int> movieIds,
-        ICollection<int> genreIds,
-        DateTime fromDate,
-        DateTime toDate
+        ICollection<int> cinemaIds = null!,
+        ICollection<int> movieIds = null!,
+        ICollection<int> genreIds = null!,
+        DateTime fromDate = default,
+        DateTime toDate = default
     )
     {
+        cinemaIds ??= [];
+        movieIds ??= [];
+        genreIds ??= [];
+        if (fromDate == default) fromDate = DateTime.Today;
+        if (toDate == default) toDate = DateTime.Today.AddYears(1);
+        
         fromDate = fromDate.Date;
         toDate = toDate.Date;
 
@@ -233,13 +239,22 @@ public class FilterApiHandler : IFilterApiHandler
     }
 
     public string ConvertFiltersToUrlString(
-        ICollection<int> cinemaIds,
-        ICollection<int> movieIds,
-        ICollection<int> genreIds,
-        DateTime fromDate,
-        DateTime toDate
+        ICollection<int> cinemaIds = null!,
+        ICollection<int> movieIds = null!,
+        ICollection<int> genreIds = null!,
+        DateTime fromDate = default,
+        DateTime toDate = default
     )
     {
+        cinemaIds ??= [];
+        movieIds ??= [];
+        genreIds ??= [];
+        if (fromDate == default) fromDate = DateTime.Today;
+        if (toDate == default) toDate = DateTime.Today.AddYears(1);
+        
+        fromDate = fromDate.Date;
+        toDate = toDate.Date;
+        
         var fromDateString = fromDate.ToString("s"); //format: 2008-04-18T06:30:00, this format is needed so there is no slashes in the string, which would be interpreted as paths in the url
         var toDateString = toDate.ToString("s");
 

@@ -337,22 +337,18 @@ public class KinoJoinTests : IAsyncLifetime
 
         var filterApiHandler = new FilterApiHandler();
         var (showtimesWithCinemaFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
-            cinemasToCheck,
-            [],
-            [],
-            fromDate,
-            toDate
+            cinemaIds: cinemasToCheck,
+            fromDate: fromDate,
+            toDate: toDate
         );
         showtimesWithCinemaFilter.Should().NotBeNull();
         showtimesWithCinemaFilter.Count.Should().BeGreaterThan(1);
 
         var moviesToCheck = showtimesWithCinemaFilter.Select(s => s.MovieId).Take(3).ToList();
         var (showtimesWithMovieFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
-            [],
-            moviesToCheck,
-            [],
-            fromDate,
-            toDate
+            movieIds: moviesToCheck,
+            fromDate: fromDate,
+            toDate: toDate
         );
         showtimesWithMovieFilter.Should().NotBeNull();
         showtimesWithMovieFilter.Count.Should().BeGreaterThan(1);
@@ -364,11 +360,9 @@ public class KinoJoinTests : IAsyncLifetime
         }
 
         var (showtimesWithGenreFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
-            [],
-            [],
-            genresToCheck,
-            fromDate,
-            toDate
+            genreIds: genresToCheck,
+            fromDate: fromDate,
+            toDate: toDate
         );
         showtimesWithGenreFilter.Should().NotBeNull();
         showtimesWithGenreFilter.Count.Should().BeGreaterThan(1);
@@ -376,11 +370,10 @@ public class KinoJoinTests : IAsyncLifetime
         //Test with combined filters
         var specificshowtime = showtimesWithCinemaFilter.First();
         var (showtimesWithCombinedFilters, _) = await filterApiHandler.GetShowtimesFromFilters(
-            new List<int> { specificshowtime.CinemaId },
-            new List<int> { specificshowtime.MovieId },
-            [],
-            fromDate,
-            toDate
+            cinemaIds: [specificshowtime.CinemaId],
+            movieIds: [specificshowtime.MovieId],
+            fromDate: fromDate,
+            toDate: toDate
         );
         showtimesWithCombinedFilters.Should().NotBeNull();
         showtimesWithCombinedFilters.Count.Should().BeGreaterThan(1);

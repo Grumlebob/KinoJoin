@@ -203,7 +203,8 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
         context.ChangeTracker.Clear();
 
         //---The Order matters, certain entities need to be added before others---
-        await HandleStaticKinoData(joinEvent); //mangler optimize playtimes
+        await HandleCinemaAndVersionTag(joinEvent);
+        await HandlePlaytimeAndRoom(joinEvent);
         await HandleMovies(joinEvent);
         await HandleHost(joinEvent);
         await HandleShowtimes(joinEvent);
@@ -214,47 +215,64 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
 
         return addedId;
     }
-
+    
     /// <summary>
-    ///  Handles independent data that came from Kino.dk, like cinemas, movies, playtimes...
+    /// Set the cinemas and version tags ogf showtimes to ef core references
     /// </summary>
-    private async Task HandleStaticKinoData(JoinEvent joinEvent)
+      private async Task HandleCinemaAndVersionTag(JoinEvent joinEvent)
     {
         var cinemaIds = joinEvent.Showtimes.Select(st => st.Cinema.Id).Distinct().ToList();
-        var playtimeStartTimes = joinEvent.Showtimes.Select(st => st.Playtime.StartTime).Distinct();
         var versionTypes = joinEvent.Showtimes.Select(st => st.VersionTag.Type).Distinct().ToList();
-        var roomIds = joinEvent.Showtimes.Select(st => st.Room.Id).Distinct().ToList();
 
         var existingCinemas = await context
             .Cinemas.Where(c => cinemaIds.Contains(c.Id))
             .ToDictionaryAsync(c => c.Id);
-        var existingPlaytimes = await context
-            .Playtimes.Where(p => playtimeStartTimes.Contains(p.StartTime))
-            .ToDictionaryAsync(p => p.StartTime);
         var existingVersionTags = await context
             .Versions.Where(v => versionTypes.Contains(v.Type))
             .ToDictionaryAsync(v => v.Type);
+
+        foreach (var showtime in joinEvent.Showtimes)
+        {
+            if (!existingCinemas.TryGetValue(showtime.Cinema.Id, out var existingCinema))
+            {
+                throw new Exception($"Cinema {showtime.Cinema.Id} not in database");
+            }
+
+            showtime.Cinema = existingCinema;
+            
+            if (
+                !existingVersionTags.TryGetValue(
+                    showtime.VersionTag.Type,
+                    out var existingVersionTag
+                )
+            )
+            {
+                throw new Exception($"Version {showtime.VersionTag.Type} not in database");
+            }
+
+            showtime.VersionTag = existingVersionTag;
+        }
+
+        await context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    ///  Upserts playtimes and rooms and sets them as ef core references
+    /// </summary>
+    private async Task HandlePlaytimeAndRoom(JoinEvent joinEvent)
+    {
+        var playtimeStartTimes = joinEvent.Showtimes.Select(st => st.Playtime.StartTime).Distinct();
+        var roomIds = joinEvent.Showtimes.Select(st => st.Room.Id).Distinct().ToList();
+        
+        var existingPlaytimes = await context
+            .Playtimes.Where(p => playtimeStartTimes.Contains(p.StartTime))
+            .ToDictionaryAsync(p => p.StartTime);
         var existingRooms = await context
             .Rooms.Where(r => roomIds.Contains(r.Id))
             .ToDictionaryAsync(r => r.Id);
 
         foreach (var showtime in joinEvent.Showtimes)
         {
-            // Handle Cinema
-            if (!existingCinemas.TryGetValue(showtime.Cinema.Id, out var existingCinema))
-            {
-                existingCinema = new Cinema
-                {
-                    Id = showtime.Cinema.Id,
-                    Name = showtime.Cinema.Name
-                };
-                context.Cinemas.Add(existingCinema);
-                existingCinemas[existingCinema.Id] = existingCinema;
-            }
-
-            showtime.Cinema = existingCinema;
-
-            //For some reason context.playtimes.Where doesn't work. It returns null.
             // Handle Playtime
             if (
                 !existingPlaytimes.TryGetValue(
@@ -268,21 +286,6 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
                 existingPlaytimes[existingPlaytime.StartTime] = existingPlaytime;
             }
             showtime.Playtime = existingPlaytime;
-
-            // Handle VersionTag
-            if (
-                !existingVersionTags.TryGetValue(
-                    showtime.VersionTag.Type,
-                    out var existingVersionTag
-                )
-            )
-            {
-                existingVersionTag = new VersionTag { Type = showtime.VersionTag.Type };
-                context.Versions.Add(existingVersionTag);
-                existingVersionTags[existingVersionTag.Type] = existingVersionTag;
-            }
-
-            showtime.VersionTag = existingVersionTag;
 
             // Handle Room
             if (!existingRooms.TryGetValue(showtime.Room.Id, out var existingRoom))
@@ -310,8 +313,6 @@ public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
 
         foreach (var movie in joinEvent.Showtimes.Select(st => st.Movie).Distinct())
         {
-            if (movie == null)
-                continue;
             var existingMovie = existingMovies.FirstOrDefault(m => m.Id == movie.Id);
 
             if (existingMovie != null)

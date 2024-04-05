@@ -1,15 +1,10 @@
 using Microsoft.AspNetCore.Components.Authorization;
 
-namespace Presentation.Client.Services;
+namespace Infrastructure.Services;
 
-public static class UserInfoService
+public class UserInfoService : IUserInfoService
 {
-    /**
-     * Get information about the currently logged in user info from an authentication state task,
-     * which can be obtained as a cascading parameter in a component.
-     * Will return null if the user is not logged in.
-     */
-    public static async Task<(string authId, string name, string email)?> GetUserInfoAsync(
+    public async Task<(string authId, string name, string email)?> GetUserInfoAsync(
         Task<AuthenticationState> authenticationStateTask
     )
     {

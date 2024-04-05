@@ -29,6 +29,7 @@ public class KinoContext : DbContext
         modelBuilder.ApplyConfiguration(new ParticipantVoteConfiguration());
         modelBuilder.ApplyConfiguration(new ParticipantConfiguration());
         modelBuilder.ApplyConfiguration(new ShowtimeConfiguration());
+        modelBuilder.ApplyConfiguration(new MovieConfiguration());
         modelBuilder.ApplyConfiguration(new PlaytimeConfiguration());
     }
 

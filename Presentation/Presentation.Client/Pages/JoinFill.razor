@@ -27,7 +27,7 @@
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
         <div class="mx-4 mb-40 rounded-lg bg-white p-6 shadow-xl">
             <div class="flex flex-col justify-center space-y-2">
-                <h2 class="text-xl font-bold">@_joinEvent!.Host!.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h2>
+                <h2 class="text-xl font-bold">@_joinEvent!.Host.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h2>
                 <div class="flex md:items-end md:justify-end">
                     <div class="flex w-full flex-col gap-2 md:w-fit md:flex-row">
                         <button class="btn-white" onclick="@(() => { _showFirstLoginDialog = false; })">Uden login</button>
@@ -173,7 +173,7 @@ else
             <p class="text-warning">Bemærk, deltager med samme navn findes allerede</p>
         }
         <InputText class="w-full rounded-full border bg-gray-50 p-2" @bind-Value="@_currentParticipant.Email" placeholder="Skriv din email (valgfrit)" type="email"/>
-        @if (_joinEvent.Participants.Any(p => p.Email == _currentParticipant.Email))
+        @if (_joinEvent.Participants.Any(p => p.Email == _currentParticipant.Email && !String.IsNullOrEmpty(_currentParticipant.Email)))
         {
             <p class="text-warning">Bemærk, deltager med samme email findes allerede</p>
         }
@@ -255,7 +255,7 @@ else
         if (_isLoggedIn)
         {
             _currentParticipant.AuthId = userInfo!.Value.authId;
-            _isHost = _joinEvent?.Host?.AuthId == _currentParticipant.AuthId;
+            _isHost = _joinEvent?.Host.AuthId == _currentParticipant.AuthId;
             _currentParticipant.Nickname = userInfo.Value.name;
             if (_joinEvent!.Participants.Any(p => p.AuthId == _currentParticipant.AuthId))
             {

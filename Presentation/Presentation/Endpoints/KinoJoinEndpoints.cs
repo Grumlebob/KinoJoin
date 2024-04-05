@@ -1,31 +1,46 @@
-﻿using System.Linq.Expressions;
-using Application.Interfaces;
-using Carter;
-using Domain.Entities;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
-using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
+﻿namespace Presentation.Endpoints;
 
-namespace Presentation.Endpoints;
-
+//ICarterModule gives access to useful extension methods, such as authorize all endpoints
 public class KinoJoinEndpoints : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         var eventGroup = app.MapGroup("api/events");
-        eventGroup.MapGet("host/{hostId}", GetJoinEventsByHostId);
-        eventGroup.MapGet("{id}", GetJoinEvent);
-        eventGroup.MapPut("", UpsertJoinEvent);
-        eventGroup.MapDelete("{joinEventId}/participants/{participantId}", MakeParticipantNotExist);
+        eventGroup.MapGet("{id}", GetJoinEventAsync);
+        eventGroup.MapGet("host/{hostId}", GetJoinEventsByHostIdAsync);
+        eventGroup.MapPut("", UpsertJoinEventAsync);
+        eventGroup.MapDelete(
+            "{joinEventId}/participants/{participantId}",
+            MakeParticipantNotExistAsync
+        );
 
         var kinoDataGroup = app.MapGroup("api/kino-data");
-        kinoDataGroup.MapGet("cinemas", GetCinemas);
-        kinoDataGroup.MapGet("movies", GetMovies);
-        kinoDataGroup.MapGet("genres", GetGenres);
-        kinoDataGroup.MapPost("update-all/{fromId}/{toId}", UpdateAllBaseDataFromKinoDk);
+        kinoDataGroup.MapGet("cinemas", GetCinemasAsync);
+        kinoDataGroup.MapGet("movies", GetMoviesAsync);
+        kinoDataGroup.MapGet("genres", GetGenresAsync);
+        kinoDataGroup.MapPost("update-all/{fromId}/{toId}", UpdateAllBaseDataFromKinoDkAsync);
     }
 
-    private static async Task<Results<Ok<int>, BadRequest<string>>> UpsertJoinEvent(
+    private static async Task<
+        Results<NotFound, Ok<JoinEvent>, BadRequest<string>>
+    > GetJoinEventAsync([FromRoute] int id, [FromServices] IKinoJoinDbService kinoJoinDbService)
+    {
+        var joinEvent = await kinoJoinDbService.GetJoinEventAsync(id);
+        return joinEvent == null ? TypedResults.NotFound() : TypedResults.Ok(joinEvent);
+    }
+
+    private static async Task<
+        Results<Ok<List<JoinEvent>>, NotFound, BadRequest<string>>
+    > GetJoinEventsByHostIdAsync(
+        [FromServices] IKinoJoinDbService kinoJoinDbService,
+        [FromRoute] string hostId
+    )
+    {
+        var joinEvents = await kinoJoinDbService.GetAllJoinEventsAsync(j => j.HostId == hostId);
+        return TypedResults.Ok(joinEvents);
+    }
+
+    private static async Task<Results<Ok<int>, BadRequest<string>>> UpsertJoinEventAsync(
         [FromBody] JoinEvent joinEvent,
         [FromServices] IKinoJoinDbService kinoJoinDbService
     )
@@ -34,6 +49,7 @@ public class KinoJoinEndpoints : ICarterModule
         var validationResults = new List<ValidationResult>();
         validator.TryValidateObjectRecursive(joinEvent, validationResults);
 
+        //If there are any validation errors, they will be stored in the validationResults list
         if (validationResults.Any())
         {
             var errorMessage = String.Join(
@@ -48,50 +64,8 @@ public class KinoJoinEndpoints : ICarterModule
     }
 
     private static async Task<
-        Results<Ok<List<JoinEvent>>, NotFound, BadRequest<string>>
-    > GetJoinEventsByHostId(
-        [FromServices] IKinoJoinDbService kinoJoinDbService,
-        [FromRoute] string hostId
-    )
-    {
-        var joinEvents = await kinoJoinDbService.GetAllJoinEventsAsync(j => j.HostId == hostId);
-        return TypedResults.Ok(joinEvents);
-    }
-
-    private static async Task<Results<NotFound, Ok<JoinEvent>, BadRequest<string>>> GetJoinEvent(
-        [FromRoute] int id,
-        [FromServices] IKinoJoinDbService kinoJoinDbService
-    )
-    {
-        var joinEvent = await kinoJoinDbService.GetJoinEventAsync(id);
-        return joinEvent == null ? TypedResults.NotFound() : TypedResults.Ok(joinEvent);
-    }
-
-    private static async Task<
-        Results<Ok<ICollection<Cinema>>, NotFound, BadRequest<string>>
-    > GetCinemas([FromServices] IKinoJoinDbService kinoKinoJoinService)
-    {
-        var cinemas = await kinoKinoJoinService.GetAllCinemasAsync();
-        return TypedResults.Ok(cinemas);
-    }
-
-    private static async Task<
-        Results<Ok<ICollection<Movie>>, NotFound, BadRequest<string>>
-    > GetMovies([FromServices] IKinoJoinDbService kinoKinoJoinService)
-    {
-        var movies = await kinoKinoJoinService.GetAllMoviesAsync();
-        return TypedResults.Ok(movies);
-    }
-
-    private static async Task<
-        Results<Ok<ICollection<Genre>>, NotFound, BadRequest<string>>
-    > GetGenres([FromServices] IKinoJoinDbService kinoKinoJoinService)
-    {
-        var genres = await kinoKinoJoinService.GetAllGenresAsync();
-        return TypedResults.Ok(genres);
-    }
-
-    private static async Task<Results<Ok, NotFound, BadRequest<string>>> MakeParticipantNotExist(
+        Results<Ok, NotFound, BadRequest<string>>
+    > MakeParticipantNotExistAsync(
         [FromRoute] int joinEventId,
         [FromRoute] int participantId,
         [FromServices] IKinoJoinDbService kinoJoinDbService
@@ -106,7 +80,31 @@ public class KinoJoinEndpoints : ICarterModule
         return TypedResults.Ok();
     }
 
-    private static async Task<Results<Ok, BadRequest<string>>> UpdateAllBaseDataFromKinoDk(
+    private static async Task<
+        Results<Ok<ICollection<Cinema>>, NotFound, BadRequest<string>>
+    > GetCinemasAsync([FromServices] IKinoJoinDbService kinoKinoJoinService)
+    {
+        var cinemas = await kinoKinoJoinService.GetAllCinemasAsync();
+        return TypedResults.Ok(cinemas);
+    }
+
+    private static async Task<
+        Results<Ok<ICollection<Movie>>, NotFound, BadRequest<string>>
+    > GetMoviesAsync([FromServices] IKinoJoinDbService kinoKinoJoinService)
+    {
+        var movies = await kinoKinoJoinService.GetAllMoviesAsync();
+        return TypedResults.Ok(movies);
+    }
+
+    private static async Task<
+        Results<Ok<ICollection<Genre>>, NotFound, BadRequest<string>>
+    > GetGenresAsync([FromServices] IKinoJoinDbService kinoKinoJoinService)
+    {
+        var genres = await kinoKinoJoinService.GetAllGenresAsync();
+        return TypedResults.Ok(genres);
+    }
+
+    private static async Task<Results<Ok, BadRequest<string>>> UpdateAllBaseDataFromKinoDkAsync(
         [FromServices] IFetchNewestKinoDkDataService service,
         [FromRoute] int fromId,
         [FromRoute] int toId

@@ -1,22 +1,6 @@
-﻿using System.Net.Http.Json;
-using Domain.Entities;
+﻿namespace Presentation.Client.NamedHttpClients;
 
-namespace Presentation.Client.NamedHttpClients;
-
-public interface IKinoJoinHttpClient
-{
-    Task<JoinEvent?> GetJoinEventAsync(int id);
-    Task<HttpResponseMessage> UpsertJoinEventAsync(JoinEvent joinEvent);
-    Task<HttpResponseMessage> MakeParticipantNotExistsAsync(int joinEventId, int participantId);
-    Task<ICollection<Cinema>?> GetCinemasAsync();
-    Task<ICollection<Movie>?> GetMoviesAsync();
-    Task<ICollection<Genre>?> GetGenresAsync();
-
-    /// <remarks>Both ids are inclusive</remarks>
-    Task<HttpResponseMessage> UpdateBaseDataFromKinoDkAsync(int fromId, int toId);
-}
-
-public class KinoJoinHttpClient : IKinoJoinHttpClient
+public class KinoJoinHttpClient
 {
     private readonly HttpClient _httpClient;
 
@@ -25,7 +9,6 @@ public class KinoJoinHttpClient : IKinoJoinHttpClient
         _httpClient = httpClient;
     }
 
-    //get by id
     public async Task<JoinEvent?> GetJoinEventAsync(int id)
     {
         var result = await _httpClient.GetAsync($"/api/events/{id}");
@@ -64,6 +47,7 @@ public class KinoJoinHttpClient : IKinoJoinHttpClient
         return await _httpClient.GetFromJsonAsync<ICollection<Genre>>("api/kino-data/genres");
     }
 
+    /// <remarks>Both ids are inclusive</remarks>
     public async Task<HttpResponseMessage> UpdateBaseDataFromKinoDkAsync(int fromId, int toId)
     {
         return await _httpClient.PostAsync($"api/kino-data/update-all/{fromId}/{toId}", null);

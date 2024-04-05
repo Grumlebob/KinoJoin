@@ -11,7 +11,7 @@ builder.Services.AddScoped<ICalendarService, CalendarService>();
 
 builder.Services.AddSingleton(new SqidsEncoder<int>(new SqidsOptions { MinLength = 6 }));
 
-builder.Services.AddHttpClient<IKinoJoinHttpClient, KinoJoinHttpClient>(client =>
+builder.Services.AddHttpClient<KinoJoinHttpClient>(client =>
 {
     client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
 });

@@ -27,7 +27,7 @@
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
         <div class="mx-4 mb-40 rounded-lg bg-white p-6 shadow-xl">
             <div class="flex flex-col justify-center space-y-2">
-                <h2 class="text-xl font-bold">@_joinEvent!.Host.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h2>
+                <h2 class="text-xl font-bold">@_joinEvent!.Host!.Username vil gerne I biografen med dig! Du kan vælge hvilke forestillinger der passer dig bedst.</h2>
                 <div class="flex md:items-end md:justify-end">
                     <div class="flex w-full flex-col gap-2 md:w-fit md:flex-row">
                         <button class="btn-white" onclick="@(() => { _showFirstLoginDialog = false; })">Uden login</button>
@@ -219,7 +219,7 @@ else
 
     private bool _somethingWentWrong;
 
-    private JoinEventResults _joinEventResults;
+    private JoinEventResults _joinEventResults = null!;
 
     protected override async Task OnInitializedAsync()
     {

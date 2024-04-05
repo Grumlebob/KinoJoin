@@ -1,10 +1,9 @@
 using System.Text;
-using Domain.Entities;
 using Microsoft.JSInterop;
 
-namespace Presentation.Client.Services;
+namespace Infrastructure.Services;
 
-public class CalendarService
+public class CalendarService : ICalendarService
 {
     public string GetCalendarFileString(JoinEvent joinEvent, Showtime showtime)
     {

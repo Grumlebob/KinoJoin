@@ -7,6 +7,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddScoped<IFilterApiHandler, FilterApiHandler>();
 builder.Services.AddScoped<IUserInfoService, UserInfoService>();
+builder.Services.AddScoped<ICalendarService, CalendarService>();
 
 builder.Services.AddSingleton(new SqidsEncoder<int>(new SqidsOptions { MinLength = 6 }));
 

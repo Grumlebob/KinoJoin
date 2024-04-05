@@ -1,8 +1,8 @@
-@using Presentation.Client.Services
+@using Infrastructure.Services
 @inject IJSRuntime JsRuntime 
 @inject NavigationManager NavigationManager
 @inject IKinoJoinHttpClient KinoJoinHttpClient
-@inject CalendarService CalendarService
+@inject ICalendarService CalendarService
 
 
 <div id="results" class="flex flex-col gap-2 pt-2"> @* pt-2 is there, because otherwise the page lands a bit too far down when pressing "se resultater" on mobile *@
@@ -373,7 +373,7 @@
     {
         var showtime = JoinEvent.Showtimes.First(s => s.Id == JoinEvent.ChosenShowtimeId);
 
-        DotNetStreamReference calendarFileStream = CalendarService.GetCalendarFileStream(JoinEvent, showtime);
+        using var calendarFileStream = CalendarService.GetCalendarFileStream(JoinEvent, showtime);
 
         const string fileName = "Begivenhed";
         await JsRuntime.InvokeVoidAsync("downloadCalendarFile", fileName + ".ics", calendarFileStream);

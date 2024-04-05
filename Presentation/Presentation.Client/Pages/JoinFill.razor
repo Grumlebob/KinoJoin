@@ -137,7 +137,7 @@
 @* showtime selection *@
 <ShowtimeSelector HasAnswered="@_currentParticipantAlreadyAnswered" SelectOptions="@_joinEvent.SelectOptions" DefaultSelectOption="@_joinEvent.DefaultSelectOption" Showtimes="@_joinEvent.Showtimes" LegendTitle="Tryk på de tider du kan" ShowtimeChoices="@_currentParticipant.VotedFor" ChoicesChanged="votes => _currentParticipant.VotedFor = votes"/>
 
-@* "Send Svar" button, or text saying you hsave answered*@
+@* "Send Svar" button, or text saying you have answered*@
 @if (!_currentParticipantAlreadyAnswered)
 {
     <div class="flex justify-center">
@@ -159,7 +159,7 @@ else
 <br/>
 <br/>
 
-@* Dialog appearing if the user trys to send and answer when no showtimes are picked *@
+@* Dialog appearing if the user tries to send and answer when no showtimes are picked *@
 <dialog class="rounded p-5" id="NoShowtimesDialog">
     <div class="flex flex-col items-end gap-4 text-center">
         <h4 class="w-full text-xl font-bold">Obs! Du har ikke valgt nogen tider</h4>

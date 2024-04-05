@@ -13,12 +13,7 @@ public class CalendarService : ICalendarService
         var location = showtime.Cinema.Name;
         var description =
             joinEvent.Description
-            + "\n Film: "
-            + showtime.Movie.Title
-            + ", "
-            + showtime.Room.Name
-            + ", "
-            + showtime.VersionTag.Type;
+            + $"\n Film: {showtime.Movie.Title}, {showtime.Room.Name}, {showtime.VersionTag.Type}";
 
         var calenderStringBuilder = new StringBuilder();
 

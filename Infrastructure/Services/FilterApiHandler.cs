@@ -1,10 +1,4 @@
-﻿using System.Globalization;
-using System.Text;
-using System.Web;
-using Domain.ExternalApiModels;
-using Newtonsoft.Json;
-
-namespace Infrastructure.Services;
+﻿namespace Infrastructure.Services;
 
 public class FilterApiHandler : IFilterApiHandler
 {

@@ -1,8 +1,4 @@
-﻿using Domain.ExternalApiModels;
-using Infrastructure.Persistence;
-using Newtonsoft.Json;
-
-namespace Infrastructure.Services;
+﻿namespace Infrastructure.Services;
 
 public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKinoDkDataService
 {

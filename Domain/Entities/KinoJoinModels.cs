@@ -38,7 +38,6 @@ public class Showtime
     public int VersionTagId { get; set; }
     public int RoomId { get; set; }
 
-    //Foreign Keys
     [ForeignKey("VersionTagId")]
     public VersionTag VersionTag { get; set; } = null!;
 

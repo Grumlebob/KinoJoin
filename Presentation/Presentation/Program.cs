@@ -37,7 +37,7 @@ else
     app.UseHsts();
 }
 
-if (!GlobalSettings.HostOnNgrokWithNoHttpsAndSetDefaultUser)
+if (builder.Configuration.GetValue<bool>("HostOnNgrokWithNoHttpsAndSetDefaultUser"))
 {
     app.UseHttpsRedirection();
 }

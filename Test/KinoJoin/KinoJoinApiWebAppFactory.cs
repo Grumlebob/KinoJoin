@@ -53,8 +53,10 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
                 },
                 ServiceLifetime.Singleton
             ); // Lifetime must be Singleton to work with TestContainers
-            
-            services.AddSingleton<IKinoContext>(provider => provider.GetRequiredService<KinoContext>());
+
+            services.AddSingleton<IKinoContext>(provider =>
+                provider.GetRequiredService<KinoContext>()
+            );
         });
     }
 

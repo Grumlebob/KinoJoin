@@ -7,6 +7,7 @@ global using Domain.Entities;
 global using Domain.ExternalApiModels;
 global using Infrastructure.Persistence;
 global using Infrastructure.Persistence.Configurations;
+global using Microsoft.AspNetCore.Components.Authorization;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;
 global using Microsoft.Extensions.Configuration;

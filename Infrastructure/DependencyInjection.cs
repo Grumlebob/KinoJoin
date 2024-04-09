@@ -1,5 +1,6 @@
-﻿using Infrastructure.Persistence;
-using Infrastructure.Services;
+﻿using Application.Services;
+using Infrastructure.Identity;
+using Infrastructure.Persistence;
 
 namespace Infrastructure;
 
@@ -10,15 +11,13 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
-        services.AddScoped<IKinoJoinDbService, KinoJoinDbService>();
-        services.AddScoped<IFetchNewestKinoDkDataService, FetchNewestKinoDkDataService>();
         services.AddScoped<IUserInfoService, UserInfoService>();
-        services.AddScoped<ICalendarService, CalendarService>();
         services.AddDbContextFactory<KinoContext>(options =>
         {
             var secret = configuration["PostgresConnection"];
             options.UseNpgsql(secret);
             options.EnableDetailedErrors();
         });
+        services.AddScoped<IKinoContext>(provider => provider.GetRequiredService<KinoContext>());
     }
 }

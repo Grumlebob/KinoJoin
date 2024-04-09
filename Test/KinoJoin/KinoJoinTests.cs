@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Http.Json;
+using Application.Services;
 using Domain.Entities;
 using Domain.ExternalApiModels;
 using FluentAssertions;
 using Infrastructure.Persistence;
-using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;

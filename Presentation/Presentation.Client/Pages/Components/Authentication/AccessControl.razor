@@ -1,5 +1,6 @@
 ﻿@inject NavigationManager Navigation
 @inject SignOutSessionStateManager SignOutManager
+@inject IConfiguration Configuration
 
 @*
 Taken from guide: https://auth0.com/blog/securing-blazor-webassembly-apps/
@@ -19,14 +20,11 @@ Taken from guide: https://auth0.com/blog/securing-blazor-webassembly-apps/
         </div>
     </Authorized>
     <NotAuthorized>
-        @if (!GlobalSettings.HostOnNgrokWithNoHttpsAndSetDefaultUser)
-        {
-            <a href="authentication/login">
-                <button class="btn-black">
-                    Log ind
-                </button>
-            </a>
-        }
+        <a href="authentication/login">
+            <button class="btn-black">
+                Log ind
+            </button>
+        </a>
     </NotAuthorized>
 </AuthorizeView>
 

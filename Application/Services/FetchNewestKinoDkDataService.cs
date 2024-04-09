@@ -1,6 +1,6 @@
-﻿namespace Infrastructure.Services;
+namespace Application.Services;
 
-public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKinoDkDataService
+public class FetchNewestKinoDkDataService(IKinoContext context) : IFetchNewestKinoDkDataService
 {
     private readonly HttpClient _httpClient = new();
 

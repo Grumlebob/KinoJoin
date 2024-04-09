@@ -1,4 +1,5 @@
 ﻿using System.Data.Common;
+using Application.Interfaces;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -52,6 +53,8 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
                 },
                 ServiceLifetime.Singleton
             ); // Lifetime must be Singleton to work with TestContainers
+            
+            services.AddSingleton<IKinoContext>(provider => provider.GetRequiredService<KinoContext>());
         });
     }
 

@@ -1,10 +1,6 @@
-﻿using Domain.ExternalApiModels;
-using Infrastructure.Persistence;
-using Newtonsoft.Json;
+﻿namespace Application.Services;
 
-namespace Infrastructure.Services;
-
-public class FetchNewestKinoDkDataService(KinoContext context) : IFetchNewestKinoDkDataService
+public class FetchNewestKinoDkDataService(IKinoContext context) : IFetchNewestKinoDkDataService
 {
     private readonly HttpClient _httpClient = new();
 

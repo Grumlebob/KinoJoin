@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Components.Authorization;
-
-namespace Infrastructure.Services;
+namespace Infrastructure.Identity;
 
 public class UserInfoService : IUserInfoService
 {

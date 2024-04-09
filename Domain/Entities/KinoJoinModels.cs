@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-
 namespace Domain.Entities;
 
 public class JoinEvent

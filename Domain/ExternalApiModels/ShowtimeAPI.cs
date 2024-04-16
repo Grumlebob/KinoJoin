@@ -46,6 +46,9 @@ public class ShowtimeApiMovie
 
     [JsonProperty("content")]
     public required ShowtimeApiMovieContent Content;
+
+    [JsonProperty("type")]
+    public string Type { get; set; } = "";
 }
 
 public class ShowtimeApiVersion
@@ -94,6 +97,9 @@ public class ShowtimeApiMovieContent
 {
     [JsonProperty("field_censorship_icon")]
     public string? FieldCensorshipIcon;
+
+    [JsonProperty("label")]
+    public string Label { get; set; } = "";
 
     [JsonProperty("field_playing_time")]
     public required string FieldPlayingTime;

@@ -64,11 +64,6 @@ public class FilterApiHandler : IFilterApiHandler
                 cinemaOption => cinemaOption.Key,
                 cinemaOption => cinemaOption.Value
             );
-        var movieIdsToNames =
-            apiResultObject.ShowtimeApiContent.ShowtimeApiFacets.Movies.Options.ToDictionary(
-                movieOption => movieOption.Key,
-                movieOption => movieOption.Value
-            );
 
         var showtimes = new List<Showtime>();
         var existingMovies = new Dictionary<int, Movie>(); //several cinemas may show the same movie. No need to create the movie object every time
@@ -85,12 +80,10 @@ public class FilterApiHandler : IFilterApiHandler
                 Name = cinemaIdsToNames[jsonCinema.Id]
             };
 
-            foreach (
-                var jsonMovie in jsonCinema.Movies.Where(jsonMovie =>
-                    movieIdsToNames.ContainsKey(jsonMovie.Id)
-                )
-            ) //if not contains key it is not a movie (there are events with different ids, example "særvisninger" are excluded)
+            foreach (var jsonMovie in jsonCinema.Movies)
             {
+                if (jsonMovie.Type != "movie" && jsonMovie.Type != "event")
+                    continue;
                 if (!int.TryParse(jsonMovie.Content.FieldPlayingTime, out var duration))
                     duration = 0;
                 if (!existingMovies.TryGetValue(jsonMovie.Id, out var movieObject)) //use existing movie object or create new
@@ -98,7 +91,7 @@ public class FilterApiHandler : IFilterApiHandler
                     movieObject = new Movie
                     {
                         Id = jsonMovie.Id,
-                        Title = movieIdsToNames[jsonMovie.Id],
+                        Title = jsonMovie.Content.Label,
                         PremiereDate = jsonMovie.Content.FieldPremiere,
                         KinoUrl = jsonMovie.Content.Url,
                         AgeRating =
@@ -116,6 +109,7 @@ public class FilterApiHandler : IFilterApiHandler
                             ?[0]
                             .Srcset,
                         DurationInMinutes = duration,
+                        IsSpecialShow = jsonMovie.Type == "event"
                     };
                     existingMovies.Add(movieObject.Id, movieObject);
                 }
@@ -219,7 +213,7 @@ public class FilterApiHandler : IFilterApiHandler
             var movieObject = new Movie
             {
                 Id = movie.Id,
-                Title = movieIdsToNames[movie.Id],
+                Title = movie.Content.Label,
                 PremiereDate = movie.Content.FieldPremiere,
                 KinoUrl = movie.Content.Url,
                 AgeRating =

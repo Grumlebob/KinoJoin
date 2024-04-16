@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Infrastructure.Migrations
+namespace Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration
@@ -207,7 +207,8 @@ namespace Infrastructure.Migrations
                         type: "character varying(100)",
                         maxLength: 100,
                         nullable: true
-                    )
+                    ),
+                    IsSpecialShow = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {

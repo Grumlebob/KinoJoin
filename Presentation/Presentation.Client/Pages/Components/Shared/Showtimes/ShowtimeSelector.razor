@@ -45,17 +45,24 @@ The main purpose is to group showtimes by their Cinema, Version and Movie, and d
 @* The main content of the component, showing all the showtimes using virtualization, to only load what is neccessary *@
 <div class="space-y-5">
     @{
-        var showtimeByMovieList = Showtimes.GroupBy(s => s.Movie.Id).ToList();
+        //order such that særvisninger always goes last
+        var showtimeByMovieList = Showtimes.GroupBy(s => s.Movie.Id).OrderBy(g => g.First().Movie.IsSpecialShow ? 1 : 0).ToList();
 
         //create a default showtime for each movie that has no showtimes to include it in the groupings.
         //This makes sure empty movies are rendered at the bottom.
         var emptyMovieGroups = MoviesWithoutShowTimes.Select(m => new Showtime { MovieId = m.Id, Movie = m })
             .GroupBy(s => s.MovieId).ToList();
         showtimeByMovieList.AddRange(emptyMovieGroups);
+        var firstSpecialShowId = showtimeByMovieList.First(mGroup => mGroup.First().Movie.IsSpecialShow).Key; //make a headline above the first "særvisning"
     }
     <Virtualize Items="showtimeByMovieList" Context="showtimesByMovie" OverscanCount="3">
         <ItemContent>
             @{ var movie = showtimesByMovie.First().Movie; }
+            @if (movie.IsSpecialShow && movie.Id == firstSpecialShowId)
+            {
+                <h1 class="text-4xl font-bold">Særvisninger</h1>
+                <br/>
+            }
 
             <div class="grid gap-4 grid-cols-[0.5fr_1fr] grid-rows-[min-content_auto] md:grid-cols-[200px_1fr]">
                 <!-- PosterImage -->
@@ -91,22 +98,29 @@ The main purpose is to group showtimes by their Cinema, Version and Movie, and d
                     {
                         <div class="inline-flex flex-col items-start justify-between gap-2 rounded md:flex-row md:items-center md:gap-4 md:py-2">
                             <!-- movie-info -->
-                            @if (movie.PremiereDate != null)
+                            @if (movie is { PremiereDate: not null, IsSpecialShow: false }) //don't show premiere for særvisninger
                             {
                                 <div class="flex space-x-1">
                                     <span class="hidden text-sm text-neutral-400 font-label md:block">Premiere</span>
                                     <span class="text-sm text-neutral-400 font-label">@movie.PremiereDate </span>
                                 </div>
-                            }
-                            @if (movie.PremiereDate != null && movie.DurationInMinutes != 0)
-                            {
-                                <span class="hidden text-sm text-neutral-400 md:block">|</span>
+                                if (movie.DurationInMinutes != 0)
+                                {
+                                    <span class="hidden text-sm text-neutral-400 md:block">|</span>
+                                }
                             }
                             @if (movie.DurationInMinutes != 0)
                             {
                                 <div class="flex space-x-1">
                                     <span class="hidden text-sm text-neutral-400 font-label md:block">Varighed</span>
                                     <span class="text-sm text-neutral-400 font-label">@movie.DurationInMinutes min</span>
+                                </div>
+                            }
+                            @if (movie.IsSpecialShow)
+                            {
+                                <span class="hidden text-sm text-neutral-400 md:block">|</span>
+                                <div class="flex space-x-1">
+                                    <span class="hidden text-sm text-neutral-400 font-label md:block">Særvisning</span>
                                 </div>
                             }
                             @if (movie.AgeRating != null)

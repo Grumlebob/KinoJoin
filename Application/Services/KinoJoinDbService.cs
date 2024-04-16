@@ -1,6 +1,6 @@
-﻿namespace Infrastructure.Services;
+﻿namespace Application.Services;
 
-public class KinoJoinDbService(KinoContext context) : IKinoJoinDbService
+public class KinoJoinDbService(IKinoContext context) : IKinoJoinDbService
 {
     public async Task<ICollection<Cinema>> GetAllCinemasAsync()
     {

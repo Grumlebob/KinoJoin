@@ -1,6 +1,6 @@
 ﻿namespace Infrastructure.Persistence;
 
-public class KinoContext : DbContext
+public class KinoContext : DbContext, IKinoContext
 {
     //This is data used by KinoJoin
     public DbSet<Host> Hosts { get; set; } = default!;

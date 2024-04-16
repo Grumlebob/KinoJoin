@@ -9,10 +9,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Infrastructure.Migrations
+namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(KinoContext))]
-    [Migration("20240404133847_Initial")]
+    [Migration("20240416111801_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -151,6 +151,9 @@ namespace Infrastructure.Migrations
                     b.Property<string>("ImageUrl")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsSpecialShow")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("KinoUrl")
                         .HasMaxLength(500)

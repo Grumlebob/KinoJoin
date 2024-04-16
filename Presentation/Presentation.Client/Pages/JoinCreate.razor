@@ -6,6 +6,7 @@
 @inject IFilterApiHandler FilterHandler
 @inject SqidsEncoder<int> SqidsEncoder
 @inject IUserInfoService UserInfoService
+@inject IConfiguration Configuration
 
 @if (_loadingPage)
 {
@@ -15,9 +16,9 @@
     return;
 }
 
-@if (!_isLoggedIn && !GlobalSettings.HostOnNgrokWithNoHttpsAndSetDefaultUser)
+@if (!_isLoggedIn && !Configuration.GetValue<bool>("HostOnNgrokWithNoHttpsAndSetDefaultUser"))
 {
-    <div class="fixed inset-0 z-50 flex h-full w-full flex-col items-center justify-center bg-black bg-opacity-50">
+    <div class="fixed inset-0 z-50 flex hover:opacity-60 w-full flex-col items-center justify-center bg-black bg-opacity-50">
         <div class="h-fit w-fit rounded bg-gray-50 p-3 shadow-md">
             <p class="text-2xl font-semibold">Du skal være logget ind for at oprette et event</p>
             <div class="w-fit">
@@ -294,7 +295,7 @@
         if (userInfo is null)
         {
             //this is only used for when we are hosting on http with ngrok
-            if (GlobalSettings.HostOnNgrokWithNoHttpsAndSetDefaultUser)
+            if (Configuration.GetValue<bool>("HostOnNgrokWithNoHttpsAndSetDefaultUser"))
             {
                 host.AuthId = "1";
                 host.Username = "Ukendt vært";
@@ -370,7 +371,7 @@
 
         foreach (var movie in _availableShowtimes.Select(s => s.Movie).DistinctBy(m => m.Id))
         {
-            if (_movieIdsToNames.ContainsKey(movie.Id)) continue;
+            if (_movieIdsToNames.ContainsKey(movie.Id) || movie.IsSpecialShow) continue; //"Særvisninger" are not included in UI filters as some would overlap with normal movies'
             _movieIdsToNames[movie.Id] = movie.Title;
         }
 

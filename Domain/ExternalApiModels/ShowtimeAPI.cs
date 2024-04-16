@@ -38,6 +38,9 @@ public class ShowtimeApiContentLevel3
 
 public class ShowtimeApiMovie
 {
+    [JsonProperty("type")]
+    public string Type;
+
     [JsonProperty("id")]
     public int Id;
 
@@ -92,6 +95,9 @@ public class ShowtimeApiRoomContent
 
 public class ShowtimeApiMovieContent
 {
+    [JsonProperty("label")]
+    public string Title { get; set; }
+
     [JsonProperty("field_censorship_icon")]
     public string? FieldCensorshipIcon;
 

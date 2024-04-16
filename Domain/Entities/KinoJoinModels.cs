@@ -74,6 +74,11 @@ public class Movie
     [MaxLength(100, ErrorMessage = "PremiereDate kan højst være 260 tegn.")]
     public string? PremiereDate { get; set; }
 
+    /// <summary>
+    /// Indicates that the movie is considered a "særvisning"
+    /// </summary>
+    public bool SpecialShowing { get; set; }
+
     [ForeignKey("AgeRatingId")]
     public AgeRating? AgeRating { get; set; }
 }

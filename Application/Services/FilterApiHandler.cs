@@ -87,9 +87,9 @@ public class FilterApiHandler : IFilterApiHandler
 
             foreach (
                 var jsonMovie in jsonCinema.Movies.Where(jsonMovie =>
-                    movieIdsToNames.ContainsKey(jsonMovie.Id)
-                )
-            ) //if not contains key it is not a movie (there are events with different ids, example "særvisninger" are excluded)
+                    jsonMovie.Type == "movie" || jsonMovie.Type == "event"
+                ) //We support movies and "særvisninger"(events)
+            )
             {
                 if (!int.TryParse(jsonMovie.Content.FieldPlayingTime, out var duration))
                     duration = 0;
@@ -98,7 +98,7 @@ public class FilterApiHandler : IFilterApiHandler
                     movieObject = new Movie
                     {
                         Id = jsonMovie.Id,
-                        Title = movieIdsToNames[jsonMovie.Id],
+                        Title = jsonMovie.Content.Title,
                         PremiereDate = jsonMovie.Content.FieldPremiere,
                         KinoUrl = jsonMovie.Content.Url,
                         AgeRating =
@@ -116,6 +116,7 @@ public class FilterApiHandler : IFilterApiHandler
                             ?[0]
                             .Srcset,
                         DurationInMinutes = duration,
+                        SpecialShowing = jsonMovie.Type == "event" //If the movie is an event, it is considered a "særvisning"
                     };
                     existingMovies.Add(movieObject.Id, movieObject);
                 }
@@ -213,13 +214,16 @@ public class FilterApiHandler : IFilterApiHandler
             )
         )
         {
+            if (movie.Type != "movie")
+                continue; //Only movies are supported here as you cant pick a "særvisning" as a filter
+
             if (!int.TryParse(movie.Content.FieldPlayingTime, out var duration))
                 duration = 0;
 
             var movieObject = new Movie
             {
                 Id = movie.Id,
-                Title = movieIdsToNames[movie.Id],
+                Title = movie.Content.Title,
                 PremiereDate = movie.Content.FieldPremiere,
                 KinoUrl = movie.Content.Url,
                 AgeRating =
@@ -227,7 +231,7 @@ public class FilterApiHandler : IFilterApiHandler
                         ? null
                         : new AgeRating { Censorship = movie.Content.FieldCensorshipIcon },
                 ImageUrl = movie.Content.ShowtimeApiFieldPoster.FieldMediaImage?.Sources?[0].Srcset,
-                DurationInMinutes = duration
+                DurationInMinutes = duration,
             };
             missingMovies.Add(movieObject);
         }

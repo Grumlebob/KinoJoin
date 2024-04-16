@@ -207,7 +207,8 @@ namespace Infrastructure.Migrations
                         type: "character varying(100)",
                         maxLength: 100,
                         nullable: true
-                    )
+                    ),
+                    SpecialShowing = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {

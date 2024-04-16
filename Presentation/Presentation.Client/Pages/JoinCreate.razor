@@ -371,7 +371,7 @@
 
         foreach (var movie in _availableShowtimes.Select(s => s.Movie).DistinctBy(m => m.Id))
         {
-            if (_movieIdsToNames.ContainsKey(movie.Id)) continue;
+            if (_movieIdsToNames.ContainsKey(movie.Id) || movie.IsSpecialShow) continue; //"Særvisninger" are not included in UI filters as some would overlap with normal movies'
             _movieIdsToNames[movie.Id] = movie.Title;
         }
 

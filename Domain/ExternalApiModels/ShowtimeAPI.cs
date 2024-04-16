@@ -46,6 +46,9 @@ public class ShowtimeApiMovie
 
     [JsonProperty("content")]
     public required ShowtimeApiMovieContent Content;
+
+    [JsonProperty("type")]
+    public string Type { get; set; } = "";
 }
 
 public class ShowtimeApiVersion

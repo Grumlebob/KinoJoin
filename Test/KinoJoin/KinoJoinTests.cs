@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Http.Json;
+using Application.Services;
 using Domain.Entities;
 using Domain.ExternalApiModels;
 using FluentAssertions;
 using Infrastructure.Persistence;
-using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -15,6 +15,7 @@ using Npgsql;
 
 namespace Test.KinoJoin;
 
+//Taken from this guide https://www.youtube.com/watch?v=tj5ZCtvgXKY
 [CollectionDefinition("KinoJoinCollection")]
 public class KinoTestCollection : ICollectionFixture<KinoJoinApiWebAppFactory>;
 
@@ -112,7 +113,13 @@ public class KinoJoinTests : IAsyncLifetime
 
         //update JoinEvent properties
         var joinEventToUpdate = _kinoContext.JoinEvents.ToList()[casesToInsert - 1];
-        joinEventToUpdate.Title = "Updated";
+        joinEventToUpdate = await _client.GetFromJsonAsync<JoinEvent>(
+            "api/events/" + joinEventToUpdate.Id
+        );
+
+        joinEventToUpdate.Should().NotBeNull();
+
+        joinEventToUpdate!.Title = "Updated";
         var updateResponse = await _client.PutAsJsonAsync("api/events", joinEventToUpdate);
         updateResponse.EnsureSuccessStatusCode();
 
@@ -237,7 +244,7 @@ public class KinoJoinTests : IAsyncLifetime
         var content = await response.Content.ReadAsStringAsync();
         content.Should().Be("[]");
 
-        //Insert a movie
+        //Insert a join event (with a movie)
         var joinEvent = _dataGenerator.JoinEventGenerator.Generate(1).First();
         var createResponse = await _client.PutAsJsonAsync("api/events", joinEvent);
         createResponse.EnsureSuccessStatusCode();
@@ -503,7 +510,7 @@ public class KinoJoinTests : IAsyncLifetime
         var createResponse = await _client.PutAsJsonAsync("api/events", joinEvent);
         createResponse.EnsureSuccessStatusCode();
 
-        var response = await _client.GetAsync($"api/events/host/{joinEvent.Host!.AuthId}");
+        var response = await _client.GetAsync($"api/events/host/{joinEvent.Host.AuthId}");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 

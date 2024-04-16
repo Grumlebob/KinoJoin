@@ -1,5 +1,5 @@
 ﻿using System.Data.Common;
-using System.Security.Cryptography;
+using Application.Interfaces;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using Presentation.Client.NamedHttpClients;
 using Respawn;
 using Testcontainers.PostgreSql;
 
@@ -17,10 +16,10 @@ namespace Test.KinoJoin;
 public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     /// The entire test environment uses a single connection to the database. This means that all the tests have to be done by the time
-    /// the connection is closed. <seealso cref="UpdateAllBaseDataFromKinoDk_ShouldReturnOk_IfUpdateSucceeds">hejsa</seealso>
-    /// The reason why this is necessary is because preseeding of the database is slow and will end up being cancelled
+    /// the connection is closed. <seealso cref="UpdateAllBaseDataFromKinoDk_ThenUseTheDataToCheckKinoDkFilterApi"></seealso>
+    /// The reason why this is necessary is because updating all base data from Kino.dk is slow and will end up being cancelled
     /// if the connection is closed before terminating
-    private const int MaxWaittimeMinutes = 5;
+    private const int MaxWaitTimeMinutes = 5;
 
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder()
         .WithImage("postgres:latest")
@@ -54,6 +53,10 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
                 },
                 ServiceLifetime.Singleton
             ); // Lifetime must be Singleton to work with TestContainers
+
+            services.AddSingleton<IKinoContext>(provider =>
+                provider.GetRequiredService<KinoContext>()
+            );
         });
     }
 
@@ -70,7 +73,7 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
 
         HttpClient = CreateClient();
         //Seeding data can take a long time, so we set a longer timeout
-        HttpClient.Timeout = TimeSpan.FromMinutes(MaxWaittimeMinutes);
+        HttpClient.Timeout = TimeSpan.FromMinutes(MaxWaitTimeMinutes);
 
         //THIS IS WHERE YOU CAN ADD SEED DATA
         using var scope = Services.CreateScope();

@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Infrastructure.Migrations
+namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(KinoContext))]
     partial class KinoContextModelSnapshot : ModelSnapshot
@@ -148,6 +148,9 @@ namespace Infrastructure.Migrations
                     b.Property<string>("ImageUrl")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsSpecialShow")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("KinoUrl")
                         .HasMaxLength(500)

@@ -45,17 +45,24 @@ The main purpose is to group showtimes by their Cinema, Version and Movie, and d
 @* The main content of the component, showing all the showtimes using virtualization, to only load what is neccessary *@
 <div class="space-y-5">
     @{
-        var showtimeByMovieList = Showtimes.GroupBy(s => s.Movie.Id).ToList();
+        //order such that særvisninger always goes last
+        var showtimeByMovieList = Showtimes.GroupBy(s => s.Movie.Id).OrderBy(g => g.First().Movie.IsSpecialShow ? 1 : 0).ToList();
 
         //create a default showtime for each movie that has no showtimes to include it in the groupings.
         //This makes sure empty movies are rendered at the bottom.
         var emptyMovieGroups = MoviesWithoutShowTimes.Select(m => new Showtime { MovieId = m.Id, Movie = m })
             .GroupBy(s => s.MovieId).ToList();
         showtimeByMovieList.AddRange(emptyMovieGroups);
+        var firstSpecialShowId = showtimeByMovieList.First(mGroup => mGroup.First().Movie.IsSpecialShow).Key; //make a headline above the first "særvisning"
     }
     <Virtualize Items="showtimeByMovieList" Context="showtimesByMovie" OverscanCount="3">
         <ItemContent>
             @{ var movie = showtimesByMovie.First().Movie; }
+            @if (movie.IsSpecialShow && movie.Id == firstSpecialShowId)
+            {
+                <h1 class="text-3xl">Særvisninger</h1>
+                <br/>
+            }
 
             <div class="grid gap-4 grid-cols-[0.5fr_1fr] grid-rows-[min-content_auto] md:grid-cols-[200px_1fr]">
                 <!-- PosterImage -->

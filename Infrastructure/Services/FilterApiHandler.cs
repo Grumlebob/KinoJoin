@@ -91,20 +91,18 @@ public class FilterApiHandler : IFilterApiHandler
                 Name = cinemaIdsToNames[jsonCinema.Id]
             };
 
-            foreach (
-                var jsonMovie in jsonCinema.Movies.Where(jsonMovie =>
-                    movieIdsToNames.ContainsKey(jsonMovie.Id)
-                )
-            ) //if not contains key it is not a movie (there are events with different ids, example "særvisninger" are excluded)
+            foreach (var jsonMovie in jsonCinema.Movies)
             {
                 if (!int.TryParse(jsonMovie.Content.FieldPlayingTime, out var duration))
                     duration = 0;
+                if (!movieIdsToNames.TryGetValue(jsonMovie.Id, out var movieTitle))
+                    movieTitle = jsonMovie.Content.Label; //if not in facets, get it from content
                 if (!existingMovies.TryGetValue(jsonMovie.Id, out var movieObject)) //use existing movie object or create new
                 {
                     movieObject = new Movie
                     {
                         Id = jsonMovie.Id,
-                        Title = movieIdsToNames[jsonMovie.Id],
+                        Title = movieTitle,
                         PremiereDate = jsonMovie.Content.FieldPremiere,
                         KinoUrl = jsonMovie.Content.Url,
                         AgeRating =
@@ -122,6 +120,7 @@ public class FilterApiHandler : IFilterApiHandler
                             ?[0]
                             .Srcset,
                         DurationInMinutes = duration,
+                        IsSpecialShow = !movieIdsToNames.ContainsKey(jsonMovie.Id) //if not in movie facets it is a "særvisning"
                     };
                     existingMovies.Add(movieObject.Id, movieObject);
                 }

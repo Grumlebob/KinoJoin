@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Http.Json;
+using Application.Feature.Sorting.Domain;
 using Application.Services;
 using Domain.Entities;
 using Domain.ExternalApiModels;
@@ -393,10 +394,11 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public void GetFiltersFromStringContainsCorrectIdsAndDates()
     {
+        
         var filterApiHandler = new FilterApiHandler();
-        const string filterUrl =
+        string filterUrl =
             "sort=most_purchased&cinemas=23&movies=5&movies=5&genres=96&genres=1&cinemas=2&date=2024-04-05T00:00:00&date=2024-04-06T00:00:00";
-        var (cinemaIds, movieIds, genreIds, startDate, endDate) =
+        var (cinemaIds, movieIds, genreIds, startDate, endDate, sortBy) =
             filterApiHandler.GetFiltersFromUrlFilterString(filterUrl);
         cinemaIds.Should().Contain(23);
         cinemaIds.Should().Contain(2);
@@ -404,8 +406,9 @@ public class KinoJoinTests : IAsyncLifetime
         genreIds.Should().Contain(1);
         startDate.Should().Be(new DateTime(2024, 4, 5));
         endDate.Should().Be(new DateTime(2024, 4, 6));
+        sortBy.Should().Be(SortBy.Most_Viewed);
 
-        (cinemaIds, movieIds, genreIds, startDate, endDate) =
+        (cinemaIds, movieIds, genreIds, startDate, endDate, sortBy) =
             filterApiHandler.GetFiltersFromUrlFilterString("");
         cinemaIds.Should().BeEmpty();
         movieIds.Should().BeEmpty();

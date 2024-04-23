@@ -1,4 +1,6 @@
-﻿namespace Application.Interfaces;
+﻿using Application.Feature.Sorting.Domain;
+
+namespace Application.Interfaces;
 
 /// <summary>
 /// The main idea of this interface is to handle the filters namely, cinemas, movies, genres and dates.
@@ -16,7 +18,8 @@ public interface IFilterApiHandler
         ICollection<int> movieIds = null!,
         ICollection<int> genreIds = null!,
         DateTime fromDate = default,
-        DateTime toDate = default
+        DateTime toDate = default,
+        SortBy sortBy = SortBy.Most_Viewed
     );
 
     /// <summary>
@@ -27,7 +30,8 @@ public interface IFilterApiHandler
         ICollection<int> movieIds = null!,
         ICollection<int> genreIds = null!,
         DateTime fromDate = default,
-        DateTime toDate = default
+        DateTime toDate = default,
+        SortBy sortBy = SortBy.Most_Viewed
     );
 
     /// <summary>
@@ -47,6 +51,7 @@ public interface IFilterApiHandler
         ISet<int> selectedMovies,
         ISet<int> selectedGenres,
         DateTime startDate,
-        DateTime endDate
+        DateTime endDate,
+        SortBy sortBy
     ) GetFiltersFromUrlFilterString(string filterString);
 }

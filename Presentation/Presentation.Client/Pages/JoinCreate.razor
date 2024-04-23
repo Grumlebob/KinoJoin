@@ -1,5 +1,6 @@
 ﻿@page "/"
 @page "/create-event/{UrlFilterString?}"
+@using Application.Feature.Sorting.Domain
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject KinoJoinHttpClient KinoJoinHttpClient
@@ -111,6 +112,20 @@
 {
     <p>Der er ingen forestillinger for de valgte filtre</p>
 }
+
+
+@* Dropdown: SortBy *@
+<div class="flex flex-row justify-end">
+    <div class="max-w-60">
+        <div class="flex flex-row">
+            <select value="@_sortBy" @onchange="OnSortByChanged" class="bg-slate-700 border border-gray-300 text-sky-50 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                <option selected value="Most_Viewed">Mest populær</option>
+                <option value="Alphabetical">Alfabetisk</option>
+                <option value="Rating">Bedst bedømt</option>
+            </select>
+        </div>
+    </div>
+</div>
 
 <ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de spilletider du vil have med i dit event" MoviesWithoutShowTimes="@_moviesWithoutShowtimes" ShowtimeChoices="@_showtimeVotes" ChoicesChanged="OnVoteChange" SelectOptions="@_selectOptionsForCreatePage" DefaultSelectOption="@_selectOptionsForCreatePage.First()"/>
 
@@ -285,6 +300,8 @@
     private bool _uploadingEvent;
 
     private string? _snackbarMessage;
+    
+    private SortBy _sortBy = SortBy.Most_Viewed;
 
     protected override async Task OnInitializedAsync()
     {
@@ -323,7 +340,7 @@
         _joinEvent.DefaultSelectOption = _joinEvent.SelectOptions[NoVoteIndex];
 
         //Set filters to match the filter string in the url
-        (_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate) = FilterHandler.GetFiltersFromUrlFilterString(UrlFilterString);
+        (_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate, _sortBy) = FilterHandler.GetFiltersFromUrlFilterString(UrlFilterString);
         if (_startDate == default) _startDate = DateTime.Today;
         if (_endDate == default) _endDate = DateTime.Today.AddYears(1);
         
@@ -409,11 +426,12 @@
 
         //Set the filter string in the url to match the selected filters,
         //so the page will save filters on reload
-        var urlFilterString = FilterHandler.ConvertFiltersToUrlString(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
+        var urlFilterString = FilterHandler.ConvertFiltersToUrlString(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate, _sortBy);
         var newUrl = "create-event/" + urlFilterString;
         NavigationManager.NavigateTo(newUrl);
 
-        (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
+        //Skal have en sortBy med
+        (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate, _sortBy);
 
         // Save votes for show times that were there before update 
         var stillAvailableShowtimeIds = new HashSet<int>(_showtimeVotes
@@ -514,5 +532,16 @@
         //Hide snackbar after 3 seconds
         await Task.Delay(3000).ContinueWith(_ => _snackbarMessage = null);
     }
+    
+    //SORTBY
+    private async Task OnSortByChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse(e.Value.ToString(), out SortBy sortByResult))
+        {
+            _sortBy = sortByResult;
+        }
+        await HandleShowtimeFiltersChanged();
+    }
+
 
 }

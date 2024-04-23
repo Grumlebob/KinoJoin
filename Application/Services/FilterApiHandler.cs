@@ -1,3 +1,5 @@
+using Application.Feature.Sorting.Domain;
+
 namespace Application.Services;
 
 public class FilterApiHandler : IFilterApiHandler
@@ -15,7 +17,8 @@ public class FilterApiHandler : IFilterApiHandler
         ICollection<int> movieIds = null!,
         ICollection<int> genreIds = null!,
         DateTime fromDate = default,
-        DateTime toDate = default
+        DateTime toDate = default,
+        SortBy sortBy = SortBy.Most_Viewed
     )
     {
         cinemaIds ??= [];
@@ -29,7 +32,20 @@ public class FilterApiHandler : IFilterApiHandler
         fromDate = fromDate.Date;
         toDate = toDate.Date;
 
-        var filterStringBuilder = new StringBuilder("&sort=most_purchased");
+        //var filterStringBuilder = new StringBuilder("&sort=most_purchased");
+        
+        var sortString = sortBy switch
+        {
+            SortBy.Alphabetical => "alphabetical",
+            SortBy.Rating => "rating",
+            SortBy.Most_Viewed => "most_viewed",
+            _ => throw new ArgumentOutOfRangeException(nameof(sortBy), sortBy, null)
+        };
+        
+        var filterStringBuilder = new StringBuilder($"&sort={sortString}");
+        
+        
+        
         var cinemaList = cinemaIds.ToList();
         for (var i = 0; i < cinemaIds.Count; i++)
         {
@@ -188,7 +204,10 @@ public class FilterApiHandler : IFilterApiHandler
             return (showtimes, []); //all movies had showtimes
 
         //we call the API again to get information on the missing movies, now without the rest of the filters, to make sure we get all the movies
-        var filterString = new StringBuilder("&sort=most_purchased");
+        var filterString = new StringBuilder($"&sort={sortString}");
+        //var filterString = new StringBuilder("&sort=most_purchased");
+        
+        
         foreach (var movieId in notIncludedMovieIds)
         {
             filterString.Append($"&movies[{index++}]={movieId}");
@@ -234,7 +253,8 @@ public class FilterApiHandler : IFilterApiHandler
         ICollection<int> movieIds = null!,
         ICollection<int> genreIds = null!,
         DateTime fromDate = default,
-        DateTime toDate = default
+        DateTime toDate = default,
+        SortBy sortBy = SortBy.Most_Viewed
     )
     {
         cinemaIds ??= [];
@@ -250,8 +270,16 @@ public class FilterApiHandler : IFilterApiHandler
 
         var fromDateString = fromDate.ToString("s"); //format: 2008-04-18T06:30:00, this format is needed so there is no slashes in the string, which would be interpreted as paths in the url
         var toDateString = toDate.ToString("s");
-
-        var filterStringBuilder = new StringBuilder("sort=most_purchased");
+        
+        var sortString = sortBy switch
+        {
+            SortBy.Alphabetical => "alphabetical",
+            SortBy.Rating => "rating",
+            SortBy.Most_Viewed => "most_viewed",
+            _ => throw new ArgumentOutOfRangeException(nameof(sortBy), sortBy, null)
+        };
+        
+        var filterStringBuilder = new StringBuilder($"&sort={sortString}");
 
         foreach (var id in movieIds)
         {
@@ -279,7 +307,8 @@ public class FilterApiHandler : IFilterApiHandler
         ISet<int> selectedMovies,
         ISet<int> selectedGenres,
         DateTime startDate,
-        DateTime endDate
+        DateTime endDate,
+        SortBy sortBy
     ) GetFiltersFromUrlFilterString(string filterString)
     {
         var selectedCinemas = new HashSet<int>();
@@ -321,10 +350,12 @@ public class FilterApiHandler : IFilterApiHandler
                         }
 
                         break;
+                    case "sort" when Enum.TryParse(value, true, out SortBy sortBy):
+                        return (selectedCinemas, selectedMovies, selectedGenres, startDate, endDate, sortBy);
                 }
             }
         }
 
-        return (selectedCinemas, selectedMovies, selectedGenres, startDate, endDate);
+        return (selectedCinemas, selectedMovies, selectedGenres, startDate, endDate, SortBy.Most_Viewed);
     }
 }

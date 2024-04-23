@@ -16,7 +16,8 @@ public interface IFilterApiHandler
         ICollection<int> movieIds = null!,
         ICollection<int> genreIds = null!,
         DateTime fromDate = default,
-        DateTime toDate = default
+        DateTime toDate = default,
+        SortOption sortOption = SortOption.Most_viewed
     );
 
     /// <summary>
@@ -27,7 +28,8 @@ public interface IFilterApiHandler
         ICollection<int> movieIds = null!,
         ICollection<int> genreIds = null!,
         DateTime fromDate = default,
-        DateTime toDate = default
+        DateTime toDate = default,
+        SortOption sortOption = SortOption.Most_viewed
     );
 
     /// <summary>
@@ -47,6 +49,7 @@ public interface IFilterApiHandler
         ISet<int> selectedMovies,
         ISet<int> selectedGenres,
         DateTime startDate,
-        DateTime endDate
+        DateTime endDate,
+        SortOption sortOption
     ) GetFiltersFromUrlFilterString(string filterString);
 }

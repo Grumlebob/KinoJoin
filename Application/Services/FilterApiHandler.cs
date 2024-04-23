@@ -15,7 +15,8 @@ public class FilterApiHandler : IFilterApiHandler
         ICollection<int> movieIds = null!,
         ICollection<int> genreIds = null!,
         DateTime fromDate = default,
-        DateTime toDate = default
+        DateTime toDate = default,
+        SortOption sortOption = SortOption.Most_viewed
     )
     {
         cinemaIds ??= [];
@@ -29,7 +30,8 @@ public class FilterApiHandler : IFilterApiHandler
         fromDate = fromDate.Date;
         toDate = toDate.Date;
 
-        var filterStringBuilder = new StringBuilder("&sort=most_purchased");
+        
+        var filterStringBuilder = new StringBuilder($"&sort={sortOption.ToString().ToLower()}");
         var cinemaList = cinemaIds.ToList();
         for (var i = 0; i < cinemaIds.Count; i++)
         {
@@ -279,7 +281,8 @@ public class FilterApiHandler : IFilterApiHandler
         ISet<int> selectedMovies,
         ISet<int> selectedGenres,
         DateTime startDate,
-        DateTime endDate
+        DateTime endDate,
+        SortOption sortOption
     ) GetFiltersFromUrlFilterString(string filterString)
     {
         var selectedCinemas = new HashSet<int>();
@@ -287,6 +290,7 @@ public class FilterApiHandler : IFilterApiHandler
         var selectedGenres = new HashSet<int>();
         DateTime startDate = default;
         DateTime endDate = default;
+        var sortOption = SortOption.Most_viewed;
 
         var query = "?" + filterString;
         var queryParams = HttpUtility.ParseQueryString(query);
@@ -321,10 +325,15 @@ public class FilterApiHandler : IFilterApiHandler
                         }
 
                         break;
+                    case "sort" when Enum.TryParse(value, true, out SortOption sort):    
+                        sortOption = sort;
+                        
+
+                        break;
                 }
             }
         }
 
-        return (selectedCinemas, selectedMovies, selectedGenres, startDate, endDate);
+        return (selectedCinemas, selectedMovies, selectedGenres, startDate, endDate,sortOption);
     }
 }

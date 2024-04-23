@@ -208,12 +208,3 @@ public class SelectOption
     [MaxLength(260, ErrorMessage = "Color kan højst være 260 tegn.")]
     public required string Color { get; set; }
 }
-
-
-public enum SortOption
-{
-    Alphabetical,
-    Rating,
-    Most_viewed
-
-}

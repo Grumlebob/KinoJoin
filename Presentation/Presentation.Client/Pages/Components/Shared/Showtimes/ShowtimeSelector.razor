@@ -1,3 +1,4 @@
+@using Application.Services
 @inject IJSRuntime JsRuntime
 
 @*
@@ -42,6 +43,21 @@ The main purpose is to group showtimes by their Cinema, Version and Movie, and d
     </div>
 }
 
+@*Sorting select, only shown if SortByChanged has been specified*@
+@if (SortByChanged.HasDelegate)
+{
+    <div class=" flex justify-end mt-4 ">
+        <div class=" rounded-full border bg-gray-100 p-3">
+            <select class="bg-transparent" value="@SortBy" onchange="@(async (ChangeEventArgs e) => { await SortByChanged.InvokeAsync(Enum.Parse<SortOption>(e.Value!.ToString()!)); })">
+                @foreach (var option in Enum.GetValues<SortOption>())
+                {
+                    <option value="@option">@ToDanish(option)</option>
+                }
+            </select>
+        </div>
+    </div>
+}
+
 @* The main content of the component, showing all the showtimes using virtualization, to only load what is neccessary *@
 <div class="space-y-5">
     @{
@@ -53,12 +69,13 @@ The main purpose is to group showtimes by their Cinema, Version and Movie, and d
         var emptyMovieGroups = MoviesWithoutShowTimes.Select(m => new Showtime { MovieId = m.Id, Movie = m })
             .GroupBy(s => s.MovieId).ToList();
         showtimeByMovieList.AddRange(emptyMovieGroups);
-        var firstSpecialShowId = showtimeByMovieList.First(mGroup => mGroup.First().Movie.IsSpecialShow).Key; //make a headline above the first "særvisning"
+        
+        var firstSpecialShowId = showtimeByMovieList.FirstOrDefault(mGroup => mGroup.First().Movie.IsSpecialShow)?.Key; //make a headline above the first "særvisning"
     }
     <Virtualize Items="showtimeByMovieList" Context="showtimesByMovie" OverscanCount="3">
         <ItemContent>
             @{ var movie = showtimesByMovie.First().Movie; }
-            @if (movie.IsSpecialShow && movie.Id == firstSpecialShowId)
+            @if ( movie.IsSpecialShow && movie.Id == firstSpecialShowId)
             {
                 <h1 class="text-4xl font-bold">Særvisninger</h1>
                 <br/>
@@ -245,6 +262,13 @@ The main purpose is to group showtimes by their Cinema, Version and Movie, and d
 
     [Parameter] public bool HasAnswered { get; set; }
 
+    
+    ///<summary>The option that should be selected in the sorting selector. This will not change the sorting, only the selected option. Sorting should be handled by the SortByChanged eventCallback.
+    /// The selector will only show if SortByChanged has also been set.</summary>
+    [Parameter] public SortOption SortBy { get; set; } = SortOption.Most_viewed;
+    
+    [Parameter] public EventCallback<SortOption> SortByChanged { get; set; }
+ 
     ///<summary>Cinemas under movies that are toggled away: (MovieId, CinemaId).
     /// Example if they collapse Atlas Biografferne under the movie "Dune" it will be added to this list, with
     /// CinemaId = 'Atlas Biografferne' and MovieId = 'Dune'
@@ -315,6 +339,17 @@ The main purpose is to group showtimes by their Cinema, Version and Movie, and d
 
         _trailerUrl = $"https://www.youtube.com/embed/{videoId}";
         StateHasChanged();
+    }
+    
+    private string ToDanish(SortOption option)
+    {
+        return option switch
+        {
+            SortOption.Alphabetical => "Alfabetisk",
+            SortOption.Rating => "Bedst bedømt",
+            SortOption.Most_viewed => "Mest populært",
+            _ => throw new ArgumentOutOfRangeException(nameof(option), option, null)
+        };
     }
 
 }

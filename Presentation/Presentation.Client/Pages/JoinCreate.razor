@@ -1,5 +1,6 @@
 ﻿@page "/"
 @page "/create-event/{UrlFilterString?}"
+@using Application.Services
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 @inject KinoJoinHttpClient KinoJoinHttpClient
@@ -112,17 +113,7 @@
     <p>Der er ingen forestillinger for de valgte filtre</p>
 }
 
-
-<div class="w-fit rounded border bg-gray-100 p-3">
-    Sortér efter:
-    <select class="bg-transparent" value="@_sortOption" onchange="@(async (ChangeEventArgs e) => { _sortOption = Enum.Parse<SortOption>(e.Value!.ToString()!); await HandleShowtimeFiltersChanged(); })">
-        @foreach (var option in Enum.GetValues<SortOption>())
-        {
-            <option value="@option">@ToDanish(option)</option>
-        }
-    </select>
-</div>
-<ShowtimeSelector Showtimes="@_availableShowtimes" LegendTitle="Klik på de spilletider du vil have med i dit event" MoviesWithoutShowTimes="@_moviesWithoutShowtimes" ShowtimeChoices="@_showtimeVotes" ChoicesChanged="OnVoteChange" SelectOptions="@_selectOptionsForCreatePage" DefaultSelectOption="@_selectOptionsForCreatePage.First()"/>
+<ShowtimeSelector Showtimes="@_availableShowtimes" SortBy="_sortBy" SortByChanged="@(async (SortOption s) => { _sortBy = s; await HandleShowtimeFiltersChanged(); })" LegendTitle="Klik på de spilletider du vil have med i dit event" MoviesWithoutShowTimes="@_moviesWithoutShowtimes" ShowtimeChoices="@_showtimeVotes" ChoicesChanged="OnVoteChange" SelectOptions="@_selectOptionsForCreatePage" DefaultSelectOption="@_selectOptionsForCreatePage.First()"/>
 
 @*Create button*@
 <button class="fixed right-6 bottom-6 z-50 flex gap-1 text-sm btn-red" @onclick="OpenEventDetailsDialog">
@@ -295,9 +286,8 @@
     private bool _uploadingEvent;
 
     private string? _snackbarMessage;
-    
-    private SortOption _sortOption = SortOption.Most_viewed;
-    
+
+    private SortOption _sortBy = SortOption.Most_viewed;
 
 
     protected override async Task OnInitializedAsync()
@@ -337,7 +327,7 @@
         _joinEvent.DefaultSelectOption = _joinEvent.SelectOptions[NoVoteIndex];
 
         //Set filters to match the filter string in the url
-        (_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate, _sortOption) = FilterHandler.GetFiltersFromUrlFilterString(UrlFilterString);
+        (_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate, _sortBy) = FilterHandler.GetFiltersFromUrlFilterString(UrlFilterString);
         if (_startDate == default) _startDate = DateTime.Today;
         if (_endDate == default) _endDate = DateTime.Today.AddYears(1);
 
@@ -372,7 +362,7 @@
             return;
         }
 
-        (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate,_sortOption);
+        (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate, _sortBy);
         _showtimeVotes = _availableShowtimes.Select(s => new ParticipantVote { ShowtimeId = s.Id, SelectedOption = _selectOptionsForCreatePage[NoVoteIndex] }).ToList();
 
         //if KinoDKService yields any data not in database,
@@ -423,11 +413,11 @@
 
         //Set the filter string in the url to match the selected filters,
         //so the page will save filters on reload
-        var urlFilterString = FilterHandler.ConvertFiltersToUrlString(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate);
+        var urlFilterString = FilterHandler.ConvertFiltersToUrlString(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate, _sortBy);
         var newUrl = "create-event/" + urlFilterString;
         NavigationManager.NavigateTo(newUrl);
 
-        (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate, _sortOption);
+        (_availableShowtimes, _moviesWithoutShowtimes) = await FilterHandler.GetShowtimesFromFilters(_selectedCinemas, _selectedMovies, _selectedGenres, _startDate, _endDate, _sortBy);
 
         // Save votes for show times that were there before update 
         var stillAvailableShowtimeIds = new HashSet<int>(_showtimeVotes
@@ -529,15 +519,6 @@
         await Task.Delay(3000).ContinueWith(_ => _snackbarMessage = null);
     }
 
-    private string ToDanish(SortOption option)
-    {
-        return option switch
-        {
-            SortOption.Alphabetical => "Alfabetisk",
-            SortOption.Rating => "Bedst bedømt",
-            SortOption.Most_viewed => "Mest populært",
-            _ => throw new ArgumentOutOfRangeException(nameof(option), option, null)
-        };
-    }
+
 
 }

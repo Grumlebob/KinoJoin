@@ -30,7 +30,6 @@ public class FilterApiHandler : IFilterApiHandler
         fromDate = fromDate.Date;
         toDate = toDate.Date;
 
-        
         var filterStringBuilder = new StringBuilder($"&sort={sortOption.ToString().ToLower()}");
         var cinemaList = cinemaIds.ToList();
         for (var i = 0; i < cinemaIds.Count; i++)
@@ -236,7 +235,8 @@ public class FilterApiHandler : IFilterApiHandler
         ICollection<int> movieIds = null!,
         ICollection<int> genreIds = null!,
         DateTime fromDate = default,
-        DateTime toDate = default
+        DateTime toDate = default,
+        SortOption sortOption = SortOption.Most_viewed
     )
     {
         cinemaIds ??= [];
@@ -253,7 +253,7 @@ public class FilterApiHandler : IFilterApiHandler
         var fromDateString = fromDate.ToString("s"); //format: 2008-04-18T06:30:00, this format is needed so there is no slashes in the string, which would be interpreted as paths in the url
         var toDateString = toDate.ToString("s");
 
-        var filterStringBuilder = new StringBuilder("sort=most_purchased");
+        var filterStringBuilder = new StringBuilder($"sort={sortOption.ToString().ToLower()}");
 
         foreach (var id in movieIds)
         {
@@ -325,15 +325,21 @@ public class FilterApiHandler : IFilterApiHandler
                         }
 
                         break;
-                    case "sort" when Enum.TryParse(value, true, out SortOption sort):    
+                    case "sort" when Enum.TryParse(value, true, out SortOption sort):
                         sortOption = sort;
-                        
 
                         break;
                 }
             }
         }
 
-        return (selectedCinemas, selectedMovies, selectedGenres, startDate, endDate,sortOption);
+        return (selectedCinemas, selectedMovies, selectedGenres, startDate, endDate, sortOption);
     }
+}
+
+public enum SortOption
+{
+    Most_viewed,
+    Alphabetical,
+    Rating,
 }

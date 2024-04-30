@@ -41,8 +41,8 @@
 
 
 @* Title and share boxes *@
-<div class="flex justify-center">
-    <div class="my-2 flex flex-col gap-2 md:flex-row">
+<div class="flex w-full justify-center">
+    <div class="my-2 flex w-full flex-col gap-2 md:w-auto md:flex-row">
 
         @* join event title and information box *@
         <div class="w-full rounded bg-gray-50 p-3 shadow-md md:w-fit md:max-w-md">
@@ -111,18 +111,18 @@
         {
             <div class="w-full rounded border bg-gray-50 p-3 shadow-md space-y-1 md:w-fit md:max-w-md">
                 <p class="text-lg font-semibold mb-0.5">Send et link til eventet til dine venner.</p>
-                <div class="flex h-8 items-center gap-x-2">
+                <div class="flex h-8 items-center gap-x-1">
                     <a href="@(_baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id))" class="text-lg text-blue-600 hover:text-blue-700">
                         @((_baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id)).Replace("https://", ""))
                     </a>
 
                     <div class="group">
-                        <button class="btn-white min-w-6" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id)); })">
+                        <button class="p-1 btn-white min-w-8" onclick="@(async () => { await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", _baseUrl + "filling/" + SqidsEncoder.Encode(_joinEvent.Id)); })">
                             <img src="Icons/CopyIcon.svg" alt="copy" class="h-full rounded-full group-hover:invert"/>
                         </button>
                     </div>
 
-                    <button class="btn-black min-w-6 lg:hidden" onclick="@(async () => { await ShareEvent(); })">
+                    <button class="p-1 btn-black min-w-8 lg:hidden" onclick="@(async () => { await ShareEvent(); })">
                         <img src="Icons/ShareIcon.svg" alt="share" class="h-full"/>
                     </button>
                 </div>

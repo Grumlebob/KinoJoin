@@ -48,6 +48,8 @@ Applications -> applications -> your application -> settings ->
 
 Remember to scroll to Application URIs, and set callback urls, or alternatively follow Auth0 own guide, which is great.
 
+### Filling database with data from Kino.dk
+In order to use the filter pickers on the creation page, you must fill the database with data from Kino.dk. To do this you must run the program and login with the email johndoe@novo.com, using the password "Pace2Password". When logged in as this user, you can see the button "Update from kino.dk". Press it and it will begin fillling the database with data from Kino.dk. It may take a few minutes before it is done.
 
 ### Self hosting
 We use  a combination of nginx and ngrok for self hosting. 

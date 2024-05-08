@@ -1,7 +1,8 @@
-namespace Application.Services;
+namespace Infrastructure.KinoAPI;
 
 public class FetchNewestKinoDkDataService(IKinoContext context) : IFetchNewestKinoDkDataService
 {
+    
     private readonly HttpClient _httpClient = new();
 
     public async Task UpdateBaseDataFromKinoDk(int lowestCinemaId, int highestCinemaId)
@@ -11,6 +12,8 @@ public class FetchNewestKinoDkDataService(IKinoContext context) : IFetchNewestKi
         //Several cinemas may have the same movie. No need to create the movie object every time. Instead we save unique movies in a dictionary,
         //and add them to the database after all cinemas have been iterated.
         var movieIdsToObjects = new Dictionary<int, Movie>();
+        
+        
 
         for (var i = lowestCinemaId; i <= highestCinemaId; i++)
         {

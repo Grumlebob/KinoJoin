@@ -53,3 +53,10 @@ public interface IFilterApiHandler
         SortOption sortOption
     ) GetFiltersFromUrlFilterString(string filterString);
 }
+
+public enum SortOption
+{
+    Most_viewed,
+    Alphabetical,
+    Rating,
+}

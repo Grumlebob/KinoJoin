@@ -1,15 +1,11 @@
-﻿global using System.Globalization;
-global using System.Linq.Expressions;
+﻿global using System.Linq.Expressions;
 global using System.Text;
-global using System.Web;
 global using Application.Interfaces;
-global using Application.Services;
+global using Application.Modules;
 global using Domain.Entities;
-global using Domain.ExternalApiModels;
 global using FluentValidation;
 global using Microsoft.AspNetCore.Components.Authorization;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.ChangeTracking;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.JSInterop;
-global using Newtonsoft.Json;

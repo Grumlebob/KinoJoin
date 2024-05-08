@@ -1,4 +1,4 @@
-namespace Application.Services;
+namespace Application.Modules;
 
 public class CalendarService : ICalendarService
 {

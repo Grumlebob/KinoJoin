@@ -1,4 +1,6 @@
-﻿namespace Domain.ExternalApiModels;
+﻿using Newtonsoft.Json.Linq;
+
+namespace Domain.ExternalApiModels;
 
 // ReSharper disable InvalidXmlDocComment
 /// <summary>

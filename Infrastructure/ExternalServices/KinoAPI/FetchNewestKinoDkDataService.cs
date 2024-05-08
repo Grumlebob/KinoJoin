@@ -1,4 +1,7 @@
-namespace Application.Services;
+using Domain;
+using Infrastructure.ExternalServices.KinoAPI.Models;
+
+namespace Infrastructure.ExternalServices.KinoAPI;
 
 public class FetchNewestKinoDkDataService(IKinoContext context) : IFetchNewestKinoDkDataService
 {

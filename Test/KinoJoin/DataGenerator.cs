@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 using Bogus;
-using Domain.Entities;
+using Domain;
 
 namespace Test.KinoJoin;
 

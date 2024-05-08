@@ -1,4 +1,7 @@
-namespace Application.Services;
+using Domain;
+using Infrastructure.ExternalServices.KinoAPI.Models;
+
+namespace Infrastructure.ExternalServices.KinoAPI;
 
 public class FilterApiHandler : IFilterApiHandler
 {
@@ -335,11 +338,4 @@ public class FilterApiHandler : IFilterApiHandler
 
         return (selectedCinemas, selectedMovies, selectedGenres, startDate, endDate, sortOption);
     }
-}
-
-public enum SortOption
-{
-    Most_viewed,
-    Alphabetical,
-    Rating,
 }

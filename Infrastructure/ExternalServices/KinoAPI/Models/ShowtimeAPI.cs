@@ -1,4 +1,4 @@
-﻿namespace Domain.ExternalApiModels;
+﻿namespace Infrastructure.ExternalServices.KinoAPI.Models;
 
 // ReSharper disable InvalidXmlDocComment
 /// <summary>

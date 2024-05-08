@@ -1,4 +1,6 @@
-﻿namespace Presentation.Endpoints;
+﻿using Domain;
+
+namespace Presentation.Endpoints;
 
 //ICarterModule gives access to useful extension methods, such as authorize all endpoints
 public class KinoJoinEndpoints : ICarterModule

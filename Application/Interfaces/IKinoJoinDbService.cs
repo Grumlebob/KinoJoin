@@ -1,5 +1,4 @@
-﻿
-namespace Application.Interfaces;
+﻿namespace Application.Interfaces;
 
 /**
  * <summary>

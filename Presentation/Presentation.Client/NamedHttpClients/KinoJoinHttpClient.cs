@@ -1,4 +1,6 @@
-﻿namespace Presentation.Client.NamedHttpClients;
+﻿using Domain;
+
+namespace Presentation.Client.NamedHttpClients;
 
 public class KinoJoinHttpClient
 {

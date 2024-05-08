@@ -2,7 +2,6 @@
 global using System.Text;
 global using Application.Interfaces;
 global using Application.Modules;
-global using Domain.Entities;
 global using FluentValidation;
 global using Microsoft.AspNetCore.Components.Authorization;
 global using Microsoft.EntityFrameworkCore;

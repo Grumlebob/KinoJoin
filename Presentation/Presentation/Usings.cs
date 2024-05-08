@@ -2,7 +2,6 @@ global using System.Net;
 global using Application;
 global using Application.Interfaces;
 global using Carter;
-global using Domain.Entities;
 global using Infrastructure;
 global using Microsoft.AspNetCore.Http.HttpResults;
 global using Microsoft.AspNetCore.Mvc;

@@ -1,5 +1,5 @@
-﻿using Infrastructure.Identity;
-using Infrastructure.KinoAPI;
+﻿using Infrastructure.ExternalServices.KinoAPI;
+using Infrastructure.ExternalServices.Users;
 
 namespace Infrastructure;
 

@@ -1,3 +1,5 @@
+using Domain;
+
 namespace Application.Modules;
 
 public class CalendarService : ICalendarService

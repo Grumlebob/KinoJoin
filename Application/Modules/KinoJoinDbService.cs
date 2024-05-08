@@ -1,4 +1,6 @@
-﻿namespace Application.Modules;
+﻿using Domain;
+
+namespace Application.Modules;
 
 public class KinoJoinDbService(IKinoContext context) : IKinoJoinDbService
 {

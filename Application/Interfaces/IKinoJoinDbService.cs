@@ -1,4 +1,6 @@
-﻿namespace Application.Interfaces;
+﻿using Domain;
+
+namespace Application.Interfaces;
 
 /**
  * <summary>

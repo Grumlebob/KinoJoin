@@ -1,7 +1,7 @@
 using Application.Interfaces;
 using Application.Modules;
-using Infrastructure.Identity;
-using Infrastructure.KinoAPI;
+using Infrastructure.ExternalServices.KinoAPI;
+using Infrastructure.ExternalServices.Users;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Sqids;
 

@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Models;
+﻿namespace Infrastructure.ExternalServices.KinoAPI.Models;
 
 /// <summary>
 /// This is when we are calling the api for a single specific movie, to include more details, in our case trailer link.

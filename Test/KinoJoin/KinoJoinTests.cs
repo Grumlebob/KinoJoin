@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Http.Json;
-using Domain.Entities;
+using Domain;
 using FluentAssertions;
-using Infrastructure.KinoAPI;
-using Infrastructure.Models;
+using Infrastructure.ExternalServices.KinoAPI;
+using Infrastructure.ExternalServices.KinoAPI.Models;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;

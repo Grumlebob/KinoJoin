@@ -2,8 +2,6 @@
 global using System.Text;
 global using System.Web;
 global using Application.Interfaces;
-global using Domain.Entities;
-global using Infrastructure.Models;
 global using Infrastructure.Persistence;
 global using Infrastructure.Persistence.Configurations;
 global using Microsoft.AspNetCore.Components.Authorization;

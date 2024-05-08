@@ -8,7 +8,6 @@ public static class DependencyInjection
         var assembly = typeof(DependencyInjection).Assembly;
         services.AddValidatorsFromAssembly(assembly);
         services.AddScoped<IKinoJoinDbService, KinoJoinDbService>();
-        // services.AddScoped<IFetchNewestKinoDkDataService, FetchNewestKinoDkDataService>();
         services.AddScoped<ICalendarService, CalendarService>();
         return services;
     }

@@ -1,6 +1,5 @@
 ﻿using Infrastructure.Identity;
 using Infrastructure.KinoAPI;
-using Infrastructure.Persistence;
 
 namespace Infrastructure;
 

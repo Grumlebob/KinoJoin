@@ -10,7 +10,7 @@ Then run this command  ({YourPassword} should be replaced with your Postgres pas
 ```dotnet user-secrets set "PostgresConnection" "Host=localhost;Database=KinoJoin;Username=postgres;Password={YourPassword};Port=5432;Include Error Detail=true;"```
 
 ### Tailwind
-To recompile the tailwind css file, run the command below fro mthe root of the solution: <br>
+To recompile the tailwind css file, run the command below from the root of the solution: <br>
 ```tailwindcss -i .\Presentation\Presentation\wwwroot\app.css -o .\Presentation\Presentation\wwwroot\app.min.css```
 
 This needs to be done everytime you have used a new tailwind class. Therefore it is a good idea to use a system that does this automatically.
@@ -21,7 +21,7 @@ It can also be done by setting up a launch configuration that runs the command a
 
 
 ### Appsettings.json
-You need to replace the code in the file ```KinoPrototype.client/wwwroot/appsettings.json``` with the code below: <br>
+You need to replace the code in the file ```Presentation/Presentation.client/wwwroot/appsettings.json``` with the code below: <br>
 ```json
  {
   "Logging": {

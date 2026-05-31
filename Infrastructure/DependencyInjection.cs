@@ -1,6 +1,5 @@
-﻿using Application.Services;
-using Infrastructure.Identity;
-using Infrastructure.Persistence;
+﻿using Infrastructure.ExternalServices.KinoAPI;
+using Infrastructure.ExternalServices.Users;
 
 namespace Infrastructure;
 
@@ -19,5 +18,6 @@ public static class DependencyInjection
             options.EnableDetailedErrors();
         });
         services.AddScoped<IKinoContext>(provider => provider.GetRequiredService<KinoContext>());
+        services.AddScoped<IFetchNewestKinoDkDataService, FetchNewestKinoDkDataService>();
     }
 }

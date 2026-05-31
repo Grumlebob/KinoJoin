@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
-
-namespace Application.Interfaces;
+﻿namespace Application.Interfaces;
 
 /// <summary>
 /// This service handles the information used by Auth0 to identify the user.

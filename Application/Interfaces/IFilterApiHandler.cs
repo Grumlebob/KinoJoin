@@ -1,4 +1,6 @@
-﻿namespace Application.Interfaces;
+﻿using Domain;
+
+namespace Application.Interfaces;
 
 /// <summary>
 /// The main idea of this interface is to handle the filters namely, cinemas, movies, genres and dates.
@@ -52,4 +54,11 @@ public interface IFilterApiHandler
         DateTime endDate,
         SortOption sortOption
     ) GetFiltersFromUrlFilterString(string filterString);
+}
+
+public enum SortOption
+{
+    Most_viewed,
+    Alphabetical,
+    Rating,
 }

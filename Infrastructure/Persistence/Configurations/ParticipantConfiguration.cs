@@ -1,4 +1,6 @@
-﻿namespace Infrastructure.Persistence.Configurations;
+﻿using Domain;
+
+namespace Infrastructure.Persistence.Configurations;
 
 public class ParticipantConfiguration : IEntityTypeConfiguration<Participant>
 {

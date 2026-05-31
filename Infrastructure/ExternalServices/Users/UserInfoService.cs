@@ -1,4 +1,4 @@
-namespace Infrastructure.Identity;
+namespace Infrastructure.ExternalServices.Users;
 
 public class UserInfoService : IUserInfoService
 {

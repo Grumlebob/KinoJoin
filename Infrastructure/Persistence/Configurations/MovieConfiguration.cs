@@ -1,3 +1,5 @@
+using Domain;
+
 namespace Infrastructure.Persistence.Configurations;
 
 public class MovieConfiguration : IEntityTypeConfiguration<Movie>

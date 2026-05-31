@@ -1,4 +1,6 @@
-﻿namespace Infrastructure.Persistence;
+﻿using Domain;
+
+namespace Infrastructure.Persistence;
 
 public class KinoContext : DbContext, IKinoContext
 {

@@ -18,6 +18,6 @@ public static class DependencyInjection
             options.EnableDetailedErrors();
         });
         services.AddScoped<IKinoContext>(provider => provider.GetRequiredService<KinoContext>());
-        services.AddScoped<IFetchNewestKinoDkDataService, FetchNewestKinoDkDataService>();
+        services.AddHttpClient<IFetchNewestKinoDkDataService, FetchNewestKinoDkDataService>();
     }
 }

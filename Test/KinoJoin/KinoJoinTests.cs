@@ -310,13 +310,10 @@ public class KinoJoinTests : IAsyncLifetime
         genres.Should().NotBeNull();
     }
 
-    /*
-     * Unfortunately Kino.dk is down 5% of the day, which causes this test to fail 5% of the time.
-     */
     [Fact]
-    public async Task UpdateAllBaseDataFromKinoDk_ThenUseTheDataToCheckKinoDkFilterApi()
+    public async Task UpdateBaseDataFromKinoDkFixture_ThenUseTheDataToCheckKinoDkFilterApi()
     {
-        //The tests main focus is getting the static data from kino.dk
+        // Use a recorded API response so this integration test does not depend on Kino.dk uptime.
         var response = await _client.PostAsync("api/kino-data/update-all/1/3", null);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -346,7 +343,9 @@ public class KinoJoinTests : IAsyncLifetime
             cinemasToCheck.Add(1);
         }
 
-        var filterApiHandler = new FilterApiHandler();
+        var filterApiHandler = new FilterApiHandler(
+            new HttpClient(new KinoApiFixtureMessageHandler())
+        );
         var (showtimesWithCinemaFilter, _) = await filterApiHandler.GetShowtimesFromFilters(
             cinemaIds: cinemasToCheck,
             fromDate: fromDate,
@@ -393,7 +392,7 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public void GetFiltersFromStringContainsCorrectIdsAndDates()
     {
-        var filterApiHandler = new FilterApiHandler();
+        var filterApiHandler = new FilterApiHandler(new HttpClient());
         const string filterUrl =
             "sort=most_purchased&cinemas=23&movies=5&movies=5&genres=96&genres=1&cinemas=2&date=2024-04-05T00:00:00&date=2024-04-06T00:00:00";
         var (cinemaIds, movieIds, genreIds, startDate, endDate, _) =
@@ -417,7 +416,7 @@ public class KinoJoinTests : IAsyncLifetime
     [Fact]
     public void ConvertFiltersToUrlString_ShouldReturnCorrectString()
     {
-        var filterApiHandler = new FilterApiHandler();
+        var filterApiHandler = new FilterApiHandler(new HttpClient());
         var fakeCinemas = new List<int> { 1, 2, 3 };
         var fakeMovies = new List<int> { 4, 5, 6 };
         var fakeGenres = new List<int> { 7, 8, 9 };
@@ -483,11 +482,6 @@ public class KinoJoinTests : IAsyncLifetime
         var migrationsAssembly = _kinoContext.GetService<IMigrationsAssembly>();
         var modelInitializer = _kinoContext.GetService<IModelRuntimeInitializer>();
         var snapshotModel = migrationsAssembly.ModelSnapshot?.Model;
-        if (snapshotModel is IMutableModel mutableModel)
-        {
-            snapshotModel = mutableModel.FinalizeModel();
-        }
-
         if (snapshotModel is not null)
         {
             snapshotModel = modelInitializer.Initialize(snapshotModel);

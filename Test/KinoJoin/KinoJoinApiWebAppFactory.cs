@@ -1,11 +1,13 @@
 ﻿using System.Data.Common;
 using Application.Interfaces;
+using Infrastructure.ExternalServices.KinoAPI;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Npgsql;
 using Respawn;
 using Testcontainers.PostgreSql;
@@ -16,7 +18,7 @@ namespace Test.KinoJoin;
 public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     /// The entire test environment uses a single connection to the database. This means that all the tests have to be done by the time
-    /// the connection is closed. <seealso cref="UpdateAllBaseDataFromKinoDk_ThenUseTheDataToCheckKinoDkFilterApi"></seealso>
+    /// the connection is closed. <seealso cref="KinoJoinTests.UpdateBaseDataFromKinoDkFixture_ThenUseTheDataToCheckKinoDkFilterApi"></seealso>
     /// The reason why this is necessary is because updating all base data from Kino.dk is slow and will end up being cancelled
     /// if the connection is closed before terminating
     private const int MaxWaitTimeMinutes = 5;
@@ -57,6 +59,11 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
             services.AddSingleton<IKinoContext>(provider =>
                 provider.GetRequiredService<KinoContext>()
             );
+
+            services.RemoveAll<IFetchNewestKinoDkDataService>();
+            services
+                .AddHttpClient<IFetchNewestKinoDkDataService, FetchNewestKinoDkDataService>()
+                .ConfigurePrimaryHttpMessageHandler(() => new KinoApiFixtureMessageHandler());
         });
     }
 

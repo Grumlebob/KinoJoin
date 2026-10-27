@@ -3,9 +3,10 @@ using Infrastructure.ExternalServices.KinoAPI.Models;
 
 namespace Infrastructure.ExternalServices.KinoAPI;
 
-public class FetchNewestKinoDkDataService(IKinoContext context) : IFetchNewestKinoDkDataService
+public class FetchNewestKinoDkDataService(IKinoContext context, HttpClient httpClient)
+    : IFetchNewestKinoDkDataService
 {
-    private readonly HttpClient _httpClient = new();
+    private readonly HttpClient _httpClient = httpClient;
 
     public async Task UpdateBaseDataFromKinoDk(int lowestCinemaId, int highestCinemaId)
     {

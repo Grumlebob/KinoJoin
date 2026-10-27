@@ -3,9 +3,9 @@ using Infrastructure.ExternalServices.KinoAPI.Models;
 
 namespace Infrastructure.ExternalServices.KinoAPI;
 
-public class FilterApiHandler : IFilterApiHandler
+public class FilterApiHandler(HttpClient httpClient) : IFilterApiHandler
 {
-    private readonly HttpClient _httpClient = new();
+    private readonly HttpClient _httpClient = httpClient;
 
     private const string ApiBaseUrl =
         "https://api.kino.dk/ticketflow/showtimes?region=content&format=json";

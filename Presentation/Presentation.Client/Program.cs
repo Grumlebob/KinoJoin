@@ -7,7 +7,7 @@ using Sqids;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddScoped<IFilterApiHandler, FilterApiHandler>();
+builder.Services.AddHttpClient<IFilterApiHandler, FilterApiHandler>();
 builder.Services.AddScoped<IUserInfoService, UserInfoService>();
 builder.Services.AddScoped<ICalendarService, CalendarService>();
 

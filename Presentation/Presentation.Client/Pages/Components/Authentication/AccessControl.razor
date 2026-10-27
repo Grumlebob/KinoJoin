@@ -1,6 +1,4 @@
 ﻿@inject NavigationManager Navigation
-@inject SignOutSessionStateManager SignOutManager
-@inject IConfiguration Configuration
 
 @*
 Taken from guide: https://auth0.com/blog/securing-blazor-webassembly-apps/
@@ -30,10 +28,9 @@ Taken from guide: https://auth0.com/blog/securing-blazor-webassembly-apps/
 
 @code{
 
-    private async Task BeginSignOut(MouseEventArgs args)
+    private void BeginSignOut()
     {
-        await SignOutManager.SetSignOutState();
-        Navigation.NavigateTo("authentication/logout");
+        Navigation.NavigateToLogout("authentication/logout");
     }
 
 }

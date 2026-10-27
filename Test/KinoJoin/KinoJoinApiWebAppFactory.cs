@@ -21,9 +21,9 @@ public class KinoJoinApiWebAppFactory : WebApplicationFactory<Program>, IAsyncLi
     /// if the connection is closed before terminating
     private const int MaxWaitTimeMinutes = 5;
 
-    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder()
-        .WithImage("postgres:latest")
-        .Build();
+    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder(
+        "postgres:latest"
+    ).Build();
 
     //Default! cause we are not initializing it here, but in the InitializeAsync method
     private DbConnection _dbConnection = default!;
